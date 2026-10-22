@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Postuler à une formation</ui:define>
+    <ui:define name="content">
+
+<style>
+/* ── Page postuler ── */
+.pst-wrap{max-width:860px;margin:0 auto;padding:0 4px;}
+.pst-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2,#64748B);text-decoration:none;margin-bottom:18px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);transition:background .15s;}
+.pst-back:hover{background:rgba(255,255,255,.22);}
+.pst-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:20px;align-items:start;}
+@media(max-width:700px){.pst-grid{grid-template-columns:1fr;}}
+
+/* Carte offre */
+.pst-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:16px;overflow:hidden;}
+.pst-card-head{padding:18px 20px;background:linear-gradient(135deg,#0072ff,#00c6ff);}
+.pst-card-head h2{margin:0;font-size:1rem;font-weight:700;color:#fff;}
+.pst-card-head p{margin:4px 0 0;font-size:11px;color:rgba(255,255,255,.8);}
+.pst-card-body{padding:18px 20px;}
+.pst-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.pst-tag{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600;background:rgba(0,114,255,.15);color:#60A5FA;border:1px solid rgba(0,114,255,.25);}
+.pst-field{margin-bottom:10px;}
+.pst-field-lbl{font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.pst-field-val{font-size:13px;color:var(--text-1,#E2E8F0);font-weight:500;}
+
+/* Docs requis */
+.pst-docs-box{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+.pst-docs-title{font-size:11px;font-weight:700;color:#60A5FA;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.pst-doc-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#BFDBFE;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.pst-doc-item:last-child{border-bottom:none;}
+.pst-doc-num{width:20px;height:20px;border-radius:50%;background:#1D4ED8;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pst-doc-name{flex:1;}
+
+/* Formulaire upload */
+.pst-form-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:16px;overflow:hidden;}
+.pst-form-head{padding:18px 20px;background:linear-gradient(135deg,rgba(16,185,129,.9),rgba(5,150,105,.9));}
+.pst-form-head h2{margin:0;font-size:1rem;font-weight:700;color:#fff;}
+.pst-form-head p{margin:4px 0 0;font-size:11px;color:rgba(255,255,255,.85);}
+.pst-form-body{padding:20px;}
+
+.pst-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.08);}
+.pst-step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.pst-step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0072ff,#00c6ff);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.pst-step-content{flex:1;}
+.pst-step-title{font-size:12px;font-weight:700;color:var(--text-1,#E2E8F0);margin-bottom:4px;}
+.pst-step-sub{font-size:11px;color:#94A3B8;margin-bottom:8px;}
+
+.pst-upload-zone{background:rgba(255,255,255,.05);border:2px dashed rgba(255,255,255,.2);border-radius:12px;padding:20px;text-align:center;}
+.pst-upload-icon{font-size:32px;display:block;margin-bottom:6px;color:#94A3B8;}
+.pst-upload-hint{font-size:11px;color:#94A3B8;margin-top:6px;}
+
+/* ── Slots compacts par document ── */
+.pst-slots-list{display:flex;flex-direction:column;gap:5px;}
+
+/* Ligne normale : numéro + nom + bouton */
+.pst-doc-slot{display:flex;align-items:center;gap:10px;padding:9px 12px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;transition:border-color .15s,background .15s;}
+.pst-doc-slot:hover{background:rgba(255,255,255,.07);}
+.pst-doc-slot.slot-ok{border-color:rgba(52,211,153,.3);background:rgba(16,185,129,.06);}
+
+.pst-doc-slot-num{width:22px;height:22px;border-radius:50%;
+  background:rgba(0,114,255,.25);border:1px solid rgba(0,114,255,.4);
+  color:#93C5FD;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pst-doc-slot.slot-ok .pst-doc-slot-num{background:rgba(16,185,129,.25);border-color:rgba(52,211,153,.4);color:#34D399;}
+
+.pst-doc-slot-name{flex:1;font-size:12px;color:#CBD5E1;line-height:1.3;min-width:0;}
+.pst-doc-slot.slot-ok .pst-doc-slot-name{color:#6EE7B7;}
+
+/* Bouton compact "Parcourir" — surcharge PrimeFaces */
+.pst-slot-btn-wrap{flex-shrink:0;}
+.pst-slot-btn-wrap .ui-fileupload{display:inline-block;}
+.pst-slot-btn-wrap .ui-fileupload-buttonbar{background:none!important;border:none!important;padding:0!important;margin:0!important;}
+.pst-slot-btn-wrap .ui-fileupload-content{display:none!important;}
+.pst-slot-btn-wrap .ui-button.ui-fileupload-choose{
+  padding:4px 12px!important;font-size:11px!important;font-weight:600!important;
+  background:rgba(0,114,255,.18)!important;border:1px solid rgba(0,114,255,.35)!important;
+  color:#93C5FD!important;border-radius:6px!important;cursor:pointer;
+  white-space:nowrap;transition:background .15s!important;}
+.pst-slot-btn-wrap .ui-button.ui-fileupload-choose:hover{background:rgba(0,114,255,.3)!important;}
+.pst-slot-btn-wrap .ui-button .ui-button-icon-left{display:none!important;}
+
+/* Chip fichier uploadé */
+.pst-slot-file{display:flex;align-items:center;gap:6px;}
+.pst-slot-fname{font-size:11px;color:#6EE7B7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;}
+.pst-slot-remove{color:#F87171;cursor:pointer;font-size:12px;text-decoration:none;flex-shrink:0;opacity:.8;}
+.pst-slot-remove:hover{opacity:1;}
+
+.pst-file-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;margin-bottom:5px;}
+.pst-file-icon{color:#34D399;font-size:14px;}
+.pst-file-name{flex:1;font-size:12px;color:#A7F3D0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pst-file-remove{color:#F87171;cursor:pointer;font-size:13px;text-decoration:none;flex-shrink:0;}
+
+.pst-no-file{text-align:center;padding:14px;font-size:12px;color:#64748B;font-style:italic;}
+
+.pst-submit{width:100%;padding:14px;background:linear-gradient(135deg,#10B981,#059669);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 14px rgba(16,185,129,.35);transition:opacity .15s;}
+.pst-submit:hover{opacity:.9;}
+.pst-submit:disabled{opacity:.5;cursor:not-allowed;}
+
+.pst-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#FCD34D;margin-bottom:14px;}
+.pst-success-banner{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:14px 18px;font-size:13px;color:#6EE7B7;display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+</style>
+
+        <!-- Accès refusé : non connecté -->
+        <h:panelGroup rendered="#{not sessionBean.connecte}" layout="block">
+            <div style="text-align:center;padding:80px;">
+                <div style="font-size:4rem;margin-bottom:12px;">🔐</div>
+                <h2 style="color:var(--text-1);">Connexion requise</h2>
+                <h:link outcome="/login" style="color:#00c6ff;font-size:14px;">Se connecter →</h:link>
+            </div>
+        </h:panelGroup>
+
+        <!-- Accès refusé : permission 5014 absente -->
+        <h:panelGroup rendered="#{sessionBean.connecte and not sessionBean.permissionsMap['5014']}" layout="block">
+            <div style="text-align:center;padding:80px;">
+                <div style="font-size:4rem;margin-bottom:12px;">🔒</div>
+                <h2 style="color:var(--text-1);">Accès non autorisé</h2>
+                <p style="color:#94A3B8;font-size:13px;">Vous n'avez pas la permission de candidater à une offre.</p>
+                <h:link outcome="/offres" style="color:#00c6ff;font-size:14px;">← Voir les offres</h:link>
+            </div>
+        </h:panelGroup>
+
+        <!-- Offre introuvable -->
+        <h:panelGroup rendered="#{sessionBean.connecte and sessionBean.permissionsMap['5014'] and not postulationBean.offreChargee}" layout="block">
+            <div style="text-align:center;padding:80px;">
+                <div style="font-size:4rem;margin-bottom:12px;">🔍</div>
+                <h2 style="color:var(--text-1);">Formation introuvable</h2>
+                <p style="color:#94A3B8;font-size:13px;">L'offre demandée n'existe pas ou n'est plus disponible.</p>
+                <h:link outcome="/offres" style="color:#00c6ff;font-size:14px;">← Voir les offres</h:link>
+            </div>
+        </h:panelGroup>
+
+        <!-- Contenu principal -->
+        <h:panelGroup rendered="#{sessionBean.connecte and sessionBean.permissionsMap['5014'] and postulationBean.offreChargee}" layout="block">
+            <div class="pst-wrap">
+
+                <!-- Retour -->
+                <h:link outcome="/offres" styleClass="pst-back">
+                    ← Retour aux offres
+                </h:link>
+
+                <h1 style="margin:0 0 4px;font-size:1.4rem;font-weight:700;color:var(--text-1);">
+                    📝 Postuler à une formation
+                </h1>
+                <p style="margin:0 0 20px;font-size:13px;color:#94A3B8;">
+                    Complétez votre dossier et soumettez votre candidature
+                </p>
+
+                <div class="pst-grid">
+
+                    <!-- ── Colonne gauche : Détails de l'offre ── -->
+                    <div>
+                        <div class="pst-card">
+                            <div class="pst-card-head">
+                                <h2><h:outputText value="#{postulationBean.offre.titre}"/></h2>
+                                <p>Détails de la formation</p>
+                            </div>
+                            <div class="pst-card-body">
+                                <div class="pst-meta">
+                                    <span class="pst-tag"><h:outputText value="#{postulationBean.offre.type}"/></span>
+                                    <h:panelGroup rendered="#{postulationBean.offre.domaine != null}">
+                                        <span class="pst-tag"><h:outputText value="#{postulationBean.offre.domaine.libelle}"/></span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{postulationBean.offre.payante}">
+                                        <span class="pst-tag" style="background:rgba(37,99,235,.2);color:#93C5FD;border-color:rgba(37,99,235,.3);">
+                                            💰 <h:outputText value="#{postulationBean.offre.coutFormate}"/>
+                                        </span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{not postulationBean.offre.payante}">
+                                        <span class="pst-tag" style="background:rgba(16,185,129,.15);color:#6EE7B7;border-color:rgba(16,185,129,.3);">✓ Gratuit</span>
+                                    </h:panelGroup>
+                                </div>
+
+                                <div class="pst-field">
+                                    <div class="pst-field-lbl">📅 Période</div>
+                                    <div class="pst-field-val">
+                                        <h:outputText value="#{postulationBean.offre.dateDebut}"/>
+                                        <span style="color:#64748B;"> → </span>
+                                        <h:outputText value="#{postulationBean.offre.dateFin}"/>
+                                    </div>
+                                </div>
+
+                                <div class="pst-field">
+                                    <div class="pst-field-lbl">🪑 Places disponibles</div>
+                                    <div class="pst-field-val">
+                                        <h:outputText value="#{postulationBean.offre.placesDisponibles}"/> place(s)
+                                    </div>
+                                </div>
+
+                                <h:panelGroup rendered="#{not empty postulationBean.offre.description}" layout="block">
+                                    <div class="pst-field">
+                                        <div class="pst-field-lbl">📋 Description</div>
+                                        <div style="font-size:12px;color:#CBD5E1;line-height:1.5;">
+                                            <h:outputText value="#{postulationBean.offre.description}"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+
+                        <!-- Documents requis (résumé côté gauche) -->
+                        <div style="margin-top:16px;">
+                            <h:panelGroup rendered="#{not empty postulationBean.offre.documentsRequis}" layout="block">
+                                <div class="pst-docs-box">
+                                    <div class="pst-docs-title">📋 <h:outputText value="#{postulationBean.offre.nbDocumentsRequis}"/> document(s) à fournir</div>
+                                    <ui:repeat value="#{postulationBean.offre.documentsRequis}" var="doc" varStatus="vs">
+                                        <div class="pst-doc-item">
+                                            <div class="pst-doc-num"><h:outputText value="#{vs.index + 1}"/></div>
+                                            <div class="pst-doc-name"><h:outputText value="#{doc}"/></div>
+                                            <h:panelGroup rendered="#{postulationBean.slotsRempliMap[doc]}">
+                                                <span style="font-size:10px;color:#34D399;font-weight:700;">✓</span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
+                    <!-- ── Colonne droite : Formulaire de candidature ── -->
+                    <div class="pst-form-card">
+                        <div class="pst-form-head">
+                            <h2>📋 Votre dossier de candidature</h2>
+                            <h:panelGroup rendered="#{not empty postulationBean.offre.documentsRequis}" layout="block">
+                                <p>Déposez vos documents puis soumettez votre demande</p>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{empty postulationBean.offre.documentsRequis}" layout="block">
+                                <p>Soumettez votre candidature — aucun document requis pour cette formation</p>
+                            </h:panelGroup>
+                        </div>
+                        <div class="pst-form-body">
+
+                            <h:form id="postulationForm">
+                                <p:messages id="postulMsgs" showDetail="true" closable="true"
+                                            style="font-size:12px;border-radius:8px;margin-bottom:14px;"/>
+
+                                <!-- Étape 1 : Upload — uniquement si documents requis définis -->
+                                <h:panelGroup rendered="#{not empty postulationBean.offre.documentsRequis}" layout="block">
+                                <div class="pst-step">
+                                    <div class="pst-step-num">1</div>
+                                    <div class="pst-step-content">
+                                        <div class="pst-step-title">
+                                            Déposez vos documents
+                                            <h:panelGroup rendered="#{postulationBean.nbFichiers gt 0}">
+                                                <span style="font-size:10px;background:#10B981;color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:600;">
+                                                    <h:outputText value="#{postulationBean.nbFichiers}"/> / <h:outputText value="#{postulationBean.offre.nbDocumentsRequis}"/>
+                                                </span>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="pst-step-sub">
+                                            Formats acceptés : PDF, Word, JPEG, PNG — 10 Mo max par fichier
+                                        </div>
+
+                                        <!-- CAS A : documents requis listés → un slot compact par document -->
+                                        <h:panelGroup rendered="#{not empty postulationBean.offre.documentsRequis}" layout="block">
+                                            <div class="pst-slots-list">
+                                            <ui:repeat value="#{postulationBean.offre.documentsRequis}" var="doc" varStatus="vs">
+                                                <div class="#{postulationBean.slotsClassMap[doc]}">
+                                                    <!-- Numéro -->
+                                                    <div class="pst-doc-slot-num"><h:outputText value="#{vs.index + 1}"/></div>
+                                                    <!-- Nom du document -->
+                                                    <div class="pst-doc-slot-name"><h:outputText value="#{doc}"/></div>
+                                                    <!-- Côté droit : fichier uploadé OU bouton parcourir -->
+                                                    <h:panelGroup rendered="#{postulationBean.slotsRempliMap[doc]}" layout="block">
+                                                        <div class="pst-slot-file">
+                                                            <i class="ti ti-file-check" style="color:#34D399;font-size:13px;flex-shrink:0;"></i>
+                                                            <span class="pst-slot-fname">
+                                                                <h:outputText value="#{postulationBean.slotNomMap[doc]}"/>
+                                                            </span>
+                                                            <p:commandLink styleClass="pst-slot-remove"
+                                                                           action="#{postulationBean.supprimerSlot(doc)}"
+                                                                           process="@none"
+                                                                           update="postulationForm"
+                                                                           title="Retirer ce fichier">
+                                                                <i class="ti ti-x"></i>
+                                                            </p:commandLink>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{not postulationBean.slotsRempliMap[doc]}" layout="block" styleClass="pst-slot-btn-wrap">
+                                                        <p:fileUpload listener="#{postulationBean.handleUploadSlot}"
+                                                                      mode="advanced"
+                                                                      multiple="false"
+                                                                      auto="true"
+                                                                      maxFileSize="10000000"
+                                                                      allowTypes="/(\.|\/)(pdf|doc|docx|jpg|jpeg|png)$/"
+                                                                      update="postulationForm"
+                                                                      chooseLabel="Parcourir"
+                                                                      uploadLabel=""
+                                                                      cancelLabel="">
+                                                            <f:attribute name="docNom" value="#{doc}"/>
+                                                        </p:fileUpload>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </ui:repeat>
+                                            </div>
+                                        </h:panelGroup>
+
+                                    </div>
+                                </div>
+                                </h:panelGroup>
+
+                                <!-- Étape 2 : Récapitulatif dossier (slots remplis) -->
+                                <h:panelGroup rendered="#{not empty postulationBean.offre.documentsRequis}" layout="block">
+                                <div class="pst-step">
+                                    <div class="pst-step-num">2</div>
+                                    <div class="pst-step-content">
+                                        <div class="pst-step-title">
+                                            Récapitulatif du dossier
+                                            <h:panelGroup rendered="#{postulationBean.nbFichiers gt 0}">
+                                                <span style="font-size:10px;background:#10B981;color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:600;">
+                                                    <h:outputText value="#{postulationBean.nbFichiers}"/> document(s) fourni(s)
+                                                </span>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="pst-step-sub">Vérifiez que tous les documents requis sont bien fournis</div>
+                                        <h:panelGroup rendered="#{postulationBean.nbFichiers eq 0}" layout="block">
+                                            <div class="pst-no-file">Aucun document fourni pour l'instant</div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{postulationBean.nbFichiers gt 0}" layout="block">
+                                            <ui:repeat value="#{postulationBean.offre.documentsRequis}" var="doc">
+                                                <h:panelGroup rendered="#{postulationBean.slotsRempliMap[doc]}" layout="block">
+                                                    <div class="pst-file-item" style="margin-bottom:5px;">
+                                                        <i class="ti ti-file-check pst-file-icon"></i>
+                                                        <span class="pst-file-name">
+                                                            <span style="color:#94A3B8;font-size:10px;"><h:outputText value="#{doc}"/> · </span>
+                                                            <h:outputText value="#{postulationBean.slotNomMap[doc]}"/>
+                                                        </span>
+                                                        <span style="font-size:10px;color:#34D399;font-weight:600;">✓</span>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                                </h:panelGroup>
+
+                                <!-- Étape 3 : Liste des participants (AGENT / Institution) -->
+                                <h:panelGroup rendered="#{postulationBean.agent}" layout="block">
+                                    <div class="pst-step">
+                                        <div class="pst-step-num"><h:panelGroup rendered="#{not empty postulationBean.offre.documentsRequis}">3</h:panelGroup><h:panelGroup rendered="#{empty postulationBean.offre.documentsRequis}">2</h:panelGroup></div>
+                                        <div class="pst-step-content">
+                                            <div class="pst-step-title">
+                                                Liste des participants
+                                                <span style="font-size:10px;background:#D97706;color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:600;">Institution</span>
+                                            </div>
+                                            <div class="pst-step-sub">
+                                                Ajoutez un fichier contenant les participants de votre institution qui suivront cette formation.<br/>
+                                                Formats acceptés : Word (.docx), Excel (.xlsx), PDF, CSV, OpenDocument — 20 Mo max.
+                                            </div>
+                                            <div class="pst-upload-zone" style="margin-top:10px;">
+                                                <i class="ti ti-users pst-upload-icon"></i>
+                                                <p:fileUpload listener="#{postulationBean.handleParticipantsUpload}"
+                                                              mode="advanced"
+                                                              auto="true"
+                                                              multiple="false"
+                                                              maxFileSize="20000000"
+                                                              allowTypes="/(\.|\/)(docx?|xlsx?|pdf|csv|odt|ods)$/"
+                                                              update="postulationForm"
+                                                              chooseLabel="Choisir le fichier participants"
+                                                              uploadLabel="Envoyer"
+                                                              cancelLabel="Annuler"
+                                                              style="font-size:12px;"/>
+                                                <div class="pst-upload-hint">
+                                                    Glissez-déposez votre fichier ou cliquez pour parcourir
+                                                </div>
+                                            </div>
+                                            <h:panelGroup rendered="#{postulationBean.hasFichierParticipants}" layout="block">
+                                                <div class="pst-file-item" style="margin-top:10px;background:rgba(5,150,105,.1);border:1px solid #A7F3D0;border-radius:8px;">
+                                                    <i class="ti ti-file-spreadsheet pst-file-icon" style="color:#059669;"></i>
+                                                    <span class="pst-file-name" style="color:#065F46;font-weight:600;">
+                                                        <h:outputText value="#{postulationBean.fichierParticipantsNom}"/>
+                                                    </span>
+                                                    <span style="font-size:10px;color:#059669;margin-left:auto;">✓ Prêt</span>
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not postulationBean.hasFichierParticipants}" layout="block">
+                                                <div class="pst-no-file" style="margin-top:8px;">
+                                                    Fichier non fourni (optionnel)
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Étape finale : Soumission -->
+                                <div class="pst-step">
+                                    <div class="pst-step-num">
+                                        <!-- docs requis + agent → 4 ; docs requis + particulier → 3 ; no docs + agent → 2 ; no docs + particulier → 1 -->
+                                        <h:panelGroup rendered="#{not empty postulationBean.offre.documentsRequis and postulationBean.agent}">4</h:panelGroup>
+                                        <h:panelGroup rendered="#{not empty postulationBean.offre.documentsRequis and not postulationBean.agent}">3</h:panelGroup>
+                                        <h:panelGroup rendered="#{empty postulationBean.offre.documentsRequis and postulationBean.agent}">2</h:panelGroup>
+                                        <h:panelGroup rendered="#{empty postulationBean.offre.documentsRequis and not postulationBean.agent}">1</h:panelGroup>
+                                    </div>
+                                    <div class="pst-step-content">
+                                        <div class="pst-step-title">Soumettez votre candidature</div>
+                                        <div class="pst-step-sub">
+                                            Votre dossier sera examiné par l'administrateur.
+                                            Vous recevrez une notification dès validation.
+                                        </div>
+
+                                        <!-- Info candidat -->
+                                        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#CBD5E1;">
+                                            <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Candidat</div>
+                                            <strong><h:outputText value="#{sessionBean.nomComplet}"/></strong>
+                                            <span style="color:#64748B;"> — </span>
+                                            <h:outputText value="#{sessionBean.email}"/>
+                                        </div>
+
+                                        <p:commandButton value="✅ Soumettre ma candidature"
+                                                         action="#{postulationBean.soumettre}"
+                                                         update="postulationForm"
+                                                         styleClass="pst-submit"
+                                                         style="margin-bottom:0;">
+                                        </p:commandButton>
+
+                                        <div style="text-align:center;margin-top:12px;font-size:11px;color:#64748B;">
+                                            🔒 Vos documents sont transmis de manière sécurisée
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </h:form>
+                        </div>
+                    </div>
+
+                </div><!-- /pst-grid -->
+            </div><!-- /pst-wrap -->
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

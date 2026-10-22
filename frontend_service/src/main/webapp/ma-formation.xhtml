@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="title">Ma formation sur mesure</ui:define>
+
+<ui:define name="content">
+<style>
+:root{--navy:#0B2545;--gold:#D9A441;--bg:#f8f9fc;--border:#e5e7eb;--text1:#0B2545;--text2:#374151;--text3:#6b7280;}
+body{background:var(--bg);}
+.mf-wrap{max-width:900px;margin:0 auto;padding:24px 16px;}
+.mf-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text3);
+         text-decoration:none;padding:6px 12px;border-radius:6px;background:#fff;border:1px solid var(--border);margin-bottom:20px;}
+.mf-back:hover{background:var(--border);}
+.mf-hero{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:20px;}
+.mf-title{font-size:20px;font-weight:700;color:var(--text1);margin:0 0 6px;}
+.mf-sub{font-size:13px;color:var(--text3);}
+.mf-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid transparent;}
+.mf-badge-blue{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;}
+.mf-badge-green{background:#dcfce7;color:#16a34a;border-color:#bbf7d0;}
+.mf-badge-orange{background:#fef3c7;color:#b45309;border-color:#fde68a;}
+.mf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;}
+@media(max-width:600px){.mf-grid{grid-template-columns:1fr;}}
+.mf-field{background:var(--bg);border-radius:8px;padding:12px 14px;}
+.mf-field-lbl{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+.mf-field-val{font-size:13px;color:var(--text1);font-weight:500;}
+.mf-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px;}
+.mf-card-title{font-size:14px;font-weight:700;color:var(--text1);margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+.mf-seance{padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border);margin-bottom:8px;}
+.mf-seance:last-child{margin-bottom:0;}
+.mf-seance-title{font-size:13px;font-weight:600;color:var(--text1);}
+.mf-seance-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.mf-empty{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
+.mf-denied{text-align:center;padding:80px 20px;}
+</style>
+
+<!-- Accès refusé si non connecté -->
+<h:panelGroup rendered="#{!sessionBean.connecte}" layout="block">
+  <div class="mf-wrap">
+    <div class="mf-denied">
+      <div style="font-size:3rem;margin-bottom:12px;">🔒</div>
+      <h2 style="color:var(--text1);font-size:1.2rem;">Connexion requise</h2>
+      <a href="#{request.contextPath}/login.xhtml"
+         style="display:inline-flex;margin-top:16px;padding:8px 18px;background:var(--navy);color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">
+        Se connecter
+      </a>
+    </div>
+  </div>
+</h:panelGroup>
+
+<!-- Contenu formation -->
+<h:panelGroup rendered="#{sessionBean.connecte}" layout="block">
+  <div class="mf-wrap">
+
+    <!-- Bouton retour -->
+    <a href="#{request.contextPath}/dashboard-agent-institution.xhtml" class="mf-back">
+      &#8592; Retour au tableau de bord
+    </a>
+
+    <!-- Formation introuvable -->
+    <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee == null}" layout="block">
+      <div class="mf-card" style="text-align:center;padding:40px;">
+        <div style="font-size:2.5rem;margin-bottom:12px;">📭</div>
+        <p style="color:var(--text3);font-size:13px;">Formation introuvable ou lien invalide.</p>
+      </div>
+    </h:panelGroup>
+
+    <!-- Détail formation -->
+    <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee != null}" layout="block">
+
+      <!-- Hero -->
+      <div class="mf-hero">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div>
+            <h1 class="mf-title"><h:outputText value="#{adminFormationBean.offreSelectionnee.titre}"/></h1>
+            <p class="mf-sub"><h:outputText value="#{adminFormationBean.offreSelectionnee.description}"/></p>
+          </div>
+          <h:panelGroup layout="block">
+            <h:panelGroup rendered="#{'DISPONIBLE'.equals(adminFormationBean.offreSelectionnee.statut)}">
+              <span class="mf-badge mf-badge-green">&#10003; Disponible</span>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{'BROUILLON'.equals(adminFormationBean.offreSelectionnee.statut)}">
+              <span class="mf-badge mf-badge-orange">&#9998; Brouillon</span>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{'FERME'.equals(adminFormationBean.offreSelectionnee.statut)}">
+              <span class="mf-badge" style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1;">Fermée</span>
+            </h:panelGroup>
+          </h:panelGroup>
+        </div>
+
+        <div class="mf-grid">
+          <div class="mf-field">
+            <div class="mf-field-lbl">Type</div>
+            <div class="mf-field-val"><h:outputText value="#{adminFormationBean.offreSelectionnee.type}"/></div>
+          </div>
+          <div class="mf-field">
+            <div class="mf-field-lbl">Places</div>
+            <div class="mf-field-val"><h:outputText value="#{adminFormationBean.offreSelectionnee.places}"/></div>
+          </div>
+          <div class="mf-field">
+            <div class="mf-field-lbl">Date de début</div>
+            <div class="mf-field-val">
+              <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.dateDebut != null}">
+                <h:outputText value="#{adminFormationBean.offreSelectionnee.dateDebut}"/>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.dateDebut == null}">
+                <span style="color:var(--text3);">Non définie</span>
+              </h:panelGroup>
+            </div>
+          </div>
+          <div class="mf-field">
+            <div class="mf-field-lbl">Date de fin</div>
+            <div class="mf-field-val">
+              <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.dateFin != null}">
+                <h:outputText value="#{adminFormationBean.offreSelectionnee.dateFin}"/>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.dateFin == null}">
+                <span style="color:var(--text3);">Non définie</span>
+              </h:panelGroup>
+            </div>
+          </div>
+          <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.lieu != null}" layout="block">
+            <div class="mf-field">
+              <div class="mf-field-lbl">Lieu</div>
+              <div class="mf-field-val"><h:outputText value="#{adminFormationBean.offreSelectionnee.lieu}"/></div>
+            </div>
+          </h:panelGroup>
+          <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.cout != null}" layout="block">
+            <div class="mf-field">
+              <div class="mf-field-lbl">Coût</div>
+              <div class="mf-field-val"><h:outputText value="#{adminFormationBean.offreSelectionnee.cout}"/> FCFA</div>
+            </div>
+          </h:panelGroup>
+        </div>
+      </div>
+
+      <!-- Séances -->
+      <div class="mf-card">
+        <h2 class="mf-card-title">
+          <svg width="16" height="16" fill="none" stroke="var(--navy)" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Séances programmées
+        </h2>
+        <h:panelGroup rendered="#{empty adminFormationBean.seances}" layout="block">
+          <div class="mf-empty">Aucune séance programmée pour le moment.</div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{not empty adminFormationBean.seances}" layout="block">
+          <ui:repeat value="#{adminFormationBean.seances}" var="s">
+            <div class="mf-seance">
+              <div class="mf-seance-title"><h:outputText value="#{s.titre}"/></div>
+              <div class="mf-seance-meta">
+                <h:panelGroup rendered="#{s.dateDebut != null}">
+                  &#128197; <h:outputText value="#{s.dateDebut}"/>
+                  <h:panelGroup rendered="#{s.dateFin != null}">
+                    &#160;&#8594;&#160;<h:outputText value="#{s.dateFin}"/>
+                  </h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{s.lieu != null and not empty s.lieu}">
+                  &#160;&#183;&#160;&#128205; <h:outputText value="#{s.lieu}"/>
+                </h:panelGroup>
+              </div>
+            </div>
+          </ui:repeat>
+        </h:panelGroup>
+      </div>
+
+      <!-- Modules -->
+      <h:panelGroup rendered="#{not empty adminFormationBean.modules}" layout="block">
+        <div class="mf-card">
+          <h2 class="mf-card-title">
+            <svg width="16" height="16" fill="none" stroke="var(--navy)" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+            Modules de formation
+          </h2>
+          <ui:repeat value="#{adminFormationBean.modules}" var="m">
+            <div class="mf-seance">
+              <div class="mf-seance-title"><h:outputText value="#{m.titre}"/></div>
+              <h:panelGroup rendered="#{m.description != null and not empty m.description}" layout="block">
+                <div class="mf-seance-meta"><h:outputText value="#{m.description}"/></div>
+              </h:panelGroup>
+            </div>
+          </ui:repeat>
+        </div>
+      </h:panelGroup>
+
+    </h:panelGroup><!-- /formation non null -->
+  </div>
+</h:panelGroup><!-- /connecte -->
+
+</ui:define>
+</ui:composition>
+</html>

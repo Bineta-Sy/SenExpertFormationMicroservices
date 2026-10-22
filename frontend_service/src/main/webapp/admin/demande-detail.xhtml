@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Détail Demandes</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div style="text-align:center;padding:60px;"><div style="font-size:4rem;">🚫</div><h2 style="color:var(--text-1);">Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                    <h1 class="page-title">📋 Détail des Demandes de Formation</h1>
+                    <p class="page-subtitle">Examinez et traitez chaque demande individuellement</p>
+                </div>
+                <h:link outcome="/admin/admin-dashboard" style="padding:9px 18px;background:rgba(255,255,255,0.15);color:var(--text-1);border-radius:8px;text-decoration:none;font-size:0.88rem;">← Dashboard</h:link>
+            </div>
+
+            <!-- Stats -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;">
+                <div style="background:rgba(255,255,255,0.12);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:1.8rem;">📋</div>
+                    <div style="color:var(--text-1);font-size:1.3rem;font-weight:800;">#{fn:length(adminBean.demandes)}</div>
+                    <div style="color:var(--text-3);font-size:0.8rem;">Total demandes</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.12);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:1.8rem;">⏳</div>
+                    <div style="color:#ffc107;font-size:1.3rem;font-weight:800;">#{adminBean.countDemandesParStatut('EN_ATTENTE')}</div>
+                    <div style="color:var(--text-3);font-size:0.8rem;">En attente</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.12);border-radius:12px;padding:16px;text-align:center;">
+                    <div style="font-size:1.8rem;">✅</div>
+                    <div style="color:#28a745;font-size:1.3rem;font-weight:800;">#{adminBean.countDemandesParStatut('VALIDEE')}</div>
+                    <div style="color:var(--text-3);font-size:0.8rem;">Validées</div>
+                </div>
+            </div>
+
+            <!-- Demandes en cards -->
+            <h:form id="formDemandes">
+                <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:14px;border-radius:8px;"/>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;">
+                    <ui:repeat value="#{adminBean.demandes}" var="dem">
+                        <div class="glass-card">
+                            <div style="height:5px;background:#{dem.statut eq 'VALIDEE' ? 'linear-gradient(135deg,#198754,#28a745)' : dem.statut eq 'EN_ATTENTE' ? 'linear-gradient(135deg,#ffc107,#fd7e14)' : 'linear-gradient(135deg,#dc3545,#c82333)'}"></div>
+                            <div style="padding:18px 20px;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                                    <span style="font-size:0.8rem;font-weight:700;color:#888;">##{dem.id}</span>
+                                    <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}"><span class="badge badge-wait">⏳ En attente</span></h:panelGroup>
+                                    <h:panelGroup rendered="#{dem.statut eq 'VALIDEE'}"><span class="badge badge-ok">✅ Validée</span></h:panelGroup>
+                                    <h:panelGroup rendered="#{dem.statut eq 'REJETEE'}"><span class="badge badge-ko">❌ Rejetée</span></h:panelGroup>
+                                </div>
+
+                                <h3 style="font-size:0.95rem;font-weight:800;color:#1e3a5f;margin-bottom:10px;">#{dem.offre.titre}</h3>
+
+                                <div style="display:grid;gap:6px;margin-bottom:14px;">
+                                    <div style="display:flex;justify-content:space-between;background:#f8faff;padding:7px 10px;border-radius:7px;">
+                                        <span style="font-size:0.78rem;color:#888;">Domaine</span>
+                                        <span class="badge badge-online" style="font-size:0.75rem;">#{dem.offre.domaine != null ? dem.offre.domaine.libelle : '—'}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;background:#f8faff;padding:7px 10px;border-radius:7px;">
+                                        <span style="font-size:0.78rem;color:#888;">Type</span>
+                                        <span class="badge badge-custom" style="font-size:0.75rem;">#{dem.offre.type}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;background:#f8faff;padding:7px 10px;border-radius:7px;">
+                                        <span style="font-size:0.78rem;color:#888;">Candidat</span>
+                                        <span style="font-size:0.82rem;font-weight:600;color:#1e3a5f;">#{dem.nomCandidat}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;background:#f8faff;padding:7px 10px;border-radius:7px;">
+                                        <span style="font-size:0.78rem;color:#888;">Date soumission</span>
+                                        <span style="font-size:0.82rem;color:#666;">#{dem.dateDemande}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;background:#f8faff;padding:7px 10px;border-radius:7px;">
+                                        <span style="font-size:0.78rem;color:#888;">Places restantes</span>
+                                        <span class="badge #{dem.offre.places gt 0 ? 'badge-ok' : 'badge-ko'}" style="font-size:0.75rem;">#{dem.offre.places}</span>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}" style="display:flex;gap:10px;">
+                                    <p:commandButton value="✔ Valider"
+                                                     action="#{adminBean.validerDemande(dem.id)}"
+                                                     update="formDemandes msgs"
+                                                     style="flex:1;padding:10px;background:linear-gradient(135deg,#198754,#28a745);border:none;border-radius:8px;color:var(--text-1);font-weight:700;cursor:pointer;"/>
+                                    <p:commandButton value="✘ Rejeter"
+                                                     action="#{adminBean.rejeterDemande(dem.id)}"
+                                                     update="formDemandes msgs"
+                                                     style="flex:1;padding:10px;background:linear-gradient(135deg,#dc3545,#c82333);border:none;border-radius:8px;color:var(--text-1);font-weight:700;cursor:pointer;"/>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </ui:repeat>
+                </div>
+
+                <h:panelGroup rendered="#{empty adminBean.demandes}">
+                    <div style="text-align:center;padding:60px;background:rgba(255,255,255,0.97);border-radius:16px;margin-top:12px;">
+                        <div style="font-size:3rem;margin-bottom:12px;">📭</div>
+                        <p style="color:#888;">Aucune demande reçue pour le moment.</p>
+                    </div>
+                </h:panelGroup>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,53 @@
+# ============================================================
+#  SENEXPERTFORMATION — Comptes de test
+#  URL : http://localhost:8080/frontend_service/login.xhtml
+# ============================================================
+
+ADMINISTRATEUR
+--------------
+Email    : admin@senexpert.sn
+Mot de passe : Admin1234!
+Role     : ADMIN / Super-admin
+Acces    : Tableau de bord admin complet
+
+AGENTS SEF (internes)
+---------------------
+moussa.niang@sef.sn      / Agent1234!   (Agent SEF)
+rokhaya.diallo@sef.sn    / Agent1234!   (Agent SEF)
+babacar.sow@sef.sn       / Agent1234!   (Agent SEF)
+ndeye.fall@sef.sn        / Agent1234!   (Agent SEF)
+
+AGENTS INSTITUTION
+------------------
+lamine.diop@dakartech.sn / Agent1234!   (Agent - DakarTech SA)
+a.ba@ongsenvert.sn       / Agent1234!   (Agent - ONG SenVert)
+c.traore@education.sn    / Agent1234!   (Agent - Ministere Education)
+ibou.sarr@sonatel.sn     / Agent1234!   (Agent - SONATEL)
+
+PARTICULIERS ACTIFS
+-------------------
+mamadou.diallo@gmail.com / Pass1234!
+fatou.seck@gmail.com     / Pass1234!
+lamine.gueye@yahoo.fr    / Pass1234!
+awa.traore@gmail.com     / Pass1234!
+marieme.diop@gmail.com   / Pass1234!
+ibrahima.ndiaye@gmail.com/ Pass1234!
+m.badji@bhs.sn           / Pass1234!
+s.ndiaye@sante.sn        / Pass1234!
+
+COMPTES EN ATTENTE (non encore valides)
+----------------------------------------
+ousmane.fall@gmail.com   / Pass1234!
+aida.ndiaye@gmail.com    / Pass1234!
+cheikh.mbaye@gmail.com   / Pass1234!
+sophie.diouf@gmail.com   / Pass1234!
+
+COMPTE SUSPENDU
+---------------
+test.suspendu@gmail.com  / Pass1234!    (statut : INACTIF)
+
+============================================================
+NOTE : Ces comptes sont inseres automatiquement par le
+DataSeeder au premier demarrage de chaque service.
+Pour reinitialiser : docker-compose down -v && docker-compose up --build
+============================================================

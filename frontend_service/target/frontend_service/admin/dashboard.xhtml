@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+<ui:define name="title">Dashboard Administration</ui:define>
+
+<!-- ── CSS spécifique au dashboard (injecté directement dans content) ── -->
+<ui:define name="pageStyle"></ui:define>
+
+<!-- ── Contenu principal ── -->
+<ui:define name="content">
+  <style>
+  .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem;}
+  .pt{font-size:17px;font-weight:600;color:#0F172A;}
+  .ps{font-size:12px;color:#475569;margin-top:2px;}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem;}
+  .kpi{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:1rem 1rem .9rem;display:flex;flex-direction:column;gap:6px;}
+  .kpi-top{display:flex;align-items:center;justify-content:space-between;}
+  .kpi-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+  .kpi-trend{font-size:11px;display:flex;align-items:center;gap:2px;}
+  .kpi-val{font-size:26px;font-weight:700;line-height:1.1;}
+  .kpi-lbl{font-size:12px;color:#475569;}
+  .pbar{height:4px;border-radius:2px;overflow:hidden;background:#E2E8F0;margin-top:4px;}
+  .pbar-fill{height:100%;border-radius:2px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .grid3{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;}
+  .card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;}
+  .ch{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid #E2E8F0;background:#F1F5F9;}
+  .ct{font-size:13px;font-weight:600;color:#0F172A;display:flex;align-items:center;gap:6px;}
+  .ct i{font-size:15px;}
+  .cb{padding:.75rem 1rem;}
+  .tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+  .tbl th{text-align:left;font-weight:600;color:#475569;padding:6px 8px;border-bottom:1px solid #E2E8F0;font-size:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;background:#F1F5F9;}
+  .tbl td{padding:8px;border-bottom:1px solid #E2E8F0;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;}
+  .tbl tr:last-child td{border-bottom:none;}
+  .tbl tr:hover td{background:#F8FAFC;}
+  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .bar-lbl{font-size:11px;color:#475569;flex:0 0 140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bar-track{flex:1;height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:3px;background:#2563EB;}
+  .bar-num{font-size:11px;font-weight:600;color:#475569;flex:0 0 28px;text-align:right;}
+  .tl-item{display:flex;gap:10px;margin-bottom:10px;}
+  .tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+  .tl-title{font-size:12px;font-weight:600;color:#0F172A;}
+  .tl-sub{font-size:11px;color:#475569;margin-top:1px;}
+  .seg{display:flex;border-radius:8px;overflow:hidden;border:1px solid #E2E8F0;margin-bottom:1rem;background:#F1F5F9;}
+  .seg-btn{flex:1;padding:6px 4px;font-size:11px;cursor:pointer;background:transparent;color:#475569;border:none;transition:all .15s;text-align:center;font-weight:500;}
+  .seg-btn.on{background:#1B3A6B;color:#fff;font-weight:600;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .pact{width:32px;height:32px;border-radius:8px;cursor:pointer;border:1px solid;transition:all .15s;background:transparent;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;outline:none;}
+  .pact .pi{font-size:14px;line-height:1;}
+  .pact-ok{color:var(--success);border-color:var(--success-bd);background:var(--success-bg);}
+  .pact-ok:hover{background:var(--success);color:#fff;border-color:var(--success);}
+  .pact-ko{color:var(--danger);border-color:var(--danger-bd);background:var(--danger-bg);}
+  .pact-ko:hover{background:var(--danger);color:#fff;border-color:var(--danger);}
+  .pact span.ui-button-text{display:none !important;}
+  .pact.ui-button{font-family:inherit;}
+  </style>
+
+  <!-- Segmented nav (vues dynamiques) -->
+  <div id="dash-views">
+
+    <!-- ══ VUE HOME ══ -->
+    <div id="view-home" class="view active">
+      <div class="ph">
+        <div>
+          <div class="pt">Tableau de bord — Vue d'ensemble</div>
+          <div class="ps">Plateforme operationnelle · SenExpertFormation</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-s" onclick="location.reload()"><i class="ti ti-refresh"></i> Actualiser</button>
+          <a href="#{request.contextPath}/admin/admin-analytics.xhtml" class="btn-p"><i class="ti ti-chart-bar"></i> Analytics</a>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpis" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi" style="cursor:pointer;" onclick="showView('comptes')">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:var(--danger-bg);"><i class="ti ti-user-plus" style="color:var(--danger);"></i></div>
+            <span class="kpi-trend" style="color:var(--danger);">à valider</span>
+          </div>
+          <div class="kpi-val" style="color:var(--danger);"><h:outputText value="#{adminDashboardBean.nbPersonnesEnAttente}"/></div>
+          <div class="kpi-lbl">Comptes en attente</div>
+          <div class="pbar"><div class="pbar-fill" style="width:60%;background:var(--danger);"></div></div>
+        </div>
+        <div class="kpi" style="cursor:pointer;" onclick="showView('aLaCarte')">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:#EDE9FE;"><i class="ti ti-stars" style="color:#7C3AED;"></i></div>
+            <span class="kpi-trend" style="color:#7C3AED;">sur mesure</span>
+          </div>
+          <div class="kpi-val" style="color:#7C3AED;"><h:outputText value="#{adminDashboardBean.nbDemandesLibresEnAttente}"/></div>
+          <div class="kpi-lbl">À la carte en attente</div>
+          <div class="pbar"><div class="pbar-fill" style="width:50%;background:#7C3AED;"></div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:var(--info-bg);"><i class="ti ti-books" style="color:var(--info);"></i></div>
+            <span class="kpi-trend" style="color:var(--success);">publiées</span>
+          </div>
+          <div class="kpi-val" style="color:var(--info);"><h:outputText value="#{adminDashboardBean.nbOffres}"/></div>
+          <div class="kpi-lbl">Offres de formation</div>
+          <div class="pbar"><div class="pbar-fill" style="width:76%;background:var(--info);"></div></div>
+        </div>
+        <div class="kpi" style="cursor:pointer;" onclick="showView('comptes')">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:#F0F9FF;"><i class="ti ti-users" style="color:#0891B2;"></i></div>
+            <span class="kpi-trend" style="color:#0891B2;">total</span>
+          </div>
+          <div class="kpi-val" style="color:#0891B2;"><h:outputText value="#{adminDashboardBean.nbPersonnes}"/></div>
+          <div class="kpi-lbl">Total utilisateurs</div>
+          <div class="pbar"><div class="pbar-fill" style="width:100%;background:#0891B2;"></div></div>
+        </div>
+      </div>
+
+      <!-- ══ DEMANDES EN ATTENTE — section prioritaire ══ -->
+      <div class="card" style="margin-bottom:12px;">
+        <div class="ch">
+          <span class="ct">
+            <i class="ti ti-clipboard-list" style="color:var(--warning);"></i>
+            Demandes à traiter
+            <h:panelGroup rendered="#{adminDashboardBean.nbDemandesEnAttenteCnt gt 0}">
+              <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;margin-left:4px;">
+                <h:outputText value="#{adminDashboardBean.nbDemandesEnAttenteCnt}"/> en attente
+              </span>
+            </h:panelGroup>
+          </span>
+          <button class="btn-s" onclick="showView('demandes')">Voir toutes <i class="ti ti-arrow-right"></i></button>
+        </div>
+        <h:form id="fDashDemandes">
+          <p:messages id="mDD" showDetail="true" closable="true"/>
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:22%">Candidat</th>
+                <th style="width:32%">Formation</th>
+                <th style="width:13%">Date</th>
+                <th style="width:11%">Statut</th>
+                <th style="width:22%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ui:repeat value="#{adminDashboardBean.demandesEnAttente}" var="dem">
+                <tr>
+                  <td><div style="font-weight:600;font-size:12px;">#{dem.nomCandidat}</div></td>
+                  <td style="font-size:11px;color:var(--text-2);">#{dem.offre.titre}</td>
+                  <td style="font-size:11px;color:var(--text-3);">#{dem.dateDemande}</td>
+                  <td><span class="pill p-pend">Attente</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px;">
+                      <p:commandButton value="✓ Valider" styleClass="btn-s btn-ok"
+                                       action="#{adminDashboardBean.validerDemande(dem.id)}"
+                                       update="fDashDemandes"/>
+                      <p:commandButton value="✗ Rejeter" styleClass="btn-s btn-ko"
+                                       action="#{adminDashboardBean.rejeterDemande(dem.id)}"
+                                       update="fDashDemandes"/>
+                    </div>
+                  </td>
+                </tr>
+              </ui:repeat>
+              <h:panelGroup rendered="#{empty adminDashboardBean.demandesEnAttente}">
+                <tr>
+                  <td colspan="5" style="text-align:center;color:var(--text-3);padding:16px;">
+                    <i class="ti ti-check" style="color:var(--success);"></i> Aucune demande en attente
+                  </td>
+                </tr>
+              </h:panelGroup>
+            </tbody>
+          </table>
+        </h:form>
+      </div>
+
+      <!-- Comptes en attente + Institutions a valider -->
+      <div class="grid2">
+
+        <!-- Comptes en attente -->
+        <div class="card">
+          <div class="ch">
+            <span class="ct"><i class="ti ti-user-check" style="color:var(--danger);"></i>Comptes en attente</span>
+            <button class="btn-s" onclick="showView('comptes')">Voir tout <i class="ti ti-arrow-right"></i></button>
+          </div>
+          <h:form id="fDashUsers">
+            <p:messages id="mDU" showDetail="true" closable="true"/>
+            <table class="tbl">
+              <thead><tr><th style="width:46%">Nom</th><th style="width:20%">Rôle</th><th style="width:34%">Actions</th></tr></thead>
+              <tbody>
+                <ui:repeat value="#{adminDashboardBean.personnes}" var="u">
+                  <h:panelGroup rendered="#{u.statut eq 'EN_ATTENTE'}" layout="block">
+                    <tr>
+                      <td>
+                        <div style="font-weight:600;font-size:12px;">#{u.prenom} #{u.nom}</div>
+                        <div style="font-size:10px;color:var(--text-3);">#{u.email}</div>
+                      </td>
+                      <td><span class="pill #{u.role eq 'AGENT' ? 'p-info' : 'p-pend'}" style="font-size:10px;">#{u.role}</span></td>
+                      <td>
+                        <div style="display:flex;gap:5px;align-items:center;">
+                          <p:commandButton icon="pi pi-check" title="Valider"
+                                           styleClass="pact pact-ok"
+                                           action="#{adminDashboardBean.validerPersonne(u.id)}"
+                                           update="fDashUsers"/>
+                          <p:commandButton icon="pi pi-ban" title="Suspendre"
+                                           styleClass="pact pact-ko"
+                                           action="#{adminDashboardBean.suspendrePersonne(u.id)}"
+                                           update="fDashUsers"/>
+                          <a href="#{request.contextPath}/admin/admin-personnes.xhtml"
+                             style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-muted);color:var(--text-2);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"
+                             title="Gérer">
+                            <i class="pi pi-eye" style="font-size:14px;"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  </h:panelGroup>
+                </ui:repeat>
+                <h:panelGroup rendered="#{adminDashboardBean.nbPersonnesEnAttente eq 0}">
+                  <tr><td colspan="3" style="text-align:center;color:var(--text-3);padding:20px;font-size:12px;"><i class="ti ti-check" style="color:var(--success);"></i> Aucun compte en attente</td></tr>
+                </h:panelGroup>
+              </tbody>
+            </table>
+          </h:form>
+        </div>
+
+        <!-- Institutions a valider -->
+        <div class="card">
+          <div class="ch">
+            <span class="ct"><i class="ti ti-building" style="color:var(--warning);"></i>Institutions à valider
+              <h:panelGroup rendered="#{adminDashboardBean.nbInstitutionsEnAttente gt 0}">
+                <span class="pill p-pend" style="font-size:10px;"><h:outputText value="#{adminDashboardBean.nbInstitutionsEnAttente}"/></span>
+              </h:panelGroup>
+            </span>
+            <button class="btn-s" onclick="showView('institutions')">Voir tout <i class="ti ti-arrow-right"></i></button>
+          </div>
+          <h:form id="fDashInst">
+            <p:messages id="mDI" showDetail="true" closable="true"/>
+            <table class="tbl">
+              <thead><tr><th style="width:46%">Institution</th><th style="width:22%">Type</th><th style="width:32%">Actions</th></tr></thead>
+              <tbody>
+                <ui:repeat value="#{adminDashboardBean.institutions}" var="inst">
+                  <h:panelGroup rendered="#{inst.statut eq 'EN_ATTENTE'}" layout="block">
+                    <tr>
+                      <td style="font-weight:600;font-size:12px;">#{inst.nom}</td>
+                      <td><span class="pill p-gray" style="font-size:10px;">#{inst.type}</span></td>
+                      <td>
+                        <div style="display:flex;gap:5px;align-items:center;">
+                          <p:commandButton icon="pi pi-check" title="Valider"
+                                           styleClass="pact pact-ok"
+                                           action="#{adminDashboardBean.validerInstitution(inst.id)}"
+                                           update="fDashInst"/>
+                          <a href="#{request.contextPath}/admin/institutions-list.xhtml"
+                             style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-muted);color:var(--text-2);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"
+                             title="Voir détail">
+                            <i class="pi pi-eye" style="font-size:14px;"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  </h:panelGroup>
+                </ui:repeat>
+                <h:panelGroup rendered="#{adminDashboardBean.nbInstitutionsEnAttente eq 0}">
+                  <tr><td colspan="3" style="text-align:center;color:var(--text-3);padding:20px;font-size:12px;"><i class="ti ti-check" style="color:var(--success);"></i> Aucune institution en attente</td></tr>
+                </h:panelGroup>
+              </tbody>
+            </table>
+          </h:form>
+        </div>
+      </div>
+
+      <!-- Formations les plus demandees + Audit + Repartition -->
+      <div class="grid3">
+
+        <!-- Formations les plus demandees -->
+        <div class="card">
+          <div class="ch">
+            <span class="ct"><i class="ti ti-chart-bar" style="color:var(--info);"></i>Formations les plus demandees</span>
+            <a href="#{request.contextPath}/admin/admin-demandes.xhtml" class="btn-s">Toutes les demandes <i class="ti ti-arrow-right"></i></a>
+          </div>
+          <div class="cb">
+            <h:panelGroup rendered="#{not empty adminDashboardBean.topOffresParDemandes}">
+              <ui:repeat value="#{adminDashboardBean.topOffresParDemandes}" var="item">
+                <div class="bar-row">
+                  <span class="bar-lbl" title="#{item[0]}">#{item[0]}</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:#{adminDashboardBean.maxDemandesOffre gt 0 ? (item[1] * 100 / adminDashboardBean.maxDemandesOffre) : 0}%;"></div>
+                  </div>
+                  <span class="bar-num"><h:outputText value="#{item[1]}"/></span>
+                </div>
+              </ui:repeat>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{empty adminDashboardBean.topOffresParDemandes}">
+              <div style="text-align:center;color:var(--text-3);padding:20px;font-size:12px;">Aucune demande enregistree</div>
+            </h:panelGroup>
+          </div>
+        </div>
+
+        <!-- Audit log + Repartition -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <div class="card">
+            <div class="ch"><span class="ct"><i class="ti ti-history"></i>Audit log recent</span>
+              <a href="#{request.contextPath}/admin/admin-audit.xhtml" class="btn-s">Voir tout</a>
+            </div>
+            <div class="cb" style="padding:.6rem .75rem;">
+              <ui:repeat value="#{adminDashboardBean.auditEntries}" var="entry" begin="0" end="4">
+                <div class="tl-item">
+                  <div class="tl-dot" style="background:#{entry.niveau eq 'INFO' ? '#16A34A' : entry.niveau eq 'WARN' ? '#D97706' : '#DC2626'};"></div>
+                  <div>
+                    <div class="tl-title">#{entry.action} — #{entry.entite}</div>
+                    <div class="tl-sub">#{entry.detail}</div>
+                  </div>
+                </div>
+              </ui:repeat>
+              <h:panelGroup rendered="#{empty adminDashboardBean.auditEntries}">
+                <div style="color:var(--text-3);font-size:12px;text-align:center;padding:10px;">Aucune entree</div>
+              </h:panelGroup>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="ch"><span class="ct"><i class="ti ti-chart-donut" style="color:var(--info);"></i>Repartition</span></div>
+            <div class="cb">
+              <div class="bar-row"><span class="bar-lbl">Total inscrits</span><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><span class="bar-num"><h:outputText value="#{adminDashboardBean.nbPersonnes}"/></span></div>
+              <div class="bar-row"><span class="bar-lbl">Actifs</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:#16A34A;"></div></div><span class="bar-num"><h:outputText value="#{adminDashboardBean.nbPersonnesActives}"/></span></div>
+              <div class="bar-row"><span class="bar-lbl">Offres publiees</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:#6366F1;"></div></div><span class="bar-num"><h:outputText value="#{adminDashboardBean.nbOffres}"/></span></div>
+              <div class="bar-row"><span class="bar-lbl">Demandes</span><div class="bar-track"><div class="bar-fill" style="width:60%;background:#06B6D4;"></div></div><span class="bar-num"><h:outputText value="#{adminDashboardBean.nbDemandes}"/></span></div>
+              <div class="bar-row"><span class="bar-lbl">Candidatures</span><div class="bar-track"><div class="bar-fill" style="width:50%;background:#F59E0B;"></div></div><span class="bar-num"><h:outputText value="#{adminDashboardBean.nbCandidatures}"/></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formations à la carte en attente -->
+      <h:panelGroup rendered="#{adminDashboardBean.nbDemandesLibresEnAttente gt 0}">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="ch">
+            <span class="ct">
+              <i class="ti ti-stars" style="color:#7C3AED;"></i>
+              Formations à la carte à traiter
+              <span style="background:#EDE9FE;color:#7C3AED;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;margin-left:4px;">
+                <h:outputText value="#{adminDashboardBean.nbDemandesLibresEnAttente}"/> en attente
+              </span>
+            </span>
+            <button class="btn-s" onclick="showView('aLaCarte')">Voir toutes <i class="ti ti-arrow-right"></i></button>
+          </div>
+          <h:form id="fDashLibre">
+            <p:messages id="mDL" showDetail="true" closable="true"/>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:20%">Demandeur</th>
+                  <th style="width:18%">Domaine</th>
+                  <th style="width:32%">Description</th>
+                  <th style="width:10%">Statut</th>
+                  <th style="width:20%">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ui:repeat value="#{adminDashboardBean.demandesLibres}" var="dl">
+                  <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}" layout="block">
+                    <tr>
+                      <td style="font-weight:600;font-size:12px;"><h:outputText value="#{dl.institutionNom}"/></td>
+                      <td><span class="pill p-info" style="font-size:10px;"><h:outputText value="#{dl.domaine}"/></span></td>
+                      <td style="font-size:11px;color:var(--text-2);">
+                        <h:outputText value="#{dl.description.length() gt 60 ? dl.description.substring(0,60).concat('…') : dl.description}"/>
+                      </td>
+                      <td><span class="pill p-pend">Attente</span></td>
+                      <td>
+                        <div style="display:flex;gap:4px;">
+                          <p:commandButton value="✓ Valider" styleClass="btn-s btn-ok"
+                                           action="#{adminDashboardBean.validerDemandeLibre(dl.id)}"
+                                           update="fDashLibre"/>
+                          <p:commandButton value="✗ Rejeter" styleClass="btn-s btn-ko"
+                                           action="#{adminDashboardBean.rejeterDemandeLibre(dl.id)}"
+                                           update="fDashLibre"/>
+                        </div>
+                      </td>
+                    </tr>
+                  </h:panelGroup>
+                </ui:repeat>
+              </tbody>
+            </table>
+          </h:form>
+        </div>
+      </h:panelGroup>
+
+      <!-- Liens rapides -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border);">
+        <a href="#{request.contextPath}/admin/admin-personnes.xhtml" class="btn-s"><i class="ti ti-users"></i> Personnes</a>
+        <a href="#{request.contextPath}/admin/admin-offres.xhtml" class="btn-s"><i class="ti ti-books"></i> Offres</a>
+        <a href="#{request.contextPath}/admin/admin-sessions.xhtml" class="btn-s"><i class="ti ti-calendar-event"></i> Sessions</a>
+        <a href="#{request.contextPath}/admin/admin-candidatures.xhtml" class="btn-s"><i class="ti ti-target"></i> Candidatures</a>
+        <button class="btn-s" onclick="showView('aLaCarte')"><i class="ti ti-stars"></i> À la carte</button>
+        <a href="#{request.contextPath}/admin/admin-analytics.xhtml" class="btn-s"><i class="ti ti-chart-bar"></i> Analytics</a>
+        <a href="#{request.contextPath}/admin/admin-audit.xhtml" class="btn-s"><i class="ti ti-history"></i> Audit</a>
+        <a href="#{request.contextPath}/admin/admin-import.xhtml" class="btn-s"><i class="ti ti-file-import"></i> Import CSV</a>
+        <a href="#{request.contextPath}/admin/admin-2fa.xhtml" class="btn-s"><i class="ti ti-lock"></i> 2FA</a>
+      </div>
+    </div>
+
+    <!-- ══ VUE COMPTES ══ -->
+    <!-- ══ VUE COMPTES ══ -->
+    <div id="view-comptes" class="view">
+      <div class="ph">
+        <div><div class="pt"><i class="ti ti-user-check" style="font-size:16px;margin-right:6px;color:var(--danger);"></i>Comptes en attente</div><div class="ps">MS-A · Gestion des utilisateurs</div></div>
+        <div style="display:flex;gap:8px;"><button class="btn-s" onclick="showView('home')"><i class="ti ti-arrow-left"></i> Retour</button><a href="#{request.contextPath}/admin/admin-personnes.xhtml" class="btn-p"><i class="ti ti-users"></i> Gestion complète</a></div>
+      </div>
+      <div class="seg"><button class="seg-btn on" onclick="toggleSeg(this)">Tous</button><button class="seg-btn" onclick="toggleSeg(this)">En attente</button><button class="seg-btn" onclick="toggleSeg(this)">Actifs</button><button class="seg-btn" onclick="toggleSeg(this)">Suspendus</button></div>
+      <div class="card">
+        <h:form id="fComptes">
+          <p:messages id="mC" showDetail="true" closable="true"/>
+          <table class="tbl">
+            <thead><tr><th style="width:28%">Personne</th><th style="width:24%">Email</th><th style="width:14%">Rôle</th><th style="width:14%">Statut</th><th style="width:20%">Actions</th></tr></thead>
+            <tbody>
+              <ui:repeat value="#{adminDashboardBean.personnes}" var="u">
+                <tr>
+                  <td style="font-weight:600;">#{u.prenom} #{u.nom}</td>
+                  <td style="font-size:11px;color:var(--text-2);">#{u.email}</td>
+                  <td><span class="pill #{u.role eq 'ADMIN' ? 'p-info' : u.role eq 'AGENT' ? 'p-info' : 'p-gray'}">#{u.role}</span></td>
+                  <td>
+                    <h:panelGroup rendered="#{u.statut eq 'EN_ATTENTE'}"><span class="pill p-pend">Attente</span></h:panelGroup>
+                    <h:panelGroup rendered="#{u.statut eq 'ACTIF'}"><span class="pill p-ok">Actif</span></h:panelGroup>
+                    <h:panelGroup rendered="#{u.statut eq 'INACTIF'}"><span class="pill p-ko">Suspendu</span></h:panelGroup>
+                  </td>
+                  <td><div style="display:flex;gap:4px;">
+                    <p:commandButton value="✓" styleClass="btn-s btn-ok" rendered="#{u.statut eq 'EN_ATTENTE'}" action="#{adminDashboardBean.validerPersonne(u.id)}" update="fComptes"/>
+                    <p:commandButton value="⊘" styleClass="btn-s btn-ko" rendered="#{u.statut eq 'ACTIF' and u.role ne 'ADMIN'}" action="#{adminDashboardBean.suspendrePersonne(u.id)}" update="fComptes"/>
+                    <p:commandButton value="↺" styleClass="btn-s" rendered="#{u.statut eq 'INACTIF'}" action="#{adminDashboardBean.reactiverPersonne(u.id)}" update="fComptes"/>
+                    <a href="#{request.contextPath}/admin/admin-personnes.xhtml" class="btn-s"><i class="ti ti-eye"></i></a>
+                  </div></td>
+                </tr>
+              </ui:repeat>
+            </tbody>
+          </table>
+        </h:form>
+      </div>
+    </div>
+
+    <!-- ══ VUE INSTITUTIONS ══ -->
+    <div id="view-institutions" class="view">
+      <div class="ph">
+        <div><div class="pt"><i class="ti ti-building" style="font-size:16px;margin-right:6px;color:var(--warning);"></i>Gestion des institutions</div><div class="ps">MS-A · <h:outputText value="#{adminDashboardBean.nbInstitutions}"/> institutions</div></div>
+        <div style="display:flex;gap:8px;"><button class="btn-s" onclick="showView('home')"><i class="ti ti-arrow-left"></i> Retour</button><a href="#{request.contextPath}/admin/institutions-list.xhtml" class="btn-p"><i class="ti ti-building"></i> Gestion complète</a></div>
+      </div>
+      <div class="seg"><button class="seg-btn on" onclick="toggleSeg(this)">Toutes</button><button class="seg-btn" onclick="toggleSeg(this)">En attente</button><button class="seg-btn" onclick="toggleSeg(this)">Validées</button></div>
+      <div class="card">
+        <h:form id="fInstitutions">
+          <p:messages id="mInst" showDetail="true" closable="true"/>
+          <table class="tbl">
+            <thead><tr><th style="width:30%">Dénomination</th><th style="width:18%">Type</th><th style="width:24%">Adresse</th><th style="width:14%">Statut</th><th style="width:14%">Actions</th></tr></thead>
+            <tbody>
+              <ui:repeat value="#{adminDashboardBean.institutions}" var="inst">
+                <tr>
+                  <td style="font-weight:600;">#{inst.nom}</td>
+                  <td><span class="pill p-gray">#{inst.type}</span></td>
+                  <td style="font-size:11px;color:var(--text-2);">#{inst.adresse}</td>
+                  <td>
+                    <h:panelGroup rendered="#{inst.statut eq 'EN_ATTENTE'}"><span class="pill p-pend">Attente</span></h:panelGroup>
+                    <h:panelGroup rendered="#{inst.statut eq 'ACTIF'}"><span class="pill p-ok">Active</span></h:panelGroup>
+                    <h:panelGroup rendered="#{inst.statut eq 'INACTIF'}"><span class="pill p-ko">Inactive</span></h:panelGroup>
+                  </td>
+                  <td><div style="display:flex;gap:3px;">
+                    <p:commandButton value="✓" styleClass="btn-s btn-ok" rendered="#{inst.statut eq 'EN_ATTENTE'}" action="#{adminDashboardBean.validerInstitution(inst.id)}" update="fInstitutions"/>
+                    <a href="#{request.contextPath}/admin/institution-detail.xhtml" class="btn-s"><i class="ti ti-eye"></i></a>
+                  </div></td>
+                </tr>
+              </ui:repeat>
+              <h:panelGroup rendered="#{empty adminDashboardBean.institutions}">
+                <tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:20px;">Aucune institution</td></tr>
+              </h:panelGroup>
+            </tbody>
+          </table>
+        </h:form>
+      </div>
+    </div>
+
+    <!-- ══ VUE OFFRES ══ -->
+    <div id="view-offres" class="view">
+      <div class="ph">
+        <div><div class="pt"><i class="ti ti-books" style="font-size:16px;margin-right:6px;color:var(--info);"></i>Offres de formation</div><div class="ps">MS-B · <h:outputText value="#{adminDashboardBean.nbOffres}"/> offres</div></div>
+        <div style="display:flex;gap:8px;"><button class="btn-s" onclick="showView('home')"><i class="ti ti-arrow-left"></i> Retour</button><a href="#{request.contextPath}/admin/offre-form.xhtml" class="btn-p"><i class="ti ti-plus"></i> Nouvelle offre</a></div>
+      </div>
+      <div class="card">
+        <h:form id="fOffres">
+          <p:messages id="mOffres" showDetail="true" closable="true"/>
+          <table class="tbl">
+            <thead><tr><th style="width:32%">Intitulé</th><th style="width:18%">Domaine</th><th style="width:14%">Statut</th><th style="width:10%">Places</th><th style="width:26%">Actions</th></tr></thead>
+            <tbody>
+              <ui:repeat value="#{adminDashboardBean.offres}" var="o">
+                <tr>
+                  <td style="font-weight:600;font-size:12px;">#{o.titre}</td>
+                  <td><span class="pill p-info" style="font-size:10px;">#{o.domaine != null ? o.domaine.libelle : '—'}</span></td>
+                  <td>
+                    <h:panelGroup rendered="#{o.statut eq 'DISPONIBLE'}"><span class="pill p-ok">Disponible</span></h:panelGroup>
+                    <h:panelGroup rendered="#{o.statut eq 'BROUILLON'}"><span class="pill p-gray">Brouillon</span></h:panelGroup>
+                    <h:panelGroup rendered="#{o.statut eq 'FERME'}"><span class="pill p-ko">Fermé</span></h:panelGroup>
+                  </td>
+                  <td style="text-align:center;font-weight:600;color:var(--info);">#{o.places}</td>
+                  <td><div style="display:flex;gap:4px;">
+                    <p:commandButton value="▶ Publier" styleClass="btn-s btn-ok" rendered="#{o.statut eq 'BROUILLON'}" action="#{adminDashboardBean.publierOffre(o.id)}" update="fOffres"/>
+                    <p:commandButton value="⊘ Fermer" styleClass="btn-s btn-ko" rendered="#{o.statut eq 'DISPONIBLE'}" action="#{adminDashboardBean.fermerOffre(o.id)}" update="fOffres"/>
+                    <a href="#{request.contextPath}/admin/admin-offres.xhtml" class="btn-s"><i class="ti ti-edit"></i></a>
+                  </div></td>
+                </tr>
+              </ui:repeat>
+              <h:panelGroup rendered="#{empty adminDashboardBean.offres}">
+                <tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:20px;">Aucune offre</td></tr>
+              </h:panelGroup>
+            </tbody>
+          </table>
+        </h:form>
+      </div>
+    </div>
+
+    <!-- ══ VUE DEMANDES ══ -->
+    <div id="view-demandes" class="view">
+      <div class="ph">
+        <div><div class="pt"><i class="ti ti-clipboard-list" style="font-size:16px;margin-right:6px;color:var(--info);"></i>Demandes de formation</div><div class="ps">MS-B · <h:outputText value="#{adminDashboardBean.nbDemandes}"/> demandes</div></div>
+        <div style="display:flex;gap:8px;"><button class="btn-s" onclick="showView('home')"><i class="ti ti-arrow-left"></i> Retour</button><a href="#{request.contextPath}/admin/admin-demandes.xhtml" class="btn-p"><i class="ti ti-clipboard-list"></i> Gestion complète</a></div>
+      </div>
+      <div class="card">
+        <h:form id="fDemandesFull">
+          <p:messages id="mDF" showDetail="true" closable="true"/>
+          <table class="tbl">
+            <thead><tr><th style="width:25%">Candidat</th><th style="width:36%">Offre</th><th style="width:15%">Statut</th><th style="width:24%">Actions</th></tr></thead>
+            <tbody>
+              <ui:repeat value="#{adminDashboardBean.demandes}" var="dem">
+                <tr>
+                  <td style="font-weight:600;">#{dem.nomCandidat}</td>
+                  <td style="font-size:11px;color:var(--text-2);">#{dem.offre.titre}</td>
+                  <td>
+                    <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}"><span class="pill p-pend">Attente</span></h:panelGroup>
+                    <h:panelGroup rendered="#{dem.statut eq 'VALIDEE'}"><span class="pill p-ok">Validée</span></h:panelGroup>
+                    <h:panelGroup rendered="#{dem.statut eq 'REJETEE'}"><span class="pill p-ko">Rejetée</span></h:panelGroup>
+                  </td>
+                  <td>
+                    <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}">
+                      <div style="display:flex;gap:4px;">
+                        <p:commandButton value="✓ Valider" styleClass="btn-s btn-ok" action="#{adminDashboardBean.validerDemande(dem.id)}" update="fDemandesFull"/>
+                        <p:commandButton value="✗ Rejeter" styleClass="btn-s btn-ko" action="#{adminDashboardBean.rejeterDemande(dem.id)}" update="fDemandesFull"/>
+                      </div>
+                    </h:panelGroup>
+                  </td>
+                </tr>
+              </ui:repeat>
+              <h:panelGroup rendered="#{empty adminDashboardBean.demandes}">
+                <tr><td colspan="4" style="text-align:center;color:var(--text-3);padding:20px;">Aucune demande</td></tr>
+              </h:panelGroup>
+            </tbody>
+          </table>
+        </h:form>
+      </div>
+    </div>
+
+    <!-- ══ VUE À LA CARTE ══ -->
+    <div id="view-aLaCarte" class="view">
+      <div class="ph">
+        <div><div class="pt"><i class="ti ti-stars" style="font-size:16px;margin-right:6px;color:#7C3AED;"></i>Formations à la carte</div>
+          <div class="ps">Demandes sur mesure · institutions et particuliers · <h:outputText value="#{adminDashboardBean.nbDemandesLibres}"/> demandes</div>
+        </div>
+        <button class="btn-s" onclick="showView('home')"><i class="ti ti-arrow-left"></i> Retour</button>
+      </div>
+      <!-- Stats -->
+      <div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px;">
+        <div class="kpi">
+          <div class="kpi-top"><div class="kpi-icon" style="background:#EDE9FE;"><i class="ti ti-list" style="color:#7C3AED;"></i></div></div>
+          <div class="kpi-val" style="color:#7C3AED;"><h:outputText value="#{adminDashboardBean.nbDemandesLibres}"/></div>
+          <div class="kpi-lbl">Total demandes à la carte</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><div class="kpi-icon" style="background:var(--warning-bg);"><i class="ti ti-clock" style="color:var(--warning);"></i></div></div>
+          <div class="kpi-val" style="color:var(--warning);"><h:outputText value="#{adminDashboardBean.nbDemandesLibresEnAttente}"/></div>
+          <div class="kpi-lbl">En attente</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><div class="kpi-icon" style="background:var(--success-bg);"><i class="ti ti-check" style="color:var(--success);"></i></div></div>
+          <div class="kpi-val" style="color:var(--success);"><h:outputText value="#{adminDashboardBean.nbDemandesLibresValidees}"/></div>
+          <div class="kpi-lbl">Validées</div>
+        </div>
+      </div>
+      <div class="card">
+        <h:form id="fLibreFull">
+          <p:messages id="mLF" showDetail="true" closable="true"/>
+          <p:dataTable value="#{adminDashboardBean.demandesLibres}" var="dl"
+                       paginator="true" rows="10"
+                       paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                       emptyMessage="Aucune demande à la carte.">
+            <p:column headerText="#" style="width:45px;text-align:center;">
+              <span style="font-size:11px;color:#94A3B8;">##{dl.id}</span>
+            </p:column>
+            <p:column headerText="Demandeur" style="width:160px;">
+              <div style="font-weight:600;font-size:12px;"><h:outputText value="#{dl.institutionNom}"/></div>
+            </p:column>
+            <p:column headerText="Domaine" style="width:130px;">
+              <span class="pill p-info" style="font-size:10px;"><h:outputText value="#{dl.domaine}"/></span>
+            </p:column>
+            <p:column headerText="Description">
+              <span style="font-size:11px;color:var(--text-2);">
+                <h:outputText value="#{dl.description.length() gt 80 ? dl.description.substring(0,80).concat('…') : dl.description}"/>
+              </span>
+            </p:column>
+            <p:column headerText="Participants" style="width:80px;text-align:center;">
+              <span style="font-size:12px;font-weight:600;color:var(--info);">
+                <h:outputText value="#{dl.nbParticipants != null ? dl.nbParticipants : '—'}"/>
+              </span>
+            </p:column>
+            <p:column headerText="Période" style="width:130px;">
+              <span style="font-size:11px;color:var(--text-3);">
+                <h:outputText value="#{dl.periodeDebut != null ? dl.periodeDebut : '—'}"/>
+                <h:panelGroup rendered="#{dl.periodeFin != null}"> → <h:outputText value="#{dl.periodeFin}"/></h:panelGroup>
+              </span>
+            </p:column>
+            <p:column headerText="Date" style="width:90px;">
+              <span style="font-size:11px;color:var(--text-3);"><h:outputText value="#{dl.dateDemande}"/></span>
+            </p:column>
+            <p:column headerText="Statut" style="width:100px;">
+              <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}"><span class="pill p-pend">En attente</span></h:panelGroup>
+              <h:panelGroup rendered="#{dl.statut eq 'VALIDEE'}"><span class="pill p-ok">Validée</span></h:panelGroup>
+              <h:panelGroup rendered="#{dl.statut eq 'REJETEE'}"><span class="pill p-ko">Rejetée</span></h:panelGroup>
+            </p:column>
+            <p:column headerText="Actions" style="width:160px;">
+              <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}" styleClass="a-actions">
+                <p:commandButton value="✓ Valider" styleClass="btn-s btn-ok"
+                                 action="#{adminDashboardBean.validerDemandeLibre(dl.id)}"
+                                 update="fLibreFull mLF"/>
+                <p:commandButton value="✗ Rejeter" styleClass="btn-s btn-ko"
+                                 action="#{adminDashboardBean.rejeterDemandeLibre(dl.id)}"
+                                 update="fLibreFull mLF"/>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{dl.statut ne 'EN_ATTENTE'}">
+                <span style="color:#CBD5E1;font-size:11px;">Traitée</span>
+              </h:panelGroup>
+            </p:column>
+          </p:dataTable>
+        </h:form>
+      </div>
+    </div>
+
+    <!-- ══ VUE AUDIT ══ -->
+    <div id="view-audit" class="view">
+      <div class="ph">
+        <div><div class="pt"><i class="ti ti-history" style="font-size:16px;margin-right:6px;"></i>Audit log</div><div class="ps">Journal des actions administrateur</div></div>
+        <div style="display:flex;gap:8px;"><button class="btn-s" onclick="showView('home')"><i class="ti ti-arrow-left"></i> Retour</button><a href="#{request.contextPath}/admin/admin-audit.xhtml" class="btn-p"><i class="ti ti-history"></i> Journal complet</a></div>
+      </div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th style="width:18%">Acteur</th><th style="width:22%">Action</th><th style="width:35%">Cible / Détail</th><th style="width:13%">Niveau</th></tr></thead>
+          <tbody>
+            <ui:repeat value="#{adminDashboardBean.auditEntries}" var="entry">
+              <tr>
+                <td style="font-size:11px;font-weight:600;">#{entry.adminEmail}</td>
+                <td><span class="pill p-info" style="font-size:10px;">#{entry.action}</span></td>
+                <td style="font-size:11px;color:var(--text-2);">#{entry.entite} — #{entry.detail}</td>
+                <td>
+                  <h:panelGroup rendered="#{entry.niveau eq 'INFO'}"><span class="pill p-ok">Info</span></h:panelGroup>
+                  <h:panelGroup rendered="#{entry.niveau eq 'WARN'}"><span class="pill p-pend">Avertis.</span></h:panelGroup>
+                  <h:panelGroup rendered="#{entry.niveau eq 'ERROR'}"><span class="pill p-ko">Erreur</span></h:panelGroup>
+                </td>
+              </tr>
+            </ui:repeat>
+            <h:panelGroup rendered="#{empty adminDashboardBean.auditEntries}">
+              <tr><td colspan="4" style="text-align:center;color:var(--text-3);padding:20px;">Aucune entrée d'audit</td></tr>
+            </h:panelGroup>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ VUE FORMATIONS SOUMISES PAR PRESTATAIRES ══ -->
+    <div id="view-formationsSoumises" class="view">
+      <div class="ph">
+        <div>
+          <div class="pt"><i class="ti ti-school" style="font-size:16px;margin-right:6px;"></i>Formations prestataires — En attente de validation</div>
+          <div class="ps">Formations soumises par des agents institution ou particuliers</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-s" onclick="showView('home')"><i class="ti ti-arrow-left"></i> Retour</button>
+        </div>
+      </div>
+
+      <h:form id="fSoumises">
+        <p:messages id="msgsSoumises" showDetail="true" closable="true" style="margin-bottom:12px;border-radius:8px;"/>
+        <div class="card">
+          <div class="ch">
+            <div class="ct"><i class="ti ti-clock-hour-4"></i> Formations en attente
+              <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:2px 8px;border-radius:12px;font-weight:700;margin-left:6px;">
+                <h:outputText value="#{adminDashboardBean.nbFormationsSoumises}"/>
+              </span>
+            </div>
+          </div>
+          <p:dataTable value="#{adminDashboardBean.formationsSoumises}" var="fs"
+                       emptyMessage="Aucune formation en attente de validation."
+                       style="width:100%;" id="dtSoumises">
+
+            <p:column headerText="Formation" style="width:32%">
+              <div style="font-weight:600;font-size:13px;color:#0F172A;margin-bottom:2px;"><h:outputText value="#{fs.titre}"/></div>
+              <div style="font-size:11px;color:#64748B;">
+                <h:outputText value="#{fs.domaine != null ? fs.domaine.libelle : '—'}"/>
+                <h:panelGroup rendered="#{fs.type != null}">
+                  &#160;·&#160;<h:outputText value="#{fs.type}"/>
+                </h:panelGroup>
+              </div>
+            </p:column>
+
+            <p:column headerText="Prestataire" style="width:20%">
+              <div style="font-size:12px;color:#0F172A;">ID : <h:outputText value="#{fs.prestataireId}"/></div>
+              <div style="font-size:10px;">
+                <h:panelGroup rendered="#{fs.prestataireRole eq 'AGENT_INSTITUTION'}">
+                  <span style="background:#DBEAFE;color:#1D4ED8;padding:1px 7px;border-radius:10px;font-weight:600;">AGENT</span>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{fs.prestataireRole eq 'PARTICULIER'}">
+                  <span style="background:#FCE7F3;color:#9D174D;padding:1px 7px;border-radius:10px;font-weight:600;">PARTICULIER</span>
+                </h:panelGroup>
+              </div>
+            </p:column>
+
+            <p:column headerText="Dates" style="width:18%">
+              <div style="font-size:11px;color:#475569;">
+                Du <h:outputText value="#{fs.dateDebut != null ? fs.dateDebut : '—'}"/>
+              </div>
+              <div style="font-size:11px;color:#475569;">
+                Au <h:outputText value="#{fs.dateFin != null ? fs.dateFin : '—'}"/>
+              </div>
+            </p:column>
+
+            <p:column headerText="Infos" style="width:14%">
+              <div style="font-size:11px;color:#475569;">
+                <h:panelGroup rendered="#{fs.places != null}">
+                  <h:outputText value="#{fs.places}"/> places
+                </h:panelGroup>
+              </div>
+              <div style="font-size:11px;color:#475569;">
+                <h:panelGroup rendered="#{fs.cout != null}">
+                  <h:outputText value="#{fs.cout}"/> FCFA
+                </h:panelGroup>
+              </div>
+            </p:column>
+
+            <p:column headerText="Programme" style="width:12%">
+              <h:panelGroup rendered="#{fs.programmeUrl != null and fs.programmeUrl != ''}">
+                <a href="#{fs.programmeUrl}" target="_blank"
+                   style="font-size:11px;color:#2563EB;text-decoration:underline;">📄 Voir</a>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{fs.programmeUrl == null or fs.programmeUrl == ''}">
+                <span style="font-size:11px;color:#CBD5E1;">—</span>
+              </h:panelGroup>
+            </p:column>
+
+            <p:column headerText="Actions" style="width:22%">
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <p:commandButton value="✓ Publier" style="font-size:11px;padding:4px 10px;background:#059669;color:#fff;border-color:#059669;border-radius:6px;cursor:pointer;width:100%;"
+                                 action="#{adminDashboardBean.validerFormationSoumise(fs.id)}"
+                                 update=":fSoumises:dtSoumises :fSoumises:msgsSoumises"
+                                 onclick="return confirm('Publier cette formation et la rendre visible aux apprenants ?')"/>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                  <p:inputText value="#{adminDashboardBean.motifRejet}"
+                               placeholder="Motif de rejet…"
+                               style="font-size:11px;padding:3px 7px;width:100%;border:1px solid #FCA5A5;border-radius:4px;"/>
+                  <p:commandButton value="✕ Rejeter" style="font-size:11px;padding:4px 10px;background:#DC2626;color:#fff;border-color:#DC2626;border-radius:6px;cursor:pointer;width:100%;"
+                                   action="#{adminDashboardBean.rejeterFormationSoumise(fs.id)}"
+                                   update=":fSoumises:dtSoumises :fSoumises:msgsSoumises"
+                                   process=":fSoumises"
+                                   onclick="if(!this.form.querySelector('input[placeholder*=Motif]').value.trim()) { alert('Saisissez un motif de rejet.'); return false; } return confirm('Rejeter cette formation ?')"/>
+                </div>
+              </div>
+            </p:column>
+          </p:dataTable>
+        </div>
+      </h:form>
+    </div>
+
+  </div><!-- /dash-views -->
+</ui:define>
+
+<!-- ── Scripts dashboard ── -->
+<ui:define name="scripts">
+<script>//<![CDATA[
+function showView(name) {
+  ['home','comptes','institutions','offres','demandes','aLaCarte','audit','formationsSoumises'].forEach(function(v) {
+    var el = document.getElementById('view-' + v);
+    if (el) el.classList.remove('acti

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Formateurs</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">🚫</div><h2>Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div class="a-header">
+                <div class="a-header-left">
+                    <h1>👨‍🏫 Formateurs</h1>
+                    <p>Gérez les formateurs et leur assignation aux offres de formation</p>
+                </div>
+            </div>
+
+            <!-- Stats rapides -->
+            <div class="a-stats" style="grid-template-columns:repeat(2,1fr);">
+                <div class="a-stat" style="border-top-color:#3B82F6;">
+                    <div class="sv"><h:outputText value="#{adminFormateurBean.nbFormateurs}"/></div>
+                    <div class="sl">Formateurs enregistrés</div>
+                </div>
+                <div class="a-stat" style="border-top-color:#8B5CF6;">
+                    <div class="sv"><h:outputText value="#{adminFormateurBean.nbOffres}"/></div>
+                    <div class="sl">Offres de formation</div>
+                </div>
+            </div>
+
+            <div class="a-grid2" style="grid-template-columns:360px 1fr;align-items:start;">
+
+                <!-- ══ FORMULAIRE CRÉATION ══ -->
+                <div class="a-card">
+                    <div class="a-card-header"><h2>➕ Nouveau formateur</h2></div>
+                    <div class="a-card-body">
+                        <h:form id="fCreate">
+                            <p:messages id="msgsCreate" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+
+                            <div class="a-field-row">
+                                <div class="a-field">
+                                    <label>Prénom <span class="req">*</span></label>
+                                    <p:inputText value="#{adminFormateurBean.fPrenom}" required="true"
+                                                 styleClass="a-input" placeholder="ex: Moussa"/>
+                                </div>
+                                <div class="a-field">
+                                    <label>Nom <span class="req">*</span></label>
+                                    <p:inputText value="#{adminFormateurBean.fNom}" required="true"
+                                                 styleClass="a-input" placeholder="ex: Diallo"/>
+                                </div>
+                            </div>
+
+                            <div class="a-field">
+                                <label>Email</label>
+                                <p:inputText value="#{adminFormateurBean.fEmail}"
+                                             styleClass="a-input" placeholder="formateur@example.com"/>
+                            </div>
+
+                            <div class="a-field-row">
+                                <div class="a-field">
+                                    <label>Téléphone</label>
+                                    <p:inputText value="#{adminFormateurBean.fTelephone}"
+                                                 styleClass="a-input" placeholder="+221 77 000 00 00"/>
+                                </div>
+                                <div class="a-field">
+                                    <label>Spécialité</label>
+                                    <p:inputText value="#{adminFormateurBean.fSpecialite}"
+                                                 styleClass="a-input" placeholder="ex: Bureautique, Dev Web"/>
+                                </div>
+                            </div>
+
+                            <div class="a-field">
+                                <label>Bio / Présentation</label>
+                                <p:inputTextarea value="#{adminFormateurBean.fBio}"
+                                                 styleClass="a-input a-textarea"
+                                                 placeholder="Courte description du formateur…" rows="3"/>
+                            </div>
+
+                            <p:commandButton value="Créer le formateur"
+                                             action="#{adminFormateurBean.creer}"
+                                             styleClass="abtn abtn-primary abtn-full"
+                                             update=":fCreate :fList"
+                                             style="margin-top:8px;"/>
+                        </h:form>
+                    </div>
+                </div>
+
+                <!-- ══ LISTE DES FORMATEURS ══ -->
+                <div>
+                    <h:form id="fList">
+                        <p:messages id="msgsList" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+                        <div class="a-card">
+                            <div class="a-card-header">
+                                <h2>Liste des formateurs</h2>
+                                <span class="a-count"><h:outputText value="#{adminFormateurBean.nbFormateurs}"/> formateur(s)</span>
+                            </div>
+                            <p:dataTable value="#{adminFormateurBean.formateurs}" var="f"
+                                         paginator="true" rows="8"
+                                         paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         emptyMessage="Aucun formateur enregistré.">
+
+                                <p:column headerText="Formateur" style="width:180px;">
+                                    <div style="font-weight:600;color:#1a1a1a;font-size:13px;">
+                                        <h:outputText value="#{f.nomComplet}"/>
+                                    </div>
+                                    <div style="font-size:11px;color:#666;margin-top:2px;">
+                                        <h:outputText value="#{f.email}"/>
+                                    </div>
+                                </p:column>
+
+                                <p:column headerText="Spécialité" style="width:140px;">
+                                    <h:panelGroup rendered="#{f.specialite != null and f.specialite != ''}">
+                                        <span class="ab ab-info"><h:outputText value="#{f.specialite}"/></span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{f.specialite == null or f.specialite == ''}">
+                                        <span style="color:#999;font-size:12px;">—</span>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Téléphone" style="width:130px;">
+                                    <span style="font-size:12px;color:#555;">
+                                        <h:outputText value="#{f.telephone != null and f.telephone != '' ? f.telephone : '—'}"/>
+                                    </span>
+                                </p:column>
+
+                                <p:column headerText="Bio">
+                                    <span style="font-size:12px;color:#444;">
+                                        <h:outputText value="#{f.bio != null and f.bio.length() gt 80 ? f.bio.substring(0,80).concat('…') : (f.bio != null ? f.bio : '—')}"/>
+                                    </span>
+                                </p:column>
+
+                                <p:column headerText="Actions" style="width:160px;">
+                                    <div class="a-actions">
+                                        <p:commandButton value="📋 Offres"
+                                                         styleClass="abtn-sm"
+                                                         action="#{adminFormateurBean.voirFormateursOffre(null, null)}"
+                                                         oncomplete="PF('dlgAssign').show()"
+                                                         update=":fAssign"
+                                                         title="Gérer les assignations">
+                                            <f:setPropertyActionListener value="#{f.id}"
+                                                target="#{adminFormateurBean.selectedFormateurId}"/>
+                                        </p:commandButton>
+                                        <p:commandButton value="🗑"
+                                                         styleClass="abtn-sm abtn-sm-ko"
+                                                         action="#{adminFormateurBean.supprimer(f.id)}"
+                                                         update=":fList :fCreate"
+                                                         onclick="return confirm('Supprimer ce formateur ?')"/>
+                                    </div>
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
+                    </h:form>
+
+                    <!-- ══ ASSIGNATION FORMATEUR ↔ OFFRE ══ -->
+                    <div class="a-card" style="margin-top:20px;">
+                        <div class="a-card-header"><h2>🔗 Assigner un formateur à une offre</h2></div>
+                        <div class="a-card-body">
+                            <h:form id="fAssign">
+                                <p:messages id="msgsAssign" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+                                <div class="a-field-row">
+                                    <div class="a-field">
+                                        <label>Formateur</label>
+                                        <p:selectOneMenu value="#{adminFormateurBean.selectedFormateurId}"
+                                                         styleClass="a-select">
+                                            <f:selectItem itemLabel="— Choisir —" itemValue="#{null}"/>
+                                            <f:selectItems value="#{adminFormateurBean.formateurs}"
+                                                           var="f" itemValue="#{f.id}"
+                                                           itemLabel="#{f.nomComplet} (#{f.specialite != null ? f.specialite : 'Généraliste'})"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="a-field">
+                                        <label>Offre de formation</label>
+                                        <p:selectOneMenu value="#{adminFormateurBean.selectedOffreId}"
+                                                         styleClass="a-select"
+                                                         onchange="PF('btnVoir') != null">
+                                            <f:selectItem itemLabel="— Choisir —" itemValue="#{null}"/>
+                                            <f:selectItems value="#{adminFormateurBean.offres}"
+                                                           var="o" itemValue="#{o.id}"
+                                                           itemLabel="#{o.titre}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="a-actions" style="gap:8px;margin-top:4px;">
+                                    <p:commandButton value="✓ Assigner"
+                                                     action="#{adminFormateurBean.assigner}"
+                                                     styleClass="abtn abtn-success"
+                                                     update=":fAssign :fFormateursOffre"/>
+                                    <p:commandButton value="👁 Voir formateurs de l'offre"
+                                                     action="#{adminFormateurBean.voirFormateursOffre(adminFormateurBean.selectedOffreId, '')}"
+                                                     styleClass="abtn abtn-secondary"
+                                                     update=":fFormateursOffre"/>
+                                </div>
+                            </h:form>
+                        </div>
+                    </div>
+
+                    <!-- ══ FORMATEURS DE L'OFFRE SÉLECTIONNÉE ══ -->
+                    <h:form id="fFormateursOffre">
+                        <p:messages id="msgsFormateursOffre" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+                        <h:panelGroup rendered="#{adminFormateurBean.selectedOffreId != null}">
+                            <div class="a-card" style="margin-top:20px;">
+                                <div class="a-card-header">
+                                    <h2>👨‍🏫 Formateurs assignés</h2>
+                                    <span class="a-count">
+                                        <h:outputText value="#{adminFormateurBean.nbFormateursOffreSelectionnee}"/> formateur(s)
+                                    </span>
+                                </div>
+                                <p:dataTable value="#{adminFormateurBean.formateursOffreSelectionnee}" var="f"
+                                             emptyMessage="Aucun formateur assigné à cette offre.">
+                                    <p:column headerText="Nom">
+                                        <span style="font-weight:600;font-size:13px;">
+                                            <h:outputText value="#{f.nomComplet}"/>
+                                        </span>
+                                    </p:column>
+                                    <p:column headerText="Spécialité">
+                                        <span class="ab ab-info">
+                                            <h:outputText value="#{f.specialite != null ? f.specialite : 'Généraliste'}"/>
+                                        </span>
+                                    </p:column>
+                                    <p:column headerText="Email">
+                                        <span style="font-size:12px;"><h:outputText value="#{f.email}"/></span>
+                                    </p:column>
+                                    <p:column headerText="Action" style="width:100px;">
+                                        <p:commandButton value="✕ Retirer"
+                                                         styleClass="abtn-sm abtn-sm-ko"
+                                                         action="#{adminFormateurBean.retirerFormateurOffre(f.id)}"
+                                                         update=":fFormateursOffre :fAssign"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                    </h:form>
+                </div>
+
+            </div>
+
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

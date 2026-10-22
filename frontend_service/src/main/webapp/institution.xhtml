@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Mon institution</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.connecte}">
+            <div style="text-align:center;padding:80px 20px;">
+                <p style="color:#64748B;font-size:13px;margin-bottom:16px;">Connexion requise.</p>
+                <h:link outcome="/login"
+                        style="padding:9px 20px;background:#4F46E5;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;">
+                    Se connecter
+                </h:link>
+            </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.connecte}">
+            <div style="margin-bottom:24px;">
+                <h1 class="page-title">Mon institution</h1>
+                <p class="page-subtitle">Enregistrez votre organisation pour accéder aux formations</p>
+            </div>
+
+            <div style="max-width:540px;">
+                <div class="card" style="margin-bottom:16px;">
+                    <div class="card-header"><h2>Informations de l'institution</h2></div>
+                    <div class="card-body">
+                        <h:form id="formInstitution">
+                            <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:16px;border-radius:8px;"/>
+                            <div class="field">
+                                <label>Nom de l'institution <span class="req">*</span></label>
+                                <p:inputText value="#{institutionBean.nom}" required="true"
+                                             placeholder="Ex: Société Sénégalaise de Technologie"
+                                             style="width:100%;padding:9px 12px;border:1px solid #CBD5E1;border-radius:8px;font-size:13px;"/>
+                            </div>
+                            <div class="field">
+                                <label>Type <span class="req">*</span></label>
+                                <p:selectOneMenu value="#{institutionBean.type}"
+                                                 style="width:100%;padding:9px 12px;border:1px solid #CBD5E1;border-radius:8px;font-size:13px;background:#fff;">
+                                    <f:selectItem itemValue="ENTREPRISE"  itemLabel="Entreprise"/>
+                                    <f:selectItem itemValue="ONG"         itemLabel="ONG"/>
+                                    <f:selectItem itemValue="MINISTERE"   itemLabel="Ministère"/>
+                                    <f:selectItem itemValue="DIRECTION"   itemLabel="Direction"/>
+                                    <f:selectItem itemValue="PARTICULIER" itemLabel="Particulier"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field">
+                                <label>Secteur d'activité <span class="req">*</span></label>
+                                <p:inputText value="#{institutionBean.secteur}" required="true"
+                                             placeholder="Ex: Informatique, Agriculture, Santé…"
+                                             style="width:100%;padding:9px 12px;border:1px solid #CBD5E1;border-radius:8px;font-size:13px;"/>
+                            </div>
+                            <div class="field">
+                                <label>NINEA / N° d'identification <span class="req">*</span></label>
+                                <p:inputText value="#{institutionBean.ninea}" required="true"
+                                             placeholder="Ex: 12345678901"
+                                             style="width:100%;padding:9px 12px;border:1px solid #CBD5E1;border-radius:8px;font-size:13px;"/>
+                                <small style="color:#94A3B8;font-size:11px;">Numéro officiel identifiant votre organisation (NINEA, RCCM, N° Agrément…)</small>
+                            </div>
+                            <div class="field">
+                                <label>Adresse</label>
+                                <p:inputText value="#{institutionBean.adresse}"
+                                             placeholder="Ex: Dakar, Plateau, Sénégal"
+                                             style="width:100%;padding:9px 12px;border:1px solid #CBD5E1;border-radius:8px;font-size:13px;"/>
+                            </div>
+                            <p:commandButton value="Enregistrer l'institution" action="#{institutionBean.creer}"
+                                             update="formInstitution"
+                                             style="width:100%;padding:10px;background:#4F46E5;border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;"/>
+                        </h:form>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Processus de validation</strong><br/>
+                    1. Créez votre compte utilisateur<br/>
+                    2. Enregistrez votre institution ici<br/>
+                    3. L'administrateur valide votre dossier<br/>
+                    4. Vous pouvez candidater aux formations
+                </div>
+
+                <div style="margin-top:14px;">
+                    <h:link outcome="/offres"
+                            style="color:#94A3B8;font-size:12px;text-decoration:none;">
+                        ← Retour aux offres
+                    </h:link>
+                </div>
+            </div>
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

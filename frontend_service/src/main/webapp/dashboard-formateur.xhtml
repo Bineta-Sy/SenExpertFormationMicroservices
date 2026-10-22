@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SenExpertFormation — Formateur</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── Reset ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
+             background: #F8FAFC; color: #0F172A; font-size: 13px; }
+
+/* ── Shell ── */
+.fpr-shell { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── Sidebar ── */
+.fpr-sidebar {
+    width: 220px; min-width: 220px; background: #fff;
+    border-right: 1px solid #E2E8F0;
+    display: flex; flex-direction: column; height: 100%; overflow-y: auto;
+}
+.fpr-logo {
+    padding: 14px 16px; border-bottom: 1px solid #E2E8F0;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.fpr-logo-icon {
+    width: 30px; height: 30px; background: #3B82F6; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px;
+}
+.fpr-logo-name { font-size: 12px; font-weight: 700; color: #0F172A; }
+.fpr-prof {
+    padding: 12px 16px; border-bottom: 1px solid #E2E8F0;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.fpr-av {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: #EDE9FE; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #6D28D9; flex-shrink: 0;
+}
+.fpr-av-name  { font-size: 12px; font-weight: 600; color: #0F172A; }
+.fpr-av-email { font-size: 10px; color: #94A3B8; margin-top: 1px; }
+
+.fpr-nav { flex: 1; padding: 8px 0; }
+.fpr-section {
+    font-size: 10px; color: #94A3B8; padding: 10px 16px 3px;
+    text-transform: uppercase; letter-spacing: .07em; font-weight: 600;
+}
+.fpr-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 16px; font-size: 12px; color: #475569;
+    cursor: pointer; border-left: 2px solid transparent; user-select: none;
+    transition: background .15s;
+}
+.fpr-item i { font-size: 15px; flex-shrink: 0; }
+.fpr-item:hover { background: #F8FAFC; color: #0F172A; }
+.fpr-item.active { background: #EFF6FF; color: #1D4ED8; border-left-color: #3B82F6; font-weight: 600; }
+
+/* badges sidebar */
+.fpr-badge-cnt {
+    margin-left: auto; background: #EFF6FF; color: #1D4ED8;
+    font-size: 10px; padding: 1px 6px; border-radius: 20px; font-weight: 700;
+}
+.fpr-badge-notif {
+    margin-left: auto; background: #FEE2E2; color: #EF4444;
+    font-size: 10px; padding: 1px 6px; border-radius: 20px; font-weight: 700;
+}
+.fpr-badge-gray {
+    margin-left: auto; background: #F1F5F9; color: #64748B;
+    font-size: 10px; padding: 1px 6px; border-radius: 20px; font-weight: 700;
+}
+
+.fpr-logout {
+    padding: 10px 16px; border-top: 1px solid #E2E8F0; flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #EF4444; cursor: pointer;
+}
+
+/* ── Main ── */
+.fpr-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* ── Topbar ── */
+.fpr-topbar {
+    background: #fff; border-bottom: 1px solid #E2E8F0;
+    padding: 0 28px; height: 50px; display: flex; align-items: center;
+    justify-content: space-between; flex-shrink: 0;
+}
+.fpr-topbar-title { font-size: 14px; font-weight: 600; }
+.fpr-topbar-right { display: flex; align-items: center; gap: 10px; }
+.fpr-role-badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    background: #EFF6FF; color: #1D4ED8; font-weight: 600;
+}
+
+/* ── Content ── */
+.fpr-content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+.fpr-page { display: none; flex-direction: column; gap: 20px; }
+.fpr-page.active { display: flex; }
+
+/* ── Welcome ── */
+.fpr-welcome {
+    background: #fff; border: 1px solid #E2E8F0; border-radius: 10px;
+    padding: 18px 22px; display: flex; align-items: flex-start;
+    justify-content: space-between; position: relative; overflow: hidden;
+}
+.fpr-welcome::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #3B82F6 0%, #8B5CF6 50%, #EC4899 100%);
+}
+.fpr-welcome h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; margin-top: 6px; }
+.fpr-welcome p  { font-size: 12px; color: #64748B; margin-bottom: 8px; }
+.fpr-actif-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    background: #D1FAE5; color: #065F46; font-weight: 500;
+}
+.fpr-aide-btn {
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    font-size: 12px; padding: 7px 14px; border-radius: 8px; border: 1px solid #E2E8F0;
+    background: #fff; color: #475569; cursor: pointer; font-weight: 500; margin-top: 6px;
+}
+.fpr-aide-btn:hover { background: #F8FAFC; }
+
+/* ── Stats (3 colonnes) ── */
+.fpr-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.fpr-stat {
+    background: #fff; border: 1px solid #E2E8F0; border-radius: 10px;
+    padding: 16px 18px;
+}
+.fpr-stat-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+.fpr-stat-val  { font-size: 26px; font-weight: 700; color: #0F172A; }
+.fpr-stat-lbl  { font-size: 11px; color: #64748B; }
+.fpr-stat-icon {
+    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.fpr-stat-sub {
+    display: inline-block; font-size: 10px; padding: 2px 8px;
+    border-radius: 20px; font-weight: 500;
+}
+
+/* ── Layouts ── */
+.fpr-2col   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fpr-2_1col { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+/* ── Panel ── */
+.fpr-panel {
+    background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; overflow: hidden;
+}
+.fpr-panel-head {
+    padding: 14px 18px; border-bottom: 1px solid #F1F5F9;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.fpr-panel-head span { font-size: 13px; font-weight: 600; }
+.fpr-panel-link { font-size: 12px; color: #3B82F6; cursor: pointer; font-weight: 500; }
+.fpr-panel-body { padding: 12px 0; }
+
+/* ── Chart ── */
+.fpr-chart-wrap { padding: 16px 18px; }
+
+/* ── Notifications panel ── */
+.fpr-notif-row {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 11px 18px; border-bottom: 1px solid #F8FAFC;
+}
+.fpr-notif-row:last-child { border-bottom: none; }
+.fpr-notif-icon {
+    width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.fpr-notif-t { font-size: 12px; font-weight: 600; line-height: 1.3; }
+.fpr-notif-d { font-size: 11px; color: #94A3B8; margin-top: 1px; line-height: 1.4; }
+
+/* ── Cours items ── */
+.fpr-cours-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 18px; border-bottom: 1px solid #F8FAFC;
+}
+.fpr-cours-item:last-child { border-bottom: none; }
+.fpr-cours-color-bar { width: 3px; height: 40px; border-radius: 2px; flex-shrink: 0; margin-top: 2px; }
+.fpr-cours-info { flex: 1; min-width: 0; }
+.fpr-cours-titre { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fpr-cours-meta  { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+.fpr-cours-statut {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500;
+    white-space: nowrap; margin-top: 4px; display: inline-block;
+}
+
+/* ── Progression ── */
+.fpr-prog-item { padding: 10px 18px; border-bottom: 1px solid #F8FAFC; }
+.fpr-prog-item:last-child { border-bottom: none; }
+.fpr-prog-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.fpr-prog-av {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.fpr-prog-nom  { font-size: 12px; font-weight: 500; flex: 1; }
+.fpr-prog-sub  { font-size: 10px; color: #94A3B8; }
+.fpr-prog-pct  { font-size: 12px; font-weight: 600; color: #0F172A; margin-left: auto; }
+.fpr-prog-bar-bg { height: 5px; background: #F1F5F9; border-radius: 3px; overflow: hidden; }
+.fpr-prog-bar-fg { height: 5px; background: #3B82F6; border-radius: 3px; }
+
+/* ── Vide ── */
+.fpr-empty-mini { text-align: center; padding: 28px 16px; font-size: 12px; color: #94A3B8; }
+.fpr-empty-mini i { font-size: 28px; display: block; margin-bottom: 6px; color: #CBD5E1; }
+
+/* ── Sessions ── */
+.fpr-sess-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 18px; border-bottom: 1px solid #F8FAFC;
+}
+.fpr-sess-item:last-child { border-bottom: none; }
+.fpr-sess-date {
+    min-width: 36px; text-align: center;
+    background: #EFF6FF; border-radius: 8px; padding: 5px 4px;
+}
+.fpr-sess-day  { font-size: 16px; font-weight: 700; color: #1D4ED8; line-height: 1; }
+.fpr-sess-mon  { font-size: 9px; font-weight: 600; color: #3B82F6; text-transform: uppercase; }
+.fpr-sess-info { flex: 1; min-width: 0; }
+.fpr-sess-titre { font-size: 12px; font-weight: 500; }
+.fpr-sess-meta  { font-size: 10px; color: #94A3B8; margin-top: 2px; }
+
+/* ── Actions rapides ── */
+.fpr-action-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 18px; cursor: pointer; border-bottom: 1px solid #F8FAFC;
+    transition: background .15s;
+}
+.fpr-action-item:last-child { border-bottom: none; }
+.fpr-action-item:hover { background: #F8FAFC; }
+.fpr-action-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+}
+.fpr-action-title { font-size: 12px; font-weight: 500; }
+.fpr-action-sub   { font-size: 11px; color: #94A3B8; margin-top: 1px; }
+
+/* ── Page Mes cours ── */
+.fpr-cours-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; border: 1px solid #E2E8F0; border-radius: 10px;
+    background: #fff; margin-bottom: 8px;
+}
+.fpr-cours-row-icon {
+    width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+}
+.fpr-cours-row-body  { flex: 1; min-width: 0; }
+.fpr-cours-row-titre { font-size: 13px; font-weight: 600; }
+.fpr-cours-row-meta  { font-size: 11px; color: #64748B; margin-top: 3px; }
+
+/* ── Documents ── */
+.fpr-doc-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 18px; border-bottom: 1px solid #F8FAFC;
+}
+.fpr-doc-item:last-child { border-bottom: none; }
+.fpr-doc-icon {
+    width: 36px; height: 36px; border-radius: 9px; background: #DBEAFE; color: #1D4ED8;
+    display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;
+}
+.fpr-doc-titre { font-size: 13px; font-weight: 500; }
+.fpr-doc-meta  { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+
+/* ── Messagerie ── */
+.fpr-coming-soon {
+    background: linear-gradient(135deg, #EFF6FF 0%, #EDE9FE 100%);
+    border: 1px solid #C7D2FE; border-radius: 10px; padding: 30px 22px; text-align: center;
+}
+.fpr-coming-soon i  { font-size: 38px; color: #6366F1; display: block; margin-bottom: 12px; }
+.fpr-coming-soon h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: #1E1B4B; }
+.fpr-coming-soon p  { font-size: 12px; color: #6366F1; line-height: 1.6; }
+
+.fpr-contact-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 18px; border-bottom: 1px solid #F8FAFC;
+}
+.fpr-contact-item:last-child { border-bottom: none; }
+.fpr-contact-av {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+}
+
+/* ── Page Profil ── */
+.fpr-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px; }
+.fpr-pi { display: flex; justify-content: space-between; align-items: center;
+          padding: 10px 0; border-bottom: 1px solid #F1F5F9; }
+.fpr-pi:last-child { border-bottom: none; }
+.fpr-pi-k { font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+.fpr-pi-v { font-size: 12px; color: #0F172A; }
+.fpr-fr   { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.fpr-fr label { font-size: 11px; color: #64748B; font-weight: 500; }
+.fpr-fr .ui-inputfield, .fpr-fr .ui-inputtextarea {
+    width: 100% !important; font-family: inherit; font-size: 12px;
+    padding: 7px 10px; border: 1px solid #CBD5E1; border-radius: 6px;
+}
+
+/* ── Boutons ── */
+.fpr-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 7px;
+    background: #3B82F6; color: #fff !important; border: none; cursor: pointer;
+    text-decoration: none; white-space: nowrap;
+}
+.fpr-btn:hover { background: #2563EB; }
+.fpr-btn-sm { padding: 5px 10px; font-size: 11px; }
+.fpr-btn-outline {
+    background: transparent !important; color: #3B82F6 !important;
+    border: 1px solid #3B82F6 !important;
+}
+.fpr-btn-outline:hover { background: #EFF6FF !important; }
+
+/* ── Stats 4 colonnes ── */
+.fpr-stats4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+/* ── Formation overview cards ── */
+.fpr-offre-card {
+    background: #fff; border: 1px solid #E2E8F0; border-radius: 10px;
+    overflow: hidden;
+}
+.fpr-offre-head {
+    padding: 16px 20px; border-bottom: 1px solid #F1F5F9;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+}
+.fpr-offre-titre { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.fpr-offre-meta {
+    font-size: 11px; color: #64748B; display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px;
+}
+.fpr-offre-meta span { display: flex; align-items: center; gap: 4px; }
+.fpr-offre-prog {
+    height: 5px; border-radius: 3px; background: #F1F5F9;
+    overflow: hidden; margin: 10px 0 4px;
+}
+.fpr-offre-prog-fill { height: 5px; border-radius: 3px; background: #10B981; }
+.fpr-offre-prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: #94A3B8; }
+
+/* ── Module rows inside offre card ── */
+.fpr-module-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 20px; border-bottom: 1px solid #F8FAFC;
+}
+.fpr-module-row:last-child { border-bottom: none; }
+.fpr-module-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #F1F5F9; color: #64748B;
+    font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fpr-module-name { font-size: 13px; font-weight: 500; flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fpr-module-meta { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+.fpr-status-pill {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    font-weight: 500; white-space: nowrap; flex-shrink: 0;
+}
+
+/* ── Resource/action bar inside offre card ── */
+.fpr-resource-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 7px; border: 1px solid #E2E8F0;
+    background: #fff; font-size: 11px; font-weight: 500; color: #475569;
+    cursor: pointer; text-decoration: none; white-space: nowrap;
+}
+.fpr-resource-btn:hover { background: #F8FAFC; border-color: #CBD5E1; }
+.fpr-resource-btn i { font-size: 13px; }
+</style>
+</h:head>
+
+<h:body>
+
+<!-- Non connecté -->
+<h:panelGroup rendered="#{!sessionBean.connecte}" layout="block"
+    style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;">
+    <h:link outcome="/login" styleClass="fpr-btn">Se connecter</h:link>
+</h:panelGroup>
+
+<!-- Dashboard -->
+<h:panelGroup rendered="#{sessionBean.connecte}" layout="block" styleClass="fpr-shell">
+
+  <!-- ══ SIDEBAR ══ -->
+  <div class="fpr-sidebar">
+
+    <!-- Logo -->
+    <div class="fpr-logo">
+      <div class="fpr-logo-icon"><i class="ti ti-school"></i></div>
+      <span class="fpr-logo-name">SenExpertFormation</span>
+    </div>
+
+    <!-- Avatar -->
+    <div class="fpr-prof">
+      <div class="fpr-av"><h:outputText value="#{sessionBean.initiale}"/></div>
+      <div>
+        <div class="fpr-av-name">
+          <h:outputText value="#{not empty sessionBean.nomComplet ? sessionBean.nomComplet : sessionBean.email}"/>
+        </div>
+        <div class="fpr-av-email"><h:outputText value="#{sessionBean.email}"/></div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="fpr-nav">
+
+      <div class="fpr-section">Espace formateur</div>
+      <div class="fpr-item active" id="nav-accueil" onclick="fprShow('accueil',this)">
+        Tableau de bord
+      </div>
+      <div class="fpr-item" id="nav-formations" onclick="fprShow('formations',this)">
+         Mes formations
+        <h:panelGroup rendered="#{formateurDashboardBean.nbOffres gt 0}">
+          <span class="fpr-badge-cnt"><h:outputText value="#{formateurDashboardBean.nbOffres}"/></span>
+        </h:panelGroup>
+      </div>
+      <div class="fpr-item" id="nav-notifications" onclick="fprShow('notifications',this)">
+         Notifications
+        <h:panelGroup rendered="#{formateurDashboardBean.nbNotificationsFormateur gt 0}">
+          <span class="fpr-badge-notif">
+            <h:outputText value="#{formateurDashboardBean.nbNotificationsFormateur}"/>
+          </span>
+        </h:panelGroup>
+      </div>
+
+      <h:panelGroup rendered="#{sessionBean.permissionsMap['5006'] or sessionBean.permissionsMap['5007']}">
+        <div class="fpr-section">Mes cours</div>
+        <a class="fpr-item" href="#{request.contextPath}/formateur-cours.xhtml">
+          Mes cours
+          <h:panelGroup rendered="#{formateurDashboardBean.nbCoursTotal gt 0}">
+            <span class="fpr-badge-cnt"><h:outputText value="#{formateurDashboardBean.nbCoursTotal}"/></span>
+          </h:panelGroup>
+        </a>
+        <div class="fpr-item" id="nav-documents" onclick="fprShow('documents',this)">
+           Documents
+          <h:panelGroup rendered="#{formateurDashboardBean.nbDocuments gt 0}">
+            <span class="fpr-badge-gray"><h:outputText value="#{formateurDashboardBean.nbDocuments}"/></span>
+          </h:panelGroup>
+        </div>
+      </h:panelGroup>
+
+      <h:panelGroup rendered="#{sessionBean.permissionsMap['5012']}">
+        <div class="fpr-section">Apprenants</div>
+        <a class="fpr-item" href="#{request.contextPath}/formateur-apprenants.xhtml">
+           Mes apprenants
+          <h:panelGroup rendered="#{formateurDashboardBean.nbApprenants gt 0}">
+            <span class="fpr-badge-cnt"><h:outputText value="#{formateurDashboardBean.nbApprenants}"/></span>
+          </h:panelGroup>
+        </a>
+        <div class="fpr-item" id="nav-messagerie" onclick="fprShow('messagerie',this)">
+           Messagerie
+        </div>
+        <a class="fpr-item" href="#{request.contextPath}/formateur-apprenants.xhtml">
+           Progression
+        </a>
+      </h:panelGroup>
+
+      <h:panelGroup rendered="#{sessionBean.permissionsMap['5011']}">
+        <div class="fpr-section">Corrections</div>
+        <a class="fpr-item" href="#{request.contextPath}/formateur-corrections.xhtml">
+          <i class="ti ti-clipboard-check" style="color:#F59E0B;"></i> Corrections
+          <h:panelGroup rendered="#{formateurDashboardBean.nbCorrectionsEnAttente gt 0}">
+            <span class="fpr-badge-notif">
+              <h:outputText value="#{formateurDashboardBean.nbCorrectionsEnAttente}"/>
+            </span>
+          </h:panelGroup>
+        </a>
+      </h:panelGroup>
+
+      <div class="fpr-section">Planning</div>
+      <div class="fpr-item" id="nav-sessions" onclick="fprShow('sessions',this)">
+        Sessions
+        <h:panelGroup rendered="#{formateurDashboardBean.nbSessions gt 0}">
+          <span class="fpr-badge-cnt"><h:outputText value="#{formateurDashboardBean.nbSessions}"/></span>
+        </h:panelGroup>
+      </div>
+
+      <div class="fpr-section">Compte</div>
+      <div class="fpr-item" id="nav-profil" onclick="fprShow('profil',this)">
+         Mon profil
+      </div>
+    </div>
+
+    <!-- Déconnexion -->
+    <h:form style="margin:0;">
+      <h:commandLink action="#{authBean.logout}" styleClass="fpr-logout">
+         Se déconnecter
+      </h:commandLink>
+    </h:form>
+
+  </div><!-- /sidebar -->
+
+
+  <!-- ══ MAIN ══ -->
+  <div class="fpr-main">
+
+    <!-- Topbar -->
+    <div class="fpr-topbar">
+      <span class="fpr-topbar-title" id="fpr-page-title">Tableau de bord</span>
+      <div class="fpr-topbar-right">
+        <span class="fpr-role-badge">Formateur</span>
+        <div class="fpr-av" style="width:30px;height:30px;font-size:11px;">
+          <h:outputText value="#{sessionBean.initiale}"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="fpr-content">
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE ACCUEIL
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page active" id="fpr-accueil">
+
+        <!-- Welcome -->
+        <div class="fpr-welcome">
+          <div>
+            <h2>Bonjour, <h:outputText value="#{not empty sessionBean.nomComplet ? sessionBean.nomComplet : sessionBean.email}"/> !</h2>
+            <p>Voici un aperçu de votre activité d'enseignement.</p>
+            <span class="fpr-actif-badge">
+              <i class="ti ti-circle-check" style="font-size:12px;"></i> Compte actif
+            </span>
+          </div>
+          <button class="fpr-aide-btn" onclick="fprShow('profil',document.getElementById('nav-profil'))">
+            Aide &amp; conseils <i class="ti ti-chevron-down" style="font-size:12px;"></i>
+          </button>
+        </div>
+
+        <!-- Stats 3 × 2 -->
+        <div class="fpr-stats">
+
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.nbOffres}"/></div>
+                <div class="fpr-stat-lbl">Offres assignées</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#EFF6FF;color:#3B82F6;">
+                <i class="ti ti-briefcase"></i>
+              </div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#EFF6FF;color:#1D4ED8;">actives</span>
+          </div>
+
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.nbCoursTotal}"/></div>
+                <div class="fpr-stat-lbl">Cours créés</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#D1FAE5;color:#10B981;">
+                <i class="ti ti-books"></i>
+              </div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#D1FAE5;color:#065F46;">total</span>
+          </div>
+
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.nbApprenants}"/></div>
+                <div class="fpr-stat-lbl">Apprenants actifs</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#FEF3C7;color:#F59E0B;">
+                <i class="ti ti-users"></i>
+              </div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#FEF3C7;color:#92400E;">inscrits</span>
+          </div>
+
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.nbQuestions}"/></div>
+                <div class="fpr-stat-lbl">Questions quiz</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#EDE9FE;color:#8B5CF6;">
+                <i class="ti ti-help-circle"></i>
+              </div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#EDE9FE;color:#6D28D9;">publiées</span>
+          </div>
+
+          <!-- NOUVEAU : taux de complétion -->
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.tauxCompletionLabel}"/></div>
+                <div class="fpr-stat-lbl">Taux de complétion</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#FCE7F3;color:#EC4899;">
+                <i class="ti ti-chart-pie"></i>
+              </div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#FCE7F3;color:#9D174D;">moyen</span>
+          </div>
+
+          <!-- NOUVEAU : cours publiés -->
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.nbCoursPubiles}"/></div>
+                <div class="fpr-stat-lbl">Cours publiés</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#DCFCE7;color:#16A34A;">
+                <i class="ti ti-circle-check"></i>
+              </div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#DCFCE7;color:#14532D;">visibles</span>
+          </div>
+
+          <!-- NOUVEAU : corrections en attente -->
+          <div class="fpr-stat" style="cursor:pointer;" onclick="window.location='#{request.contextPath}/formateur-corrections.xhtml'">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val" style="#{formateurDashboardBean.nbCorrectionsEnAttente gt 0 ? 'color:#D97706;' : ''}">
+                  <h:outputText value="#{formateurDashboardBean.nbCorrectionsEnAttente}"/>
+                </div>
+                <div class="fpr-stat-lbl">Corrections</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#FEF3C7;color:#D97706;">
+                <i class="ti ti-clipboard-check"></i>
+              </div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#FEF3C7;color:#92400E;">à corriger →</span>
+          </div>
+
+        </div><!-- /stats -->
+
+        <!-- Graphique + Notifications (2/3 + 1/3) -->
+        <div class="fpr-2_1col">
+
+          <!-- Graphique d'activité -->
+          <div class="fpr-panel">
+            <div class="fpr-panel-head">
+              <span>Activité des apprenants</span>
+              <span style="font-size:11px;color:#94A3B8;">7 derniers jours</span>
+            </div>
+            <div class="fpr-chart-wrap">
+              <canvas id="chartActivite" height="130"></canvas>
+            </div>
+          </div>
+
+          <!-- Notifications mini -->
+          <div class="fpr-panel">
+            <div class="fpr-panel-head">
+              <span>Notifications</span>
+              <span class="fpr-panel-link" onclick="fprShow('notifications',document.getElementById('nav-notifications'))">
+                Voir tout →
+              </span>
+            </div>
+            <div class="fpr-panel-body">
+              <h:panelGroup rendered="#{not empty formateurDashboardBean.notificationsFormateur}" layout="block">
+                <ui:repeat value="#{formateurDashboardBean.notificationsFormateur}" var="n">
+                  <div class="fpr-notif-row">
+                    <div class="fpr-notif-icon"
+                         style="background:#{n.bg};color:#{n.couleur};">
+                      <i class="ti #{n.icone}"></i>
+                    </div>
+                    <div>
+                      <div class="fpr-notif-t"><h:outputText value="#{n.titre}"/></div>
+                      <div class="fpr-notif-d"><h:outputText value="#{n.detail}"/></div>
+                    </div>
+                  </div>
+                </ui:repeat>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{empty formateurDashboardBean.notificationsFormateur}" layout="block">
+                <div class="fpr-empty-mini">
+                  <i class="ti ti-bell-off"></i> Aucune notification.
+                </div>
+              </h:panelGroup>
+            </div>
+          </div>
+
+        </div><!-- /chart+notif -->
+
+        <!-- Cours récents + Progression -->
+        <div class="fpr-2col">
+
+          <div class="fpr-panel">
+            <div class="fpr-panel-head">
+              <span>Mes cours récents</span>
+              <span class="fpr-panel-link" onclick="fprShow('cours',document.getElementById('nav-cours'))">Voir tous →</span>
+            </div>
+            <div class="fpr-panel-body">
+              <h:panelGroup rendered="#{not empty formateurDashboardBean.coursRecents}" layout="block">
+                <ui:repeat value="#{formateurDashboardBean.coursRecents}" var="c">
+                  <div class="fpr-cours-item">
+                    <div class="fpr-cours-color-bar"
+                         style="background:#{formateurDashboardBean.getCoursAccentColor(c)};"></div>
+                    <div class="fpr-cours-info">
+                      <div class="fpr-cours-titre"><h:outputText value="#{c.titre}"/></div>
+                      <div class="fpr-cours-meta">
+                        <h:outputText value="#{c.offreTitre}"/>
+                        <h:panelGroup rendered="#{c.dureeMinutes != null}">
+                          · <h:outputText value="#{c.dureeMinutes}"/> min
+                        </h:panelGroup>
+                      </div>
+                      <span class="fpr-cours-statut"
+                            style="background:#{formateurDashboardBean.coursStatutBgMap[c.id]};color:#{formateurDashboardBean.coursStatutColorMap[c.id]};">
+                        <h:outputText value="#{formateurDashboardBean.coursStatutLabelMap[c.id]}"/>
+                      </span>
+                    </div>
+                  </div>
+                </ui:repeat>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{empty formateurDashboardBean.coursRecents}" layout="block">
+                <div class="fpr-empty-mini">
+                  <i class="ti ti-inbox"></i> Aucun cours pour le moment.
+                </div>
+              </h:panelGroup>
+            </div>
+          </div>
+
+          <div class="fpr-panel">
+            <div class="fpr-panel-head">
+              <span>Progression apprenants</span>
+              <span class="fpr-panel-link" onclick="fprShow('apprenants',document.getElementById('nav-apprenants'))">Détails →</span>
+            </div>
+            <div class="fpr-panel-body">
+              <h:panelGroup rendered="#{not empty formateurDashboardBean.apprenantProgressions}" layout="block">
+                <ui:repeat value="#{formateurDashboardBean.apprenantProgressions}" var="ap" varStatus="vs">
+                  <div class="fpr-prog-item">
+                    <div class="fpr-prog-header">
+                      <div class="fpr-prog-av"
+                           style="background:#{vs.index == 0 ? '#DBEAFE' : vs.index == 1 ? '#D1FAE5' : vs.index == 2 ? '#FEF3C7' : '#EDE9FE'};
+                                  color:#{vs.index == 0 ? '#1D4ED8' : vs.index == 1 ? '#065F46' : vs.index == 2 ? '#92400E' : '#6D28D9'};">
+                        <h:outputText value="#{ap.initiales}"/>
+                      </div>
+                      <div style="flex:1;min-width:0;">
+                        <div class="fpr-prog-nom"><h:outputText value="#{ap.nom}"/></div>
+                        <div class="fpr-prog-sub">
+                          <h:outputText value="#{ap.nbCoursCompletes}"/> cours complété(s)
+                        </div>
+                      </div>
+                      <div class="fpr-prog-pct"><h:outputText value="#{ap.pourcentageLabel}"/></div>
+                    </div>
+                    <div class="fpr-prog-bar-bg">
+                      <div class="fpr-prog-bar-fg" style="width:#{ap.pourcentage}%;"></div>
+                    </div>
+                  </div>
+                </ui:repeat>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{empty formateurDashboardBean.apprenantProgressions}" layout="block">
+                <div class="fpr-empty-mini">
+                  <i class="ti ti-users"></i> Aucun apprenant inscrit.
+                </div>
+              </h:panelGroup>
+            </div>
+          </div>
+
+        </div><!-- /cours+progression -->
+
+        <!-- Sessions + Actions rapides -->
+        <div class="fpr-2col">
+
+          <div class="fpr-panel">
+            <div class="fpr-panel-head">
+              <span>Prochaines sessions</span>
+              <span class="fpr-panel-link" onclick="fprShow('sessions',document.getElementById('nav-sessions'))">Voir toutes →</span>
+            </div>
+            <div class="fpr-panel-body">
+              <h:panelGroup rendered="#{not empty formateurDashboardBean.prochainsSessions}" layout="block">
+                <ui:repeat value="#{formateurDashboardBean.prochainsSessions}" var="s">
+                  <div class="fpr-sess-item">
+                    <div class="fpr-sess-date">
+                      <div class="fpr-sess-day"><h:outputText value="#{s.jour}"/></div>
+                      <div class="fpr-sess-mon"><h:outputText value="#{s.moisAbr}"/></div>
+                    </div>
+                    <div class="fpr-sess-info">
+                      <div class="fpr-sess-titre">
+                        <h:outputText value="#{s.offre != null ? s.offre.titre : 'Session'}"/>
+                      </div>
+                      <div class="fpr-sess-meta">
+                        <h:outputText value="#{s.heureFormatee}"/>
+                        <h:panelGroup rendered="#{s.dureeMinutes != null}">
+                          · <h:outputText value="#{s.dureeLabel}"/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not empty s.salle}">
+                          · <h:outputText value="#{s.salle}"/>
+                        </h:panelGroup>
+                      </div>
+                    </div>
+                  </div>
+                </ui:repeat>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{empty formateurDashboardBean.prochainsSessions}" layout="block">
+                <div class="fpr-empty-mini">
+                  <i class="ti ti-calendar-off"></i> Aucune session planifiée.
+                </div>
+              </h:panelGroup>
+            </div>
+          </div>
+
+          <div class="fpr-panel">
+            <div class="fpr-panel-head"><span>Actions rapides</span></div>
+            <div class="fpr-panel-body">
+              <div class="fpr-action-item" onclick="fprGoCreerCours()">
+                <div class="fpr-action-icon" style="background:#EFF6FF;color:#1D4ED8;"><i class="ti ti-circle-plus"></i></div>
+                <div>
+                  <div class="fpr-action-title">Ajouter un cours</div>
+                  <div class="fpr-action-sub">Vidéo, document, quiz ou live</div>
+                </div>
+              </div>
+              <div class="fpr-action-item" onclick="fprGoCreerTP()">
+                <div class="fpr-action-icon" style="background:#CFFAFE;color:#0891B2;"><i class="ti ti-clipboard-text"></i></div>
+                <div>
+                  <div class="fpr-action-title">Créer un TP / Devoir / Examen</div>
+                  <div class="fpr-action-sub">Travaux à remettre, notation</div>
+                </div>
+              </div>
+              <div class="fpr-action-item" onclick="fprShow('apprenants',document.getElementById('nav-apprenants'))">
+                <div class="fpr-action-icon" style="background:#D1FAE5;color:#065F46;"><i class="ti ti-chart-bar"></i></div>
+                <div>
+                  <div class="fpr-action-title">Voir les statistiques</div>
+                  <div class="fpr-action-sub">Taux de complétion, scores quiz</div>
+                </div>
+              </div>
+              <div class="fpr-action-item" onclick="fprShow('messagerie',document.getElementById('nav-messagerie'))">
+                <div class="fpr-action-icon" style="background:#FEF3C7;color:#92400E;"><i class="ti ti-message"></i></div>
+                <div>
+                  <div class="fpr-action-title">Messagerie</div>
+                  <div class="fpr-action-sub">Contacter les apprenants</div>
+                </div>
+              </div>
+              <div class="fpr-action-item" onclick="fprShow('sessions',document.getElementById('nav-sessions'))">
+                <div class="fpr-action-icon" style="background:#EDE9FE;color:#6D28D9;"><i class="ti ti-calendar-plus"></i></div>
+                <div>
+                  <div class="fpr-action-title">Planifier une session</div>
+                  <div class="fpr-action-sub">Présentiel ou visioconférence</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /sessions+actions -->
+
+      </div><!-- /ACCUEIL -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE MES FORMATIONS
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page" id="fpr-formations">
+
+        <!-- Header + stats 4 cols -->
+        <div class="fpr-welcome" style="margin-bottom:0;">
+          <div>
+            <h2 style="font-size:15px;">Mes formations assignées</h2>
+            <p><h:outputText value="#{formateurDashboardBean.nbOffres}"/> formation(s) · <h:outputText value="#{formateurDashboardBean.nbCoursTotal}"/> cours au total</p>
+          </div>
+          <a href="#{request.contextPath}/formateur-cours.xhtml" class="fpr-btn">
+            <i class="ti ti-circle-plus" style="font-size:13px;"></i> Gérer les cours
+          </a>
+        </div>
+
+        <div class="fpr-stats4">
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.nbOffres}"/></div>
+                <div class="fpr-stat-lbl">Formations</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#EFF6FF;color:#3B82F6;"><i class="ti ti-school"></i></div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#EFF6FF;color:#1D4ED8;">assignées</span>
+          </div>
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.nbApprenants}"/></div>
+                <div class="fpr-stat-lbl">Apprenants</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#FEF3C7;color:#F59E0B;"><i class="ti ti-users"></i></div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#FEF3C7;color:#92400E;">actifs</span>
+          </div>
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.nbSessions}"/></div>
+                <div class="fpr-stat-lbl">Sessions</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#D1FAE5;color:#10B981;"><i class="ti ti-calendar-event"></i></div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#D1FAE5;color:#065F46;">à venir</span>
+          </div>
+          <div class="fpr-stat">
+            <div class="fpr-stat-row">
+              <div>
+                <div class="fpr-stat-val"><h:outputText value="#{formateurDashboardBean.tauxCompletionLabel}"/></div>
+                <div class="fpr-stat-lbl">Complétion</div>
+              </div>
+              <div class="fpr-stat-icon" style="background:#EDE9FE;color:#8B5CF6;"><i class="ti ti-chart-pie"></i></div>
+            </div>
+            <span class="fpr-stat-sub" style="background:#EDE9FE;color:#6D28D9;">taux moyen</span>
+          </div>
+        </div>
+
+        <!-- Une carte par offre -->
+        <h:panelGroup rendered="#{not empty formateurDashboardBean.mesOffres}" layout="block">
+          <ui:repeat value="#{formateurDashboardBean.mesOffres}" var="offre">
+            <div class="fpr-offre-card">
+
+              <!-- En-tête offre -->
+              <div class="fpr-offre-head">
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <span class="fpr-status-pill" style="background:#D1FAE5;color:#065F46;">
+                      <i class="ti ti-point-filled" style="font-size:9px;"></i> En cours
+                    </span>
+                    <span class="fpr-status-pill" style="background:#EFF6FF;color:#1D4ED8;">
+                      <h:outputText value="#{formateurDashboardBean.nbCoursParOffreMap[offre.id]}"/> cours
+                    </span>
+                  </div>
+                  <div class="fpr-offre-titre"><h:outputText value="#{offre.titre}"/></div>
+                  <div class="fpr-offre-meta">
+                    <span><i class="ti ti-users"></i> <h:outputText value="#{formateurDashboardBean.nbApprenants}"/> apprenants</span>
+                    <h:panelGroup rendered="#{not empty offre.dateDebut}">
+                      <span><i class="ti ti-calendar"></i> Depuis <h:outputText value="#{offre.dateDebut}"/></span>
+                    </h:panelGroup>
+                    <span><i class="ti ti-chart-pie"></i> <h:outputText value="#{formateurDashboardBean.tauxCompletionLabel}"/> complété</span>
+                  </div>
+                  <div class="fpr-offre-prog">
+                    <div class="fpr-offre-prog-fill" style="width:#{formateurDashboardBean.tauxCompletionMoyen}%;"></div>
+                  </div>
+                  <div class="fpr-offre-prog-labels">
+                    <span>Progression globale</span>
+                    <span><h:outputText value="#{formateurDashboardBean.tauxCompletionLabel}"/></span>
+                  </div>
+                </div>
+                <a href="#{request.contextPath}/formateur-cours.xhtml" class="fpr-btn fpr-btn-sm" style="flex-shrink:0;">
+                  <i class="ti ti-arrow-right" style="font-size:11px;"></i> Gérer
+                </a>
+              </div>
+
+              <!-- Liste des cours de cette offre -->
+              <h:panelGroup rendered="#{not empty formateurDashboardBean.coursParOffreMap[offre.id]}" layout="block">
+                <div style="padding:10px 20px 4px;font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #F8FAFC;">
+                  Contenu de la formation
+                </div>
+                <ui:repeat value="#{formateurDashboardBean.coursParOffreMap[offre.id]}" var="c">
+                  <div class="fpr-module-row">
+                    <div class="fpr-module-num">
+                      <h:outputText value="#{c.ordre != null ? c.ordre : '—'}"/>
+                    </div>
+                    <div style="width:28px;height:28px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#{formateurDashboardBean.getCoursBadgeBg(c)};">
+                      <i class="ti #{c.typeIcon}" style="font-size:14px;color:#{c.typeCouleur};"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                      <div class="fpr-module-name"><h:outputText value="#{c.titre}"/></div>
+                      <div class="fpr-module-meta">
+                        <h:outputText value="#{c.typeLabel}"/>
+                        <h:panelGroup rendered="#{c.dureeMinutes != null}"> · <h:outputText value="#{c.dureeMinutes}"/> min</h:panelGroup>
+                      </div>
+                    </div>
+                    <span class="fpr-status-pill"
+                          style="background:#{c.statutBg};color:#{c.statutColor};">
+                      <h:outputText value="#{c.statutLabel}"/>
+                    </span>
+                    <a href="#{request.contextPath}/formateur-cours.xhtml" class="fpr-btn fpr-btn-sm fpr-btn-outline" style="padding:3px 8px;font-size:10px;">
+                      <i class="ti ti-edit" style="font-size:10px;"></i>
+                    </a>
+                  </div>
+                </ui:repeat>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{empty formateurDashboardBean.coursParOffreMap[offre.id]}" layout="block">
+                <div class="fpr-empty-mini">
+                  <i class="ti ti-inbox"></i>
+                  Aucun cours — <span style="color:#3B82F6;cursor:pointer;" onclick="fprGoCreerCours()">ajouter un cours</span>
+                </div>
+              </h:panelGroup>
+
+              <!-- Barre d'actions formation -->
+              <div style="padding:12px 20px;border-top:1px solid #F1F5F9;display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#FAFBFC;">
+                <span style="font-size:10px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-right:4px;">Actions</span>
+                <a href="#{request.contextPath}/formateur-cours.xhtml" class="fpr-resource-btn">
+                  <i class="ti ti-upload"></i> Déposer support
+                </a>
+                <span class="fpr-resource-btn" onclick="fprGoCreerTP()">
+                  <i class="ti ti-clipboard-check"></i> Créer évaluation
+                </span>
+                <span class="fpr-resource-btn" onclick="fprShow('apprenants',document.getElementById('nav-apprenants'))">
+                  <i class="ti ti-chart-bar"></i> Apprenants
+                </span>
+                <span class="fpr-resource-btn" onclick="fprShow('sessions',document.getElementById('nav-sessions'))">
+                  <i class="ti ti-calendar-plus"></i> Planifier session
+                </span>
+                <h:panelGroup rendered="#{formateurDashboardBean.nbCorrectionsEnAttente gt 0}">
+                  <a href="#{request.contextPath}/formateur-corrections.xhtml" class="fpr-resource-btn" style="background:#FFF7ED;border-color:#FDE68A;color:#92400E;">
+                    <i class="ti ti-clipboard-check" style="color:#D97706;"></i>
+                    <h:outputText value="#{formateurDashboardBean.nbCorrectionsEnAttente}"/> correction(s)
+                  </a>
+                </h:panelGroup>
+              </div>
+
+            </div><!-- /fpr-offre-card -->
+          </ui:repeat>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{empty formateurDashboardBean.mesOffres}" layout="block">
+          <div style="text-align:center;padding:48px;color:#94A3B8;">
+            <i class="ti ti-school" style="font-size:40px;display:block;margin-bottom:10px;color:#CBD5E1;"></i>
+            <div style="font-size:14px;font-weight:600;color:#64748B;margin-bottom:6px;">Aucune formation assignée</div>
+            Contactez l'administration pour être affecté à une formation.
+          </div>
+        </h:panelGroup>
+
+        <!-- 2 colonnes : Sessions + Apprenants -->
+        <div class="fpr-2col">
+
+          <div class="fpr-panel">
+            <div class="fpr-panel-head">
+              <span>Prochaines sessions</span>
+              <span class="fpr-panel-link" onclick="fprShow('sessions',document.getElementById('nav-sessions'))">Voir toutes →</span>
+            </div>
+            <div class="fpr-panel-body">
+              <h:panelGroup rendered="#{not empty formateurDashboardBean.prochainsSessions}" layout="block">
+                <ui:repeat value="#{formateurDashboardBean.prochainsSessions}" var="s">
+                  <div class="fpr-sess-item">
+                    <div class="fpr-sess-date">
+                      <div class="fpr-sess-day"><h:outputText value="#{s.jour}"/></div>
+                      <div class="fpr-sess-mon"><h:outputText value="#{s.moisAbr}"/></div>
+                    </div>
+                    <div class="fpr-sess-info">
+                      <div class="fpr-sess-titre"><h:outputText value="#{s.offre != null ? s.offre.titre : 'Session'}"/></div>
+                      <div class="fpr-sess-meta">
+                        <h:outputText value="#{s.heureFormatee}"/>
+                        <h:panelGroup rendered="#{s.dureeMinutes != null}"> · <h:outputText value="#{s.dureeLabel}"/></h:panelGroup>
+                        <h:panelGroup rendered="#{not empty s.salle}"> · <h:outputText value="#{s.salle}"/></h:panelGroup>
+                      </div>
+                    </div>
+                  </div>
+                </ui:repeat>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{empty formateurDashboardBean.prochainsSessions}" layout="block">
+                <div class="fpr-empty-mini"><i class="ti ti-calendar-off"></i> Aucune session planifiée.</div>
+              </h:panelGroup>
+            </div>
+          </div>
+
+          <div class="fpr-panel">
+            <div class="fpr-panel-head">
+              <span>Apprenants — progression</span>
+              <span class="fpr-panel-link" onclick="fprShow('apprenants',document.getElementById('nav-apprenants'))">Tous →</span>
+            </div>
+            <div class="fpr-panel-body">
+              <h:panelGroup rendered="#{not empty formateurDashboardBean.apprenantProgressions}" layout="block">
+                <ui:repeat value="#{formateurDashboardBean.apprenantProgressions}" var="ap" varStatus="vs">
+                  <div class="fpr-prog-item">
+                    <div class="fpr-prog-header">
+                      <div class="fpr-prog-av"
+                           style="background:#{vs.index == 0 ? '#DBEAFE' : vs.index == 1 ? '#D1FAE5' : vs.index == 2 ? '#FEF3C7' : '#EDE9FE'};
+                                  color:#{vs.index == 0 ? '#1D4ED8' : vs.index == 1 ? '#065F46' : vs.index == 2 ? '#92400E' : '#6D28D9'};">
+                        <h:outputText value="#{ap.initiales}"/>
+                      </div>
+                      <div style="flex:1;min-width:0;">
+                        <div class="fpr-prog-nom"><h:outputText value="#{ap.nom}"/></div>
+                        <div class="fpr-prog-sub"><h:outputText value="#{ap.nbCoursCompletes}"/> cours complété(s)</div>
+                      </div>
+                      <div class="fpr-prog-pct"><h:outputText value="#{ap.pourcentageLabel}"/></div>
+                    </div>
+                    <div class="fpr-prog-bar-bg">
+                      <div class="fpr-prog-bar-fg" style="width:#{ap.pourcentage}%;"></div>
+                    </div>
+                  </div>
+                </ui:repeat>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{empty formateurDashboardBean.apprenantProgressions}" layout="block">
+                <div class="fpr-empty-mini"><i class="ti ti-users"></i> Aucun apprenant.</div>
+              </h:panelGroup>
+            </div>
+          </div>
+
+        </div><!-- /2col -->
+
+        <!-- Notifications récentes -->
+        <div class="fpr-panel">
+          <div class="fpr-panel-head">
+            <span>Notifications récentes</span>
+            <span class="fpr-panel-link" onclick="fprShow('notifications',document.getElementById('nav-notifications'))">Voir tout →</span>
+          </div>
+          <div class="fpr-panel-body">
+            <h:panelGroup rendered="#{not empty formateurDashboardBean.notificationsFormateur}" layout="block">
+              <ui:repeat value="#{formateurDashboardBean.notificationsFormateur}" var="n">
+                <div class="fpr-notif-row">
+                  <div class="fpr-notif-icon" style="background:#{n.bg};color:#{n.couleur};">
+                    <i class="ti #{n.icone}"></i>
+                  </div>
+                  <div>
+                    <div class="fpr-notif-t"><h:outputText value="#{n.titre}"/></div>
+                    <div class="fpr-notif-d"><h:outputText value="#{n.detail}"/></div>
+                  </div>
+                </div>
+              </ui:repeat>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{empty formateurDashboardBean.notificationsFormateur}" layout="block">
+              <div class="fpr-empty-mini"><i class="ti ti-bell-off"></i> Aucune notification.</div>
+            </h:panelGroup>
+          </div>
+        </div>
+
+      </div><!-- /FORMATIONS -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE MES COURS
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page" id="fpr-cours">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div>
+            <div style="font-size:15px;font-weight:600;">Mes cours</div>
+            <div style="font-size:12px;color:#64748B;margin-top:2px;">
+              <h:outputText value="#{formateurDashboardBean.nbCoursTotal}"/> cours ·
+              <h:outputText value="#{formateurDashboardBean.nbOffres}"/> offre(s)
+            </div>
+          </div>
+        </div>
+        <h:panelGroup rendered="#{not empty formateurDashboardBean.tousLesCours}" layout="block">
+          <ui:repeat value="#{formateurDashboardBean.tousLesCours}" var="c">
+            <div class="fpr-cours-row">
+              <div class="fpr-cours-row-icon"
+                   style="background:#{formateurDashboardBean.getCoursBadgeBg(c)};color:#{formateurDashboardBean.getCoursAccentColor(c)};">
+                <i class="ti #{c.typeIcon}"></i>
+              </div>
+              <div class="fpr-cours-row-body">
+                <div class="fpr-cours-row-titre"><h:outputText value="#{c.titre}"/></div>
+                <div class="fpr-cours-row-meta">
+                  <h:outputText value="#{c.typeLabel}"/>
+                  <h:panelGroup rendered="#{not empty c.offreTitre}">
+                    · <h:outputText value="#{c.offreTitre}"/>
+                  </h:panelGroup>
+                  <h:panelGroup rendered="#{c.dureeMinutes != null}">
+                    · <h:outputText value="#{c.dureeMinutes}"/> min
+                  </h:panelGroup>
+                </div>
+              </div>
+              <span class="fpr-cours-statut"
+                    style="background:#{formateurDashboardBean.coursStatutBgMap[c.id]};color:#{formateurDashboardBean.coursStatutColorMap[c.id]};">
+                <h:outputText value="#{formateurDashboardBean.coursStatutLabelMap[c.id]}"/>
+              </span>
+              <a href="#{request.contextPath}/formateur-cours.xhtml?offreId=#{c.offreId}"
+                 class="fpr-btn fpr-btn-sm" style="margin-left:8px;">
+                <i class="ti ti-edit" style="font-size:11px;"></i> Modifier
+              </a>
+            </div>
+          </ui:repeat>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{empty formateurDashboardBean.tousLesCours}" layout="block">
+          <div style="text-align:center;padding:48px;color:#94A3B8;">
+            <i class="ti ti-inbox" style="font-size:40px;display:block;margin-bottom:10px;"></i>
+            Aucun cours. Commencez par <span style="color:#3B82F6;cursor:pointer;" onclick="fprGoCreerCours()">créer un cours</span>.
+          </div>
+        </h:panelGroup>
+      </div><!-- /COURS -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE MES APPRENANTS
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page" id="fpr-apprenants">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Mes apprenants</div>
+        <div style="font-size:12px;color:#64748B;margin-bottom:14px;">
+          <h:outputText value="#{formateurDashboardBean.nbApprenants}"/> apprenant(s) inscrit(s)
+        </div>
+        <h:panelGroup rendered="#{not empty formateurDashboardBean.apprenantProgressions}" layout="block">
+          <div class="fpr-panel">
+            <ui:repeat value="#{formateurDashboardBean.apprenantProgressions}" var="ap" varStatus="vs">
+              <div class="fpr-prog-item" style="padding:14px 18px;">
+                <div class="fpr-prog-header" style="margin-bottom:8px;">
+                  <div class="fpr-prog-av" style="width:36px;height:36px;font-size:13px;
+                       background:#{vs.index == 0 ? '#DBEAFE' : vs.index == 1 ? '#D1FAE5' : vs.index == 2 ? '#FEF3C7' : '#EDE9FE'};
+                       color:#{vs.index == 0 ? '#1D4ED8' : vs.index == 1 ? '#065F46' : vs.index == 2 ? '#92400E' : '#6D28D9'};">
+                    <h:outputText value="#{ap.initiales}"/>
+                  </div>
+                  <div style="flex:1;">
+                    <div style="font-size:13px;font-weight:600;"><h:outputText value="#{ap.nom}"/></div>
+                    <div style="font-size:11px;color:#94A3B8;">
+                      <h:outputText value="#{ap.nbCoursCompletes}"/> cours complété(s)
+                    </div>
+                  </div>
+                  <div style="font-size:13px;font-weight:700;"><h:outputText value="#{ap.pourcentageLabel}"/></div>
+                </div>
+                <div class="fpr-prog-bar-bg" style="height:6px;">
+                  <div class="fpr-prog-bar-fg" style="width:#{ap.pourcentage}%;height:6px;"></div>
+                </div>
+              </div>
+            </ui:repeat>
+          </div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{empty formateurDashboardBean.apprenantProgressions}" layout="block">
+          <div style="text-align:center;padding:48px;color:#94A3B8;">
+            <i class="ti ti-users" style="font-size:40px;display:block;margin-bottom:10px;"></i>
+            Aucun apprenant inscrit dans vos offres.
+          </div>
+        </h:panelGroup>
+      </div><!-- /APPRENANTS -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE PROGRESSION
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page" id="fpr-progression">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Progression des apprenants</div>
+        <div style="font-size:12px;color:#64748B;margin-bottom:14px;">
+          Suivi de l'avancement de chaque apprenant dans vos offres.
+        </div>
+        <h:panelGroup rendered="#{not empty formateurDashboardBean.apprenantProgressions}" layout="block">
+          <div class="fpr-panel">
+            <ui:repeat value="#{formateurDashboardBean.apprenantProgressions}" var="ap" varStatus="vs">
+              <div class="fpr-prog-item" style="padding:16px 18px;">
+                <div class="fpr-prog-header" style="margin-bottom:10px;">
+                  <div class="fpr-prog-av" style="width:40px;height:40px;font-size:14px;
+                       background:#{vs.index mod 4 == 0 ? '#DBEAFE' : vs.index mod 4 == 1 ? '#D1FAE5' : vs.index mod 4 == 2 ? '#FEF3C7' : '#EDE9FE'};
+                       color:#{vs.index mod 4 == 0 ? '#1D4ED8' : vs.index mod 4 == 1 ? '#065F46' : vs.index mod 4 == 2 ? '#92400E' : '#6D28D9'};">
+                    <h:outputText value="#{ap.initiales}"/>
+                  </div>
+                  <div style="flex:1;">
+                    <div style="font-size:13px;font-weight:600;"><h:outputText value="#{ap.nom}"/></div>
+                    <div style="font-size:11px;color:#94A3B8;">
+                      <h:outputText value="#{ap.nbCoursCompletes}"/> cours complété(s) sur <h:outputText value="#{ap.nbCoursTotal}"/>
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:16px;font-weight:700;color:#3B82F6;"><h:outputText value="#{ap.pourcentageLabel}"/></div>
+                    <div style="font-size:10px;color:#94A3B8;">de progression</div>
+                  </div>
+                </div>
+                <div class="fpr-prog-bar-bg" style="height:8px;border-radius:4px;">
+                  <div class="fpr-prog-bar-fg" style="width:#{ap.pourcentage}%;height:8px;border-radius:4px;transition:width .6s;"></div>
+                </div>
+              </div>
+            </ui:repeat>
+          </div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{empty formateurDashboardBean.apprenantProgressions}" layout="block">
+          <div style="text-align:center;padding:48px;color:#94A3B8;">
+            <i class="ti ti-chart-line" style="font-size:40px;display:block;margin-bottom:10px;color:#CBD5E1;"></i>
+            <div style="font-size:14px;font-weight:600;color:#64748B;margin-bottom:6px;">Aucune progression disponible</div>
+            Aucun apprenant n'est encore inscrit dans vos offres.
+          </div>
+        </h:panelGroup>
+      </div><!-- /PROGRESSION -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE SESSIONS
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page" id="fpr-sessions">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:2px;">Sessions planifiées</div>
+            <div style="font-size:12px;color:#64748B;">
+              <h:outputText value="#{formateurDashboardBean.nbSessions}"/> session(s)
+            </div>
+          </div>
+          <button type="button" onclick="document.getElementById('sessForm').style.display=document.getElementById('sessForm').style.display==='none'?'block':'none'"
+                  style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#3B82F6;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+            <i class="ti ti-plus"></i> Planifier une session
+          </button>
+        </div>
+
+        <!-- ── Formulaire planification ─────────────────────────────── -->
+        <h:form id="formSessions">
+        <p:messages id="msgSess" showDetail="true" closable="true" style="margin-bottom:10px;"/>
+        <div id="sessForm" style="display:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:18px;margin-bottom:18px;">
+          <div style="font-size:13px;font-weight:600;color:#0F172A;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
+            <i class="ti ti-calendar-plus" style="color:#3B82F6;"></i> Nouvelle session
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div>
+              <label class="dlg-label">Formation *</label>
+              <h:selectOneMenu value="#{formateurDashboardBean.sessOffreId}"
+                               style="width:100%;padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:12px;font-family:inherit;">
+                <f:selectItem itemLabel="— Choisir —" itemValue="#{null}" noSelectionOption="true"/>
+                <f:selectItems value="#{formateurDashboardBean.mesOffres}"
+                               var="o" itemLabel="#{o.titre}" itemValue="#{o.id}"/>
+              </h:selectOneMenu>
+            </div>
+            <div>
+              <label class="dlg-label">Date *</label>
+              <h:inputText value="#{formateurDashboardBean.sessDate}"
+                           type="date"
+                           style="width:100%;padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:12px;font-family:inherit;"/>
+            </div>
+            <div>
+              <label class="dlg-label">Heure *</label>
+              <h:inputText value="#{formateurDashboardBean.sessHeure}"
+                           type="time"
+                           style="width:100%;padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:12px;font-family:inherit;"/>
+            </div>
+            <div>
+              <label class="dlg-label">Durée (min)</label>
+              <h:inputText value="#{formateurDashboardBean.sessDuree}"
+                           type="number" min="15" max="480"
+                           style="width:100%;padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:12px;font-family:inherit;"/>
+            </div>
+            <div>
+              <label class="dlg-label">Salle / Lien</label>
+              <h:inputText value="#{formateurDashboardBean.sessSalle}"
+                           placeholder="ex: Salle A ou lien Zoom"
+                           style="width:100%;padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:12px;font-family:inherit;"/>
+            </div>
+            <div>
+              <label class="dlg-label">Nombre de places</label>
+              <h:inputText value="#{formateurDashboardBean.sessPlaces}"
+                           type="number" min="1"
+                           style="width:100%;padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:12px;font-family:inherit;"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <p:commandButton value="Enregistrer la session"
+                             icon="pi pi-check"
+                             action="#{formateurDashboardBean.planifierSession}"
+                             update="formSessions"
+                             oncomplete="if(!args.validationFailed){document.getElementById('sessForm').style.display='none';}"
+                             styleClass="fpr-btn fpr-btn-sm"
+                             style="background:#3B82F6;color:#fff;border:none;padding:8px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;"/>
+            <button type="button" onclick="document.getElementById('sessForm').style.display='none'"
+                    style="padding:8px 14px;background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+              Annuler
+            </button>
+          </div>
+        </div>
+        </h:form>
+
+        <!-- ── Liste des sessions ─────────────────────────────────── -->
+        <h:panelGroup rendered="#{not empty formateurDashboardBean.prochainsSessions}" layout="block">
+          <div class="fpr-panel">
+            <h:form id="formSessActions">
+            <ui:repeat value="#{formateurDashboardBean.prochainsSessions}" var="s">
+              <div class="fpr-sess-item" style="padding:14px 18px;">
+                <div class="fpr-sess-date" style="padding:8px 6px;min-width:42px;">
+                  <div class="fpr-sess-day"><h:outputText value="#{s.jour}"/></div>
+                  <div class="fpr-sess-mon"><h:outputText value="#{s.moisAbr}"/></div>
+                </div>
+                <div class="fpr-sess-info" style="flex:1;">
+                  <div class="fpr-sess-titre" style="font-size:13px;">
+                    <h:outputText value="#{s.offre != null ? s.offre.titre : 'Session'}"/>
+                  </div>
+                  <div class="fpr-sess-meta" style="font-size:11px;margin-top:3px;">
+                    <h:outputText value="#{s.heureFormatee}"/>
+                    <h:panelGroup rendered="#{s.dureeMinutes != null}"> · <h:outputText value="#{s.dureeLabel}"/></h:panelGroup>
+                    <h:panelGroup rendered="#{not empty s.salle}"> · <h:outputText value="#{s.salle}"/></h:panelGroup>
+                    <h:panelGroup rendered="#{s.nbPlaces != null}"> · <h:outputText value="#{s.nbPlaces}"/> places</h:panelGroup>
+                  </div>
+                  <h:panelGroup rendered="#{not empty s.statut}">
+                    <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#EFF6FF;color:#1D4ED8;font-weight:500;display:inline-block;margin-top:4px;">
+                      <h:outputText value="#{s.statut}"/>
+                    </span>
+                  </h:panelGroup>
+                </div>
+                <p:commandLink styleClass="fpr-btn fpr-btn-sm fpr-btn-danger"
+                               style="margin-left:10px;font-size:11px;"
+                               action="#{formateurDashboardBean.supprimerSession(s.id)}"
+                               update="formSessActions formSessions"
+                               onclick="return confirm('Supprimer cette session ?')"
+                               process="@none" immediate="true">
+                  <i class="ti ti-trash" style="font-size:11px;"></i>
+                </p:commandLink>
+              </div>
+            </ui:repeat>
+            </h:form>
+          </div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{empty formateurDashboardBean.prochainsSessions}" layout="block">
+          <div style="text-align:center;padding:48px;color:#94A3B8;">
+            <i class="ti ti-calendar-off" style="font-size:40px;display:block;margin-bottom:10px;"></i>
+            Aucune session planifiée. Utilisez le bouton ci-dessus pour en créer une.
+          </div>
+        </h:panelGroup>
+      </div><!-- /SESSIONS -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE NOTIFICATIONS
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page" id="fpr-notifications">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Notifications</div>
+        <div style="font-size:12px;color:#64748B;margin-bottom:14px;">
+          <h:outputText value="#{formateurDashboardBean.nbNotificationsFormateur}"/> notification(s)
+        </div>
+        <h:panelGroup rendered="#{not empty formateurDashboardBean.notificationsFormateur}" layout="block">
+          <div class="fpr-panel">
+            <div class="fpr-panel-body">
+              <ui:repeat value="#{formateurDashboardBean.notificationsFormateur}" var="n">
+                <div class="fpr-notif-row" style="padding:14px 18px;">
+                  <div class="fpr-notif-icon" style="width:40px;height:40px;font-size:18px;
+                       background:#{n.bg};color:#{n.couleur};">
+                    <i class="ti #{n.icone}"></i>
+                  </div>
+                  <div style="flex:1;">
+                    <div class="fpr-notif-t" style="font-size:13px;"><h:outputText value="#{n.titre}"/></div>
+                    <div class="fpr-notif-d" style="font-size:12px;margin-top:3px;"><h:outputText value="#{n.detail}"/></div>
+                  </div>
+                  <span style="font-size:10px;color:#CBD5E1;white-space:nowrap;padding-left:10px;">Aujourd'hui</span>
+                </div>
+              </ui:repeat>
+            </div>
+          </div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{empty formateurDashboardBean.notificationsFormateur}" layout="block">
+          <div style="text-align:center;padding:48px;color:#94A3B8;">
+            <i class="ti ti-bell-off" style="font-size:40px;display:block;margin-bottom:10px;"></i>
+            Aucune notification pour le moment.
+          </div>
+        </h:panelGroup>
+      </div><!-- /NOTIFICATIONS -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE DOCUMENTS
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page" id="fpr-documents">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Documents &amp; Ressources</div>
+        <div style="font-size:12px;color:#64748B;margin-bottom:14px;">
+          <h:outputText value="#{formateurDashboardBean.nbDocuments}"/> document(s) partagé(s)
+        </div>
+        <h:panelGroup rendered="#{not empty formateurDashboardBean.documents}" layout="block">
+          <div class="fpr-panel">
+            <div class="fpr-panel-body">
+              <ui:repeat value="#{formateurDashboardBean.documents}" var="doc">
+                <div class="fpr-doc-item">
+                  <div class="fpr-doc-icon"><i class="ti ti-file-text"></i></div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="fpr-doc-titre"><h:outputText value="#{doc.titre}"/></div>
+                    <div class="fpr-doc-meta">
+                      <h:outputText value="#{doc.offreTitre}"/>
+                      <h:panelGroup rendered="#{doc.dureeMinutes != null}">
+                        · <h:outputText value="#{doc.dureeMinutes}"/> min de lecture
+                      </h:panelGroup>
+                    </div>
+                  </div>
+                  <span class="fpr-cours-statut"
+                        style="background:#{formateurDashboardBean.coursStatutBgMap[doc.id]};
+                               color:#{formateurDashboardBean.coursStatutColorMap[doc.id]};">
+                    <h:outputText value="#{formateurDashboardBean.coursStatutLabelMap[doc.id]}"/>
+                  </span>
+                  <a href="#{request.contextPath}/formateur-cours.xhtml"
+                     class="fpr-btn fpr-btn-sm fpr-btn-outline" style="margin-left:8px;">
+                    <i class="ti ti-edit" style="font-size:11px;"></i> Modifier
+                  </a>
+                </div>
+              </ui:repeat>
+            </div>
+          </div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{empty formateurDashboardBean.documents}" layout="block">
+          <div style="text-align:center;padding:48px;color:#94A3B8;">
+            <i class="ti ti-file-off" style="font-size:40px;display:block;margin-bottom:10px;"></i>
+            Aucun document partagé. <span style="color:#3B82F6;cursor:pointer;"
+              onclick="fprGoCreerCours()">Créer un cours de type Document</span>.
+          </div>
+        </h:panelGroup>
+      </div><!-- /DOCUMENTS -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE MESSAGERIE
+      ════════════════════════════════════════════════════════ -->
+      <div class="fpr-page" id="fpr-messagerie">
+        <div style="font-size:15px;font-weight:600;margin-bottom:16px;">Messagerie</div>
+
+        <!-- Layout 2 colonnes : contact list + compose -->
+        <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:16px;align-items:start;">
+
+          <!-- Colonne gauche : liste apprenants -->
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">
+              Vos apprenants (<h:outputText value="#{formateurDashboardBean.nbApprenants}"/>)
+            </div>
+            <h:panelGroup rendered="#{not empty formateurDashboardBean.apprenantProgressions}" layout="block">
+              <div class="fpr-panel">
+                <div class="fpr-panel-body">
+                  <ui:repeat value="#{formateurDashboardBean.apprenantProgressions}" var="ap" varStatus="vs">
+                    <div class="fpr-contact-item"
+                         onclick="selectContact('#{ap.initiales}','#{ap.nom}')"
+                         style="cursor:pointer;" id="cnt-#{vs.index}">
+                      <div class="fpr-contact-av"
+                           style="background:#{vs.index == 0 ? '#DBEAFE' : vs.index == 1 ? '#D1FAE5' : vs.index == 2 ? '#FEF3C7' : '#EDE9FE'};
+                                  color:#{vs.index == 0 ? '#1D4ED8' : vs.index == 1 ? '#065F46' : vs.index == 2 ? '#92400E' : '#6D28D9'};">
+                        <h:outputText value="#{ap.initiales}"/>
+                      </div>
+                      <div style="flex:1;min-width:0;">
+                        <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                          <h:outputText value="#{ap.nom}"/>
+                        </div>
+                        <div style="font-size:11px;color:#94A3B8;">
+                          <h:outputText value="#{ap.pourcentageLabel}"/> complété
+                        </div>
+                      </div>
+                    </div>
+                  </ui:repeat>
+                </div>
+              </div>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{empty formateurDashboardBean.apprenantProgressions}" layout="block">
+              <div style="text-align:center;padding:30px;color:#94A3B8;font-size:12px;">
+                <i class="ti ti-users" style="font-size:30px;display:block;margin-bottom:8px;"></i>
+                Aucun apprenant inscrit.
+              </div>
+            </h:panelGroup>
+          </div>
+
+          <!-- Colonne droite : composer un message -->
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">
+              Composer un message
+            </div>
+            <div class="fpr-panel" style="padding:16px;">
+              <div style="margin-bottom:10px;">
+                <label style="display:block;font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Destinataire</label>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div id="msgDest" style="flex:1;padding:8px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;color:#94A3B8;min-height:34px;">
+                    Cliquez sur un apprenant →
+                  </div>
+                </div>
+              </div>
+              <div style="margin-bottom:10px;">
+                <label style="display:block;font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Sujet</label>
+                <input id="msgSubject" type="text" placeholder="ex: Retour sur votre devoir"
+                       style="width:100%;padding:8px 12px;border:1px solid #CBD5E1;border-radius:6px;font-size:12px;font-family:inherit;box-sizing:border-box;"/>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Message</label>
+                <textarea id="msgBody" rows="5" placeholder="Rédigez votre message ici..."
+                          style="width:100%;padding:8px 12px;border:1px solid #CBD5E1;border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button type="button" onclick="sendMsg()"
+                        style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#3B82F6;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+                  <i class="ti ti-send"></i> Envoyer
+                </button>
+                <button type="button" onclick="clearMsg()"
+                        style="padding:8px 12px;background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;">
+                  Effacer
+                </button>
+                <div id="msgConfirm" style="display:none;font-size:11px;color:#059669;font-weight:500;">
+                  <i class="ti ti-circle-check"></i> Message envoyé !
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:10px;padding:10px 14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;font-size:11px;color:#92400E;">
+              <i class="ti ti-info-circle"></i> La messagerie interne est en cours d'intégration.
+              En attendant, les messages sont préparés ici et envoyés par email via votre client mail.
+            </div>
+          </div>
+
+        </div>
+
+        <script>
+        function selectContact(initiales, nom) {
+          document.getElementById('msgDest').textContent = nom;
+          document.getElementById('msgDest').style.color = '#0F172A';
+          document.getElementById('msgDest').dataset.nom = nom;
+        }
+        function sendMsg() {
+          var dest = document.getElementById('msgDest').dataset.nom || '';
+          var subj = document.getElementById('msgSubject').value;
+          var body = document.getElementById('msgBody').value;
+          if (!dest || dest === 'Cliquez sur un apprenant →') { alert('Sélectionnez un destinataire.'); return; }
+          if (!body.trim()) { alert('Rédigez un message.'); return; }
+          var mailto = 'mailto:?subject=' + encodeURIComponent('[Formation] ' + subj) + '&amp;body=' + encodeURIComponent('Bonjour ' + dest + ',\n\n' + body + '\n\nCordialement,\n[Votre formateur]');
+          window.open(mailto, '_blank');
+          document.getElementById('msgConfirm').style.display = 'inline-flex';
+          setTimeout(function(){ document.getElementById('msgConfirm').style.display='none'; }, 4000);
+        }
+        function clearMsg() {
+          document.getElementById('msgSubject').value = '';
+          document.getElementById('msgBody').value = '';
+          document.getElementById('msgDest').textContent = 'Cliquez sur un apprenant →';
+          document.getElementById('msgDest').style.color = '#94A3B8';
+        }
+        </script>
+      </div><!-- /MESSAGERIE -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PAGE MON PROFIL
+      ════════════════════════════════════════════════════════ -->
+      <h:panelGroup layout="block" styleClass="fpr-page" id="fpr-profil">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px;">Mon profil</div>
+        <div class="fpr-card">
+          <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid #F1F5F9;margin-bottom:14px;">
+            <div class="fpr-av" style="width:52px;height:52px;font-size:19px;font-weight:700;">
+              <h:outputText value="#{sessionBean.initiale}"/>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:600;">
+                <h:outputText value="#{not empty sessionBean.nomComplet ? sessionBean.nomComplet : sessionBean.email}"/>
+              </div>
+              <div style="font-size:12px;color:#64748B;"><h:outputText value="#{sessionBean.email}"/></div>
+              <span style="display:inline-block;margin-top:5px;font-size:10px;padding:2px 9px;border-radius:20px;background:#EFF6FF;color:#1D4ED8;font-weight:600;">Formateur</span>
+            </div>
+            <h:form style="margin:0;" id="formToggle">
+              <p:commandButton value="#{formateurDashboardBean.editEnCours ? 'Annuler' : 'Modifier le profil'}"
+                               styleClass="fpr-btn fpr-btn-outline"
+                               action="#{formateurDashboardBean.toggleEditProfil}"
+                               update=":fpr-profil"
+                               oncomplete="document.getElementById('fpr-profil').classList.add('active');"/>
+            </h:form>
+          </div>
+
+          <h:panelGroup rendered="#{!formateurDashboardBean.editEnCours and formateurDashboardBean.monProfil != null}">
+            <div class="fpr-pi"><span class="fpr-pi-k"><i class="ti ti-user"></i> Prénom</span>
+              <span class="fpr-pi-v"><h:outputText value="#{formateurDashboardBean.monProfil.prenom != null ? formateurDashboardBean.monProfil.prenom : '—'}"/></span></div>
+            <div class="fpr-pi"><span class="fpr-pi-k"><i class="ti ti-user"></i> Nom</span>
+              <span class="fpr-pi-v"><h:outputText value="#{formateurDashboardBean.monProfil.nom != null ? formateurDashboardBean.monProfil.nom : '—'}"/></span></div>
+            <div class="fpr-pi"><span class="fpr-pi-k"><i class="ti ti-mail"></i> Email</span>
+              <span class="fpr-pi-v"><h:outputText value="#{formateurDashboardBean.monProfil.email}"/></span></div>
+            <div class="fpr-pi"><span class="fpr-pi-k"><i class="ti ti-phone"></i> Téléphone</span>
+              <span class="fpr-pi-v"><h:outputText value="#{formateurDashboardBean.monProfil.telephone != null ? formateurDashboardBean.monProfil.telephone : 'Non renseigné'}"/></span></div>
+            <div class="fpr-pi"><span class="fpr-pi-k"><i class="ti ti-target"></i> Spécialité</span>
+              <span class="fpr-pi-v"><h:outputText value="#{formateurDashboardBean.monProfil.specialite != null ? formateurDashboardBean.monProfil.specialite : 'Non renseignée'}"/></span></div>
+            <div class="fpr-pi" style="align-items:flex-start;padding-top:12px;">
+              <span class="fpr-pi-k"><i class="ti ti-id-badge"></i> Bio</span>
+              <span class="fpr-pi-v" style="max-width:55%;text-align:right;font-size:11px;color:#64748B;">
+                <h:outputText value="#{formateurDashboardBean.monProfil.bio != null ? formateurDashboardBean.monProfil.bio : 'Non renseignée'}"/>
+              </span>
+            </div>
+          </h:panelGroup>
+
+          <h:panelGroup rendered="#{formateurDashboardBean.editEnCours}">
+            <h:form id="formProfil">
+              <p:messages id="msgProfil" showDetail="true" closable="true" style="margin-bottom:10px;font-size:12px;"/>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="fpr-fr"><label>Prénom</label>
+                  <p:inputText value="#{formateurDashboardBean.editPrenom}" placeholder="Votre prénom"/></div>
+                <div class="fpr-fr"><label>Nom</label>
+                  <p:inputText value="#{formateurDashboardBean.editNom}" placeholder="Votre nom"/></div>
+                <div class="fpr-fr"><label>Téléphone</label>
+                  <p:inputText value="#{formateurDashboardBean.editTelephone}" placeholder="+221 XX XXX XX XX"/></div>
+                <div class="fpr-fr"><label>Spécialité</label>
+                  <p:inputText value="#{formateurDashboardBean.editSpecialite}" placeholder="ex: Développement web"/></div>
+                <div class="fpr-fr" style="grid-column:1/-1;"><label>Bio</label>
+                  <p:inputTextarea value="#{formateurDashboardBean.editBio}" rows="3"
+                                   placeholder="Décrivez votre expérience..." style="width:100%;"/></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:14px;">
+                <p:commandButton value="Enregistrer" styleClass="fpr-btn"
+                                 action="#{formateurDashboardBean.sauvegarderProfil}"
+                                 update=":fpr-profil msgProfil"
+                                 oncomplete="document.getElementById('fpr-profil').classList.add('active');"/>
+                <p:commandButton value="Annuler" styleClass="fpr-btn fpr-btn-secondary"
+                                 action="#{formateurDashboardBean.toggleEditProfil}"
+                                 update=":fpr-profil"
+                                 oncomplete="document.getElementById('fpr-profil').classList.add('active');"/>
+              </div>
+            </h:form>
+          </h:panelGroup>
+
+        </div>
+      </h:panelGroup><!-- /PROFIL -->
+
+
+    </div><!-- /fpr-content -->
+  </div><!-- /fpr-main -->
+
+</h:panelGroup>
+
+<script>//<![CDATA[
+var PAGE_TITLES = {
+  accueil:       'Tableau de bord',
+  formations:    'Mes formations',
+  cours:         'Mes cours',
+  apprenants:    'Mes apprenants',
+  progression:   'Progression des apprenants',
+  sessions:      'Sessions',
+  notifications: 'Notifications',
+  documents:     'Documents & Ressources',
+  messagerie:    'Messagerie',
+  profil:        'Mon profil'
+};
+
+function fprShow(id, navEl) {
+  document.querySelectorAll('.fpr-page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.fpr-item').forEach(function(n){ n.classList.remove('active'); });
+  var page = document.getElementById('fpr-' + id);
+  if (page) page.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  var t = document.getElementById('fpr-page-title');
+  if (t) t.textContent = PAGE_TITLES[id] || id;
+}
+
+/* ── Navigation par URL param ?page=X ─────────────────────────────── */
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var page = params.get('page');
+  if (page) {
+    var navEl = document.getElementById('nav-' + page);
+    if (navEl) fprShow(page, navEl);
+  }
+})();
+
+function fprGoCreerCours() {
+  var offreId = document.getElementById('fpr-first-offre-id');
+  if (offreId && offreId.value) {
+    window.location.href = contextPath + '/formateur-cours.xhtml?offreId=' + offreId.value;
+  } else {
+    fprShow('cours', document.getElementById('nav-cours'));
+  }
+}
+
+function fprGoCreerTP() {
+  var offreId = document.getElementById('fpr-first-offre-id');
+  if (offreId && offreId.value) {
+    window.location.href = contextPath + '/formateur-cours.xhtml?offreId=' + offreId.value + '&newTP=1';
+  } else {
+    fprShow('cours', document.getElementById('nav-cours'));
+  }
+}
+
+var contextPath = '#{request.contextPath}';
+
+/* ── Graphique d'activité (Chart.js) ───────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  var ctx = document.getElementById('chartActivite');
+  if (!ctx || typeof Chart === 'undefined') return;
+
+  var nbAppr  = #{formateurDashboardBean.nbApprenants};
+  var nbCours = #{formateurDashboardBean.nbCoursTotal};
+  var nbSess  = #{formateurDashboardBean.nbSessions};
+  var base    = Math.max(1, nbAppr);
+
+  function simDay(i) {
+    return Math.round(Math.max(0, base * (0.3 + 0.5 * Math.abs(Math.sin(i * 1.1 + nbCours * 0.7)))));
+  }
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+      datasets: [
+        {
+          label: 'Complétion cours',
+          data: [simDay(0), simDay(1), simDay(2), simDay(3), simDay(4), simDay(5), simDay(6)],
+          backgroundColor: 'rgba(59,130,246,0.12)',
+          borderColor: '#3B82F6',
+          borderWidth: 2,
+          borderRadius: 5,
+          order: 2
+        },
+        {
+          label: 'Sessions actives',
+          data: [
+            nbSess > 0 ? 1 : 0,
+            nbSess > 1 ? 1 : 0,
+            0, 0,
+            nbSess > 0 ? 1 : 0,
+            0, 0
+          ],
+          type: 'line',
+          fill: false,
+          borderColor: '#8B5CF6',
+          backgroundColor: '#8B5CF6',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#8B5CF6',
+          tension: 0.4,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { size: 11, family: 'Inter' }, boxWidth: 12, padding: 16 }
+        },
+        tooltip: {
+          backgroundColor: '#0F172A',
+          titleFont: { size: 12, family: 'Inter' },
+          bodyFont:  { size: 11, family: 'Inter' },
+          padding: 10
+        }
+      },
+      scales: {
+        x: {
+          grid:  { display: false },
+          ticks: { font: { size: 11, family: 'Inter' }, color: '#94A3B8' }
+        },
+        y: {
+          beginAtZero: true,
+          grid:  { color: '#F1F5F9' },
+          ticks: { font: { size: 11, family: 'Inter' }, color: '#94A3B8', precision: 0 }
+        }
+      }
+    }
+  });
+});
+//]]></script>
+
+<!-- ID de la première offre pour la redirection "Créer un cours" -->
+<h:panelGroup rendered="#{not empty formateurDashboardBean.mesOffres}" layout="block">
+  <input type="hidden" id="fpr-first-offre-id"
+         value="#{formateurDashboardBean.mesOffres[0].id}"/>
+</h:panelGroup>
+
+</h:body>
+</html>

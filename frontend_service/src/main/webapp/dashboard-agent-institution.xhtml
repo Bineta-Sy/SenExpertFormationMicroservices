@@ -1,0 +1,3089 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="title">Espace Institution — SenExpertFormation</ui:define>
+<ui:define name="content">
+
+<style>
+/* ── Reset + scope ── */
+.page-wrapper { padding:0!important; max-width:100%!important; }
+*, *::before, *::after { box-sizing:border-box; }
+
+/* ── Layout ── */
+.ai-app { display:flex; height:calc(100vh - 58px); overflow:hidden; background:#f8f9fc; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:#1a1a2e; }
+
+/* ── Sidebar ── */
+.ai-sidebar {
+  width:17rem; background:linear-gradient(190deg,#0B2545 0%,#0a1f3d 55%,#081835 100%);
+  display:flex; flex-direction:column;
+  flex-shrink:0; height:100%; overflow:hidden;
+  box-shadow:2px 0 24px rgba(0,0,0,.18);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+
+.ai-sidebar-hd {
+  padding:1.5rem; border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex; align-items:center; gap:.75rem; position:relative;
+}
+.ai-avatar {
+  width:2.75rem; height:2.75rem; background:linear-gradient(135deg,#D9A441,#c4922e);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:#0B2545; font-weight:800; font-size:.9375rem; flex-shrink:0;
+  box-shadow:0 4px 12px rgba(217,164,65,.35);
+}
+.ai-sidebar-name  { color:#fff; font-weight:700; font-size:.875rem; line-height:1.3; }
+.ai-sidebar-role  { color:#D9A441; font-size:.7rem; font-weight:700; letter-spacing:.08em; }
+.ai-sidebar-inst  { color:rgba(255,255,255,.45); font-size:.7rem; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:10.5rem; }
+
+.ai-sidebar-close {
+  display:none; position:absolute; top:1.25rem; right:1.25rem;
+  width:1.75rem; height:1.75rem; border-radius:.5rem; border:none;
+  background:rgba(255,255,255,.08); color:rgba(255,255,255,.7);
+  align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+}
+.ai-sidebar-close:hover { background:rgba(255,255,255,.16); color:#fff; }
+
+.ai-nav { flex:1; padding:1rem .75rem; display:flex; flex-direction:column; gap:.2rem; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.18) transparent; }
+.ai-nav-btn {
+  width:100%; display:flex; align-items:center; gap:.75rem;
+  padding:.6875rem .875rem; border-radius:.75rem;
+  font-size:.8438rem; font-weight:500; cursor:pointer;
+  border:none; background:none; text-align:left; position:relative;
+  color:#9fb0cc; transition:background .15s,color .15s,transform .15s; text-decoration:none;
+}
+.ai-nav-btn svg { flex-shrink:0; opacity:.85; transition:opacity .15s; }
+.ai-nav-btn:hover { background:rgba(255,255,255,.07); color:#fff; }
+.ai-nav-btn:hover svg { opacity:1; }
+.ai-nav-btn.active {
+  background:linear-gradient(135deg,#D9A441,#c4922e); color:#0B2545; font-weight:700;
+  box-shadow:0 4px 14px rgba(217,164,65,.3);
+}
+.ai-nav-btn.active svg { stroke:#0B2545; opacity:1; }
+.ai-nav-badge {
+  margin-left:auto; background:#ef4444; color:#fff;
+  font-size:.625rem; font-weight:700; padding:1px 6px; border-radius:9999px;
+  box-shadow:0 0 0 2px rgba(255,255,255,.06);
+}
+.ai-nav-btn.active .ai-nav-badge { box-shadow:0 0 0 2px rgba(11,37,69,.15); }
+.ai-sidebar-ft { padding:.875rem .75rem 1.125rem; border-top:1px solid rgba(255,255,255,.08); }
+.ai-logout {
+  width:100%; display:flex; align-items:center; gap:.75rem;
+  padding:.6875rem .875rem; border-radius:.75rem;
+  font-size:.8438rem; font-weight:500; cursor:pointer;
+  border:none; background:none; color:#9fb0cc; transition:background .15s,color .15s;
+  text-decoration:none;
+}
+.ai-logout:hover { background:rgba(248,113,113,.12); color:#f87171; }
+
+/* ── Overlay / burger (mobile drawer) ── */
+.ai-sidebar-overlay {
+  display:none; position:fixed; inset:0; background:rgba(8,20,40,.55);
+  backdrop-filter:blur(2px); z-index:45; opacity:0; transition:opacity .25s;
+}
+.ai-sidebar-overlay.show { display:block; opacity:1; }
+.ai-burger {
+  display:none; align-items:center; justify-content:center;
+  width:2.25rem; height:2.25rem; border-radius:.625rem; border:1px solid #e5e7eb;
+  background:#fff; color:#0B2545; cursor:pointer; flex-shrink:0; margin-right:.75rem;
+}
+.ai-burger:hover { background:#f8fafc; }
+
+/* ── Main ── */
+.ai-main  { flex:1; display:flex; flex-direction:column; min-width:0; }
+.ai-hdr {
+  background:rgba(255,255,255,.85); backdrop-filter:saturate(180%) blur(8px);
+  border-bottom:1px solid #f0f0f0; padding:.875rem 2rem;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0; z-index:10;
+}
+.ai-hdr-left { display:flex; align-items:center; }
+.ai-hdr-title { font-size:1.0625rem; font-weight:800; color:#0B2545; letter-spacing:-.01em; }
+.ai-hdr-sub   { font-size:.8125rem; color:#9ca3af; }
+.ai-hdr-right { display:flex; align-items:center; gap:.75rem; }
+.ai-hdr-avatar {
+  width:2.125rem; height:2.125rem; background:linear-gradient(135deg,#0B2545,#163560); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:#D9A441; font-weight:800; font-size:.75rem; flex-shrink:0;
+  box-shadow:0 2px 8px rgba(11,37,69,.25);
+}
+
+.ai-content { flex:1; padding:2rem; overflow-y:auto; }
+
+/* ── Pages ── */
+.ai-page { display:none; }
+.ai-page.active { display:block; animation:aiFade .18s ease; }
+@keyframes aiFade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Page header ── */
+.ai-page-hd   { margin-bottom:2rem; }
+.ai-page-row  { display:flex; align-items:center; gap:.75rem; margin-bottom:.25rem; }
+.ai-icon-badge {
+  width:2rem; height:2rem; background:rgba(217,164,65,.12);
+  border-radius:.5rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.ai-page-title { font-size:1.5rem; font-weight:900; color:#0B2545; }
+.ai-page-sub   { color:#9ca3af; font-size:.875rem; margin-left:2.75rem; }
+
+/* ── Nav section labels ── */
+.ai-nav-section {
+  padding:.875rem 1rem .25rem;
+  font-size:.625rem; font-weight:700; letter-spacing:.1em;
+  color:rgba(255,255,255,.3); text-transform:uppercase;
+}
+
+/* ── Stat cards ── */
+.ai-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
+.ai-stat  {
+  background:#fff; border-radius:1.125rem; border:1px solid #f0f0f0;
+  padding:1.25rem; position:relative; overflow:hidden;
+  transition:box-shadow .2s,transform .2s;
+}
+.ai-stat:hover { box-shadow:0 10px 28px rgba(11,37,69,.1); transform:translateY(-2px); }
+.ai-stat-head {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:.875rem;
+}
+.ai-stat-ico {
+  width:2.625rem; height:2.625rem; border-radius:.875rem;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  box-shadow:0 4px 10px rgba(0,0,0,.12);
+}
+.ai-stat-tag {
+  font-size:.7rem; font-weight:700; letter-spacing:.03em;
+  white-space:nowrap;
+}
+.ai-stat-val { font-size:2.125rem; font-weight:900; color:#0B2545; line-height:1.1; letter-spacing:-.02em; }
+.ai-stat-lbl { font-size:.75rem; color:#9ca3af; margin-top:.25rem; }
+.ai-stat-bar {
+  position:absolute; bottom:0; left:0; right:0; height:3px;
+}
+
+/* ── Dashboard greeting ── */
+.ai-greeting { margin-bottom:1.5rem; }
+.ai-greeting-name { font-size:1.375rem; font-weight:900; color:#0B2545; margin:0 0 .25rem; }
+.ai-greeting-sub  { font-size:.8125rem; color:#9ca3af; margin:0; }
+.ai-greeting-badge { display:inline-flex; align-items:center; gap:.25rem; font-size:.75rem; font-weight:700; }
+.ai-greeting-badge.ok     { color:#15803d; }
+.ai-greeting-badge.wait   { color:#b45309; }
+.ai-greeting-badge.inactive { color:#991b1b; }
+
+/* ── Dashboard two-col ── */
+.ai-two-col { display:grid; grid-template-columns:1.4fr 1fr; gap:1.25rem; margin-bottom:1.5rem; }
+
+/* ── Dashboard candidatures table ── */
+.ai-dash-tbl-wrap { background:#fff; border-radius:1rem; border:1px solid #f0f0f0; overflow:hidden; margin-bottom:1.5rem; }
+.ai-dash-tbl { width:100%; border-collapse:collapse; }
+.ai-dash-tbl thead tr { border-bottom:1px solid #f3f4f6; }
+.ai-dash-tbl th { padding:.625rem 1rem; font-size:.6875rem; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:.06em; text-align:left; background:#fafafa; }
+.ai-dash-tbl td { padding:.75rem 1rem; font-size:.8125rem; color:#1a1a2e; border-bottom:1px solid #f3f4f6; }
+.ai-dash-tbl tr:last-child td { border-bottom:none; }
+.ai-dash-tbl tr:hover td { background:#fafafa; }
+.ai-dash-tbl-name { font-weight:600; color:#0B2545; }
+.ai-dash-tbl-sub  { font-size:.7rem; color:#9ca3af; margin-top:2px; }
+.ai-dash-sec-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem; }
+.ai-dash-sec-title { font-weight:700; color:#0B2545; font-size:.9375rem; display:flex; align-items:center; gap:.5rem; }
+.ai-dash-badge { font-size:.6875rem; font-weight:600; padding:2px 8px; border-radius:9999px; background:#fef3c7; color:#92400e; }
+.ai-dash-badge.green { background:#dcfce7; color:#15803d; }
+.ai-dash-badge.blue  { background:#dbeafe; color:#1d4ed8; }
+
+/* ── Dashboard mini membres ── */
+.ai-mini-list { background:#fff; border-radius:1rem; border:1px solid #f0f0f0; overflow:hidden; }
+.ai-mini-row  { display:flex; align-items:center; gap:.75rem; padding:.625rem 1rem; border-bottom:1px solid #f3f4f6; }
+.ai-mini-row:last-child { border-bottom:none; }
+.ai-mini-av   { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.6875rem; font-weight:700; flex-shrink:0; }
+.ai-mini-name { font-size:.8125rem; font-weight:600; color:#0B2545; }
+.ai-mini-sub  { font-size:.7rem; color:#9ca3af; }
+.ai-mini-inst-row { display:flex; justify-content:space-between; align-items:center; padding:.5rem 1rem; border-bottom:1px solid #f3f4f6; }
+.ai-mini-inst-row:last-child { border-bottom:none; }
+.ai-mini-inst-lbl { font-size:.6875rem; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:.05em; }
+.ai-mini-inst-val { font-size:.8125rem; font-weight:600; color:#0B2545; }
+
+/* ── Activity feed ── */
+.ai-activity-item { display:flex; align-items:flex-start; gap:.75rem; padding:.75rem 0; border-bottom:1px solid #f3f4f6; }
+.ai-activity-item:last-child { border-bottom:none; padding-bottom:0; }
+.ai-activity-ico  { width:2rem; height:2rem; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.ai-activity-ico.green  { background:#dcfce7; }
+.ai-activity-ico.red    { background:#fee2e2; }
+.ai-activity-ico.blue   { background:#dbeafe; }
+.ai-activity-ico.gray   { background:#f3f4f6; }
+.ai-activity-text { font-size:.8125rem; color:#1a1a2e; line-height:1.4; }
+.ai-activity-date { font-size:.75rem; color:#9ca3af; margin-top:.2rem; }
+
+/* ── À faire ── */
+.ai-todo-card { padding:.75rem 1rem; border-radius:.75rem; margin-bottom:.5rem; }
+.ai-todo-card:last-child { margin-bottom:0; }
+.ai-todo-card.yellow { background:#fffbeb; border:1px solid #fcd34d; }
+.ai-todo-card.blue   { background:#eff6ff; border:1px solid #bfdbfe; }
+.ai-todo-title { font-size:.8125rem; font-weight:700; color:#0B2545; margin:0 0 .2rem; }
+.ai-todo-sub   { font-size:.75rem; color:#6b7280; margin:0; }
+
+/* ── Accès rapide ── */
+.ai-quick-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; }
+.ai-quick-btn  {
+  display:flex; flex-direction:column; align-items:center; gap:.5rem;
+  padding:1.125rem .5rem; border-radius:1.125rem; background:#fff;
+  border:1px solid #f0f0f0; font-size:.8125rem; font-weight:600; color:#0B2545;
+  cursor:pointer; transition:border-color .15s, box-shadow .15s, transform .15s; text-decoration:none;
+}
+.ai-quick-btn:hover { border-color:rgba(217,164,65,.5); box-shadow:0 8px 20px rgba(11,37,69,.08); transform:translateY(-2px); }
+.ai-quick-btn svg   { color:#D9A441; }
+
+/* ── Card ── */
+.ai-card      { background:#fff; border-radius:1.125rem; border:1px solid #f0f0f0; padding:1.5rem; margin-bottom:1.5rem; }
+.ai-card-hd   { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
+.ai-card-title { font-weight:700; color:#0B2545; font-size:.9375rem; }
+.ai-see-all   { color:#D9A441; font-size:.875rem; font-weight:600; text-decoration:none; }
+.ai-see-all:hover { text-decoration:underline; }
+
+/* ── Formations grid ── */
+.ai-form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:.75rem; }
+.ai-form-row  {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.875rem 1rem; border:1px solid #f0f0f0; border-radius:.75rem; gap:.5rem;
+  transition:border-color .15s,box-shadow .15s;
+}
+.ai-form-row:hover { border-color:rgba(217,164,65,.4); box-shadow:0 1px 6px rgba(0,0,0,.06); }
+.ai-form-ico {
+  width:2.5rem; height:2.5rem; background:#0B2545; border-radius:.75rem;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#D9A441;
+}
+.ai-form-info { min-width:0; flex:1; margin:0 .75rem; }
+.ai-form-name { font-weight:600; color:#0B2545; font-size:.8125rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ai-form-dur  { font-size:.75rem; color:#9ca3af; }
+
+/* Button: Inscrire */
+.ai-btn-ins { font-size:.75rem !important; background:#D9A441 !important; color:#fff !important;
+  font-weight:700 !important; padding:.375rem .75rem !important; border-radius:.5rem !important;
+  border:none !important; cursor:pointer; flex-shrink:0; transition:background .15s !important;
+  box-shadow:none !important; }
+.ai-btn-ins:hover { background:#c4922e !important; }
+.ai-btn-ins .ui-button-text { padding:0 !important; }
+
+/* ── Badges ── */
+.ai-badge { display:inline-flex; align-items:center; gap:.375rem; font-size:.8125rem; font-weight:700; padding:.375rem 1rem; border-radius:9999px; flex-shrink:0; }
+.ai-badge-green  { background:#dcfce7; color:#15803d; }
+.ai-badge-orange { background:#ffedd5; color:#c2410c; }
+.ai-badge-red    { background:#fee2e2; color:#991b1b; }
+.ai-badge-gray   { background:#f3f4f6; color:#4b5563; }
+
+/* ── Candidatures ── */
+.ai-cands { display:flex; flex-direction:column; gap:1rem; }
+.ai-cand  { background:#fff; border-radius:1rem; border:1px solid #f0f0f0; padding:1.5rem; }
+.ai-cand-top { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
+.ai-cand-title { font-weight:700; color:#0B2545; font-size:.9375rem; }
+.ai-cand-date  { font-size:.8125rem; color:#9ca3af; margin-top:.25rem; }
+.ai-cand-info  { font-size:.8125rem; color:#6b7280; margin-top:.375rem; }
+.ai-cand-foot  { margin-top:.75rem; padding-top:.75rem; border-top:1px solid #f3f4f6; }
+
+/* Annuler btn */
+.ai-btn-cancel { font-size:.75rem !important; background:#fee2e2 !important; color:#991b1b !important;
+  border:none !important; padding:.25rem .75rem !important; border-radius:.5rem !important;
+  font-weight:600 !important; cursor:pointer; box-shadow:none !important; }
+.ai-btn-cancel:hover { background:#fecaca !important; }
+.ai-btn-cancel .ui-button-text { padding:0 !important; }
+
+/* ── Membres list ── */
+.ai-membre { display:flex; align-items:center; gap:.75rem; padding:.75rem; background:#f8fafc; border-radius:.75rem; margin-bottom:.5rem; }
+.ai-membre-av { width:2rem; height:2rem; background:#0B2545; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#D9A441; font-weight:800; font-size:.75rem; flex-shrink:0; }
+.ai-membre-name { font-weight:600; font-size:.875rem; color:#0B2545; }
+.ai-membre-mail { font-size:.75rem; color:#9ca3af; }
+
+/* ── Banner ── */
+.ai-banner { display:flex; align-items:center; gap:1rem; border-radius:1rem; padding:1.25rem 1.5rem; color:#fff; margin-bottom:1.5rem; }
+.ai-banner-navy { background:linear-gradient(135deg,#0B2545,#1a3a6b); }
+.ai-banner-warn { background:linear-gradient(135deg,#92400e,#b45309); }
+.ai-banner-ico  { font-size:2rem; flex-shrink:0; }
+.ai-banner-title { font-weight:700; font-size:1rem; }
+.ai-banner-sub   { font-size:.8125rem; color:rgba(255,255,255,.75); margin-top:.25rem; }
+
+/* ── Empty ── */
+.ai-empty { background:#fff; border-radius:1rem; border:1px solid #f0f0f0; padding:4rem 2rem; text-align:center; color:#9ca3af; }
+.ai-empty svg { display:block; margin:0 auto .75rem; opacity:.3; }
+.ai-empty p { font-size:.875rem; }
+
+/* ── Info grid (institution) ── */
+.ai-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:.875rem; }
+.ai-info-label { font-weight:600; color:#0B2545; font-size:.8125rem; margin-bottom:.25rem; }
+.ai-info-val   { color:#4b5563; }
+
+/* ── Dialog paiement simple : fond opaque ── */
+#dlgPaiementSimple .ui-dialog-content,
+#dlgPaiementSimple .ui-dialog,
+#dlgPaiementSimple { background:#fff !important; }
+#dlgPaiementSimple .ui-dialog-titlebar { background:#fff !important; border-bottom:1px solid #e5e7eb !important; border-radius:12px 12px 0 0; }
+#dlgPaiementSimple .ui-dialog-content  { border-radius:0 0 12px 12px; }
+
+/* ── Dialog compat (keep legacy sef- classes for dialogs) ── */
+.sef-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; }
+.sef-btn-primary { background:#0B2545; color:#D9A441; }
+.sef-btn-primary:hover { background:#163560; }
+.sef-btn-outline  { background:#fff; color:#374151; border:1px solid #d1d5db; }
+.sef-btn-outline:hover { background:#f9fafb; }
+.sef-domain-tag   { display:inline-block; background:#e0e7ff; color:#3730a3; border-radius:6px; padding:3px 10px; font-size:12px; font-weight:600; }
+.sef-badge        { display:inline-block; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600; background:#f1f5f9; color:#475569; }
+.sef-badge-success { background:#dcfce7; color:#166534; }
+.sef-info-item label { display:block; font-size:11.5px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+.sef-info-item div  { font-size:13.5px; font-weight:600; color:#111827; }
+
+/* ── Form inputs ── */
+.ai-lbl { display:block; font-size:.75rem; font-weight:700; color:#374151; margin-bottom:.35rem; }
+.ai-inp { width:100%; padding:.5rem .75rem; border:1px solid #d1d5db; border-radius:.5rem;
+          font-size:.875rem; color:#1a1a2e; background:#fff; transition:border-color .15s; }
+.ai-inp:focus { outline:none; border-color:#D9A441; box-shadow:0 0 0 3px rgba(217,164,65,.15); }
+/* Fix datePicker calendar icon */
+#ai-carte .p-datepicker-trigger {
+  background:#0B2545 !important;
+  border-color:#0B2545 !important;
+  color:#D9A441 !important;
+  border-radius:0 .5rem .5rem 0 !important;
+  padding:.5rem .65rem !important;
+}
+#ai-carte .p-datepicker-trigger:hover {
+  background:#1a3a6b !important;
+  border-color:#1a3a6b !important;
+}
+#ai-carte .p-calendar { width:100% !important; }
+#ai-carte .p-calendar .p-inputtext { border-radius:.5rem 0 0 .5rem !important; width:100% !important; }
+.ai-btn-primary { background:#0B2545 !important; color:#D9A441 !important; border:none !important;
+                  font-size:.875rem !important; font-weight:600 !important; border-radius:.625rem !important;
+                  padding:.5rem 1.25rem !important; cursor:pointer; }
+.ai-btn-primary:hover { background:#163560 !important; }
+.ai-btn-primary .ui-button-text { padding:0 !important; }
+
+/* ── Bouton secondaire (manquant) ── */
+.ai-btn-secondary { background:#f8fafc !important; color:#0B2545 !important;
+  border:1px solid #e2e8f0 !important; font-size:.875rem !important; font-weight:600 !important;
+  border-radius:.625rem !important; padding:.5rem 1.25rem !important; cursor:pointer;
+  display:inline-flex; align-items:center; gap:.375rem; }
+.ai-btn-secondary:hover { background:#f1f5f9 !important; border-color:#cbd5e1 !important; }
+.ai-btn-secondary .ui-button-text { padding:0 !important; }
+
+/* ── Bouton outline (manquant) ── */
+.ai-btn-outline { background:#fff !important; color:#374151 !important;
+  border:1px solid #d1d5db !important; font-size:.875rem !important; font-weight:600 !important;
+  border-radius:.625rem !important; padding:.5rem 1.25rem !important; cursor:pointer; }
+.ai-btn-outline:hover { background:#f9fafb !important; }
+.ai-btn-outline .ui-button-text { padding:0 !important; }
+
+/* ── Dialog participants : classes manquantes ── */
+.dd-part-email { font-size:.75rem; color:#9ca3af; margin-top:2px; display:block; }
+.dd-part-tel   { font-size:.8125rem; color:#6b7280; min-width:120px; }
+.dd-part-statut { display:flex; align-items:center; gap:.5rem; }
+.dd-del-btn { background:none !important; color:#ef4444 !important; border:none !important;
+              padding:.25rem !important; box-shadow:none !important; cursor:pointer; }
+.dd-del-btn:hover { background:#fee2e2 !important; border-radius:.375rem !important; }
+.dd-del-btn .ui-button-icon { font-size:.875rem; }
+.dd-add-form { background:#f8fafc; border-radius:.75rem; border:1px solid #e5e7eb;
+               padding:1rem; margin-top:1rem; }
+
+/* ── Dialog boutons (manquants) ── */
+.dd-btn-add { background:#0B2545 !important; color:#D9A441 !important; border:none !important;
+  font-size:.8125rem !important; font-weight:600 !important; border-radius:.5rem !important;
+  padding:.5rem 1rem !important; cursor:pointer; margin-top:.75rem; }
+.dd-btn-add:hover { background:#163560 !important; }
+.dd-btn-add .ui-button-text { padding:0 !important; }
+.dd-btn-send { background:#0B2545 !important; color:#D9A441 !important; border:none !important;
+  border-radius:.5rem !important; padding:.5rem .75rem !important; cursor:pointer;
+  flex-shrink:0; }
+.dd-btn-send:hover { background:#163560 !important; }
+.dd-btn-primary { background:#0B2545 !important; color:#D9A441 !important; border:none !important;
+  font-size:.875rem !important; font-weight:600 !important; border-radius:.625rem !important;
+  padding:.625rem 1.5rem !important; cursor:pointer; }
+.dd-btn-primary:hover { background:#163560 !important; }
+.dd-btn-primary .ui-button-text { padding:0 !important; }
+
+/* ── Messages : wrapper manquant ── */
+.dd-msg-wrap { display:flex; flex-direction:column; }
+.dd-msg-wrap.moi   { align-items:flex-end; }
+.dd-msg-wrap.autre { align-items:flex-start; }
+.dd-msg-wrap.moi   .dd-msg-bubble { background:#0B2545; color:#fff; border-radius:12px 12px 4px 12px; }
+.dd-msg-wrap.autre .dd-msg-bubble { background:#f1f5f9; color:#1e293b; border-radius:12px 12px 12px 4px; }
+.dd-msg-bubble { max-width:75%; padding:8px 12px; font-size:13px; line-height:1.5; }
+.dd-msg-time   { font-size:.6875rem; color:#9ca3af; margin-top:3px; padding:0 4px; }
+
+/* ── Responsive tablette ── */
+@media (max-width:1100px) and (min-width:768px) {
+  .ai-stats { grid-template-columns:repeat(3,1fr); }
+  .ai-two-col { grid-template-columns:1fr; }
+  .ai-quick-grid { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ── Responsive mobile : sidebar complet en tiroir ── */
+@media (max-width:767px) {
+  .ai-burger { display:flex; }
+  .ai-sidebar-close { display:flex; }
+  .ai-sidebar {
+    position:fixed; top:0; left:0; height:100vh; z-index:46;
+    transform:translateX(-100%);
+  }
+  .ai-sidebar.open { transform:translateX(0); }
+  .ai-content { padding:1rem; }
+  .ai-stats   { grid-template-columns:repeat(2,1fr); }
+  .ai-stat-val { font-size:1.5rem; }
+  .ai-form-grid { grid-template-columns:1fr; }
+  .ai-cand-top { flex-direction:column; }
+  .ai-hdr { padding:.75rem 1rem; }
+  .ai-info-grid { grid-template-columns:1fr; }
+  .ai-two-col { grid-template-columns:1fr; }
+  .ai-quick-grid { grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:420px) {
+  .ai-stats { grid-template-columns:1fr; }
+}
+</style>
+
+<!-- ═══════════════════════════════════════
+     NOT CONNECTED
+════════════════════════════════════════ -->
+<h:panelGroup rendered="#{!sessionBean.connecte}" layout="block">
+  <script>window.location.replace('login.xhtml');</script>
+</h:panelGroup>
+
+<!-- ═══════════════════════════════════════
+     APP
+════════════════════════════════════════ -->
+<h:panelGroup rendered="#{sessionBean.connecte}" layout="block" styleClass="ai-app">
+
+  <!-- ── Sidebar ── -->
+  <aside class="ai-sidebar" id="aiSidebar">
+    <div class="ai-sidebar-hd">
+      <button type="button" class="ai-sidebar-close" onclick="aiSidebarClose()" aria-label="Fermer le menu">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <div class="ai-avatar">
+        <h:outputText value="#{not empty sessionBean.initiale ? sessionBean.initiale : sessionBean.email.substring(0,1).toUpperCase()}"/>
+      </div>
+      <div>
+        <div class="ai-sidebar-name"><h:outputText value="#{sessionBean.nomComplet}"/></div>
+        <div class="ai-sidebar-role">INSTITUTION</div>
+        <h:panelGroup rendered="#{agentInstitutionBean.institution != null}">
+          <div class="ai-sidebar-inst"><h:outputText value="#{agentInstitutionBean.institution.nom}"/></div>
+        </h:panelGroup>
+      </div>
+    </div>
+
+    <nav class="ai-nav">
+
+      <div class="ai-nav-section">TABLEAU DE BORD</div>
+      <button class="ai-nav-btn active" id="nav-dashboard" type="button"
+              onclick="aiTab('dashboard',this)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Vue d'ensemble
+      </button>
+
+      <div class="ai-nav-section">MES FORMATIONS</div>
+      <button class="ai-nav-btn" id="nav-formations" type="button"
+              onclick="aiTab('formations',this)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        Mes formations
+        <h:panelGroup rendered="#{agentInstitutionBean.nbFormationsObtenues gt 0}">
+          <span class="ai-nav-badge" style="background:#15803d;">
+            <h:outputText value="#{agentInstitutionBean.nbFormationsObtenues}"/>
+          </span>
+        </h:panelGroup>
+      </button>
+
+      <h:panelGroup rendered="#{sessionBean.permissionsMap['5008'] or sessionBean.permissionsMap['5009']}">
+        <button class="ai-nav-btn" id="nav-candidatures" type="button"
+                onclick="aiTab('candidatures',this)">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="17" x2="13" y2="17"/>
+          </svg>
+          Candidatures
+          <h:panelGroup rendered="#{agentInstitutionBean.nbDemandesEnAttente gt 0}">
+            <span class="ai-nav-badge"><h:outputText value="#{agentInstitutionBean.nbDemandesEnAttente}"/></span>
+          </h:panelGroup>
+        </button>
+      </h:panelGroup>
+
+      <button class="ai-nav-btn" id="nav-carte" type="button"
+              onclick="aiTab('carte',this)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="1"/>
+          <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+        </svg>
+        &#192; la carte
+        <h:panelGroup rendered="#{agentInstitutionBean.nbDemandesLibresEnAttente gt 0}">
+          <span class="ai-nav-badge" style="background:#7c3aed;">
+            <h:outputText value="#{agentInstitutionBean.nbDemandesLibresEnAttente}"/>
+          </span>
+        </h:panelGroup>
+      </button>
+
+      <h:outputLink value="catalogue.xhtml" styleClass="ai-nav-btn">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        Catalogue des offres
+      </h:outputLink>
+
+      <div class="ai-nav-section">MON INSTITUTION</div>
+      <button class="ai-nav-btn" id="nav-institution" type="button"
+              onclick="aiTab('institution',this)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21V9h6v12"/>
+        </svg>
+        Fiche institution
+      </button>
+
+      <button class="ai-nav-btn" id="nav-membres" type="button"
+              onclick="aiTab('membres',this)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Membres
+        <h:panelGroup rendered="#{agentInstitutionBean.nbMembres gt 0}">
+          <span class="ai-nav-badge" style="background:#0B2545;">
+            <h:outputText value="#{agentInstitutionBean.nbMembres}"/>
+          </span>
+        </h:panelGroup>
+      </button>
+
+      <div class="ai-nav-section">MON ESPACE</div>
+      <button class="ai-nav-btn" id="nav-messagerie" type="button"
+              onclick="aiTab('messagerie',this)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Messagerie
+      </button>
+
+      <button class="ai-nav-btn" id="nav-compte" type="button"
+              onclick="aiTab('compte',this)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Mon compte
+      </button>
+
+    </nav>
+
+    <div class="ai-sidebar-ft">
+      <h:commandLink action="#{authBean.logout}" styleClass="ai-logout">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Déconnexion
+      </h:commandLink>
+    </div>
+  </aside>
+
+  <!-- Overlay tiroir mobile -->
+  <div class="ai-sidebar-overlay" id="aiSidebarOverlay" onclick="aiSidebarClose()"></div>
+
+  <!-- ── Main ── -->
+  <div class="ai-main">
+
+    <!-- Header -->
+    <header class="ai-hdr">
+      <div class="ai-hdr-left">
+        <button type="button" class="ai-burger" onclick="aiSidebarOpen()" aria-label="Ouvrir le menu">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div>
+          <div class="ai-hdr-title" id="ai-hdr-title">Tableau de bord</div>
+          <div class="ai-hdr-sub" id="ai-hdr-sub">Vue d'ensemble de votre activité</div>
+        </div>
+      </div>
+      <div class="ai-hdr-right">
+        <div class="ai-hdr-avatar">
+          <h:outputText value="#{not empty sessionBean.initiale ? sessionBean.initiale : sessionBean.email.substring(0,1).toUpperCase()}"/>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="ai-content">
+      <p:messages id="aiMsgs" showDetail="true" closable="true" style="margin-bottom:1rem;font-size:13px;"/>
+
+      <!-- ═════════════════════════════
+           PAGE : DASHBOARD
+      ══════════════════════════════ -->
+      <div id="ai-dashboard" class="ai-page active">
+
+        <!-- Greeting -->
+        <div class="ai-greeting">
+          <p class="ai-greeting-name">
+            Bonjour, <h:outputText value="#{sessionBean.nomComplet}"/>
+          </p>
+          <p class="ai-greeting-sub">
+            <h:panelGroup rendered="#{agentInstitutionBean.institution != null}">
+              <h:outputText value="#{agentInstitutionBean.institution.nom}"/>&#160;&#183;&#160;
+              Statut institution :&#160;
+              <span class="ai-greeting-badge #{agentInstitutionBean.institutionActive ? 'ok' : (agentInstitutionBean.institutionEnAttente ? 'wait' : 'inactive')}">
+                <h:outputText value="#{agentInstitutionBean.statutInstitution}"/>
+              </span>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{agentInstitutionBean.institution == null}">
+              Aucune institution rattachée.
+            </h:panelGroup>
+          </p>
+        </div>
+
+        <!-- Bannière attente -->
+        <h:panelGroup rendered="#{agentInstitutionBean.institutionEnAttente}" layout="block">
+          <div class="ai-banner ai-banner-warn" style="margin-bottom:1.5rem;">
+            <div class="ai-banner-ico">&#9203;</div>
+            <div>
+              <div class="ai-banner-title">Institution en attente de validation</div>
+              <div class="ai-banner-sub">Les candidatures seront disponibles après validation par l'administrateur.</div>
+            </div>
+          </div>
+        </h:panelGroup>
+
+        <!-- Stat cards -->
+        <div class="ai-stats">
+
+          <!-- Candidatures -->
+          <div class="ai-stat">
+            <div class="ai-stat-head">
+              <div class="ai-stat-ico" style="background:#0B2545;">
+                <svg width="18" height="18" fill="none" stroke="#D9A441" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="5" y="2" width="14" height="20" rx="2"/>
+                  <line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="12" x2="15" y2="12"/>
+                </svg>
+              </div>
+              <span class="ai-stat-tag" style="color:#0B2545;">total</span>
+            </div>
+            <div class="ai-stat-val"><h:outputText value="#{agentInstitutionBean.nbDemandes}"/></div>
+            <div class="ai-stat-lbl">Candidatures</div>
+            <div class="ai-stat-bar" style="background:#0B2545;"></div>
+          </div>
+
+          <!-- Validées -->
+          <div class="ai-stat">
+            <div class="ai-stat-head">
+              <div class="ai-stat-ico" style="background:#22c55e;">
+                <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </div>
+              <span class="ai-stat-tag" style="color:#16a34a;">accept&#233;es</span>
+            </div>
+            <div class="ai-stat-val" style="color:#16a34a;"><h:outputText value="#{agentInstitutionBean.nbDemandesValidees}"/></div>
+            <div class="ai-stat-lbl">Valid&#233;es</div>
+            <div class="ai-stat-bar" style="background:#22c55e;"></div>
+          </div>
+
+          <!-- En attente -->
+          <div class="ai-stat">
+            <div class="ai-stat-head">
+              <div class="ai-stat-ico" style="background:#f59e0b;">
+                <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <span class="ai-stat-tag" style="color:#b45309;">&#224; traiter</span>
+            </div>
+            <div class="ai-stat-val" style="color:#b45309;"><h:outputText value="#{agentInstitutionBean.nbDemandesEnAttente}"/></div>
+            <div class="ai-stat-lbl">En attente</div>
+            <div class="ai-stat-bar" style="background:#f59e0b;"></div>
+          </div>
+
+          <!-- Membres -->
+          <div class="ai-stat">
+            <div class="ai-stat-head">
+              <div class="ai-stat-ico" style="background:#D9A441;">
+                <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <span class="ai-stat-tag" style="color:#92400e;">inscrits</span>
+            </div>
+            <div class="ai-stat-val"><h:outputText value="#{agentInstitutionBean.nbMembres}"/></div>
+            <div class="ai-stat-lbl">Membres</div>
+            <div class="ai-stat-bar" style="background:#D9A441;"></div>
+          </div>
+
+          <!-- Carte en attente -->
+          <div class="ai-stat">
+            <div class="ai-stat-head">
+              <div class="ai-stat-ico" style="background:#7c3aed;">
+                <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <span class="ai-stat-tag" style="color:#6d28d9;">sur mesure</span>
+            </div>
+            <div class="ai-stat-val" style="color:#7c3aed;"><h:outputText value="#{agentInstitutionBean.nbDemandesLibresEnAttente}"/></div>
+            <div class="ai-stat-lbl">Carte en attente</div>
+            <div class="ai-stat-bar" style="background:#7c3aed;"></div>
+          </div>
+
+          <!-- Formations sur mesure -->
+          <div class="ai-stat">
+            <div class="ai-stat-head">
+              <div class="ai-stat-ico" style="background:#0d9488;">
+                <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+              </div>
+              <span class="ai-stat-tag" style="color:#0f766e;">publi&#233;es</span>
+            </div>
+            <div class="ai-stat-val" style="color:#0d9488;"><h:outputText value="#{agentInstitutionBean.nbFormationsSurMesure}"/></div>
+            <div class="ai-stat-lbl">Formations sur mesure</div>
+            <div class="ai-stat-bar" style="background:#0d9488;"></div>
+          </div>
+
+        </div>
+
+        <!-- Table : candidatures à suivre -->
+        <div>
+          <div class="ai-dash-sec-hd">
+            <div class="ai-dash-sec-title">
+              <svg width="16" height="16" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/>
+                <line x1="9" y1="12" x2="15" y2="12"/>
+              </svg>
+              Candidatures à suivre
+              <h:panelGroup rendered="#{agentInstitutionBean.nbDemandesEnAttente gt 0}">
+                <span class="ai-dash-badge"><h:outputText value="#{agentInstitutionBean.nbDemandesEnAttente}"/> en attente</span>
+              </h:panelGroup>
+            </div>
+            <button type="button" class="ai-see-all" style="background:none;border:none;cursor:pointer;font-size:.8125rem;"
+                    onclick="aiTab('candidatures', document.getElementById('nav-candidatures'))">
+              Voir toutes &#8594;
+            </button>
+          </div>
+          <div class="ai-dash-tbl-wrap">
+            <h:panelGroup rendered="#{empty agentInstitutionBean.mesDemandes}" layout="block">
+              <div style="padding:2rem;text-align:center;color:#9ca3af;font-size:.8125rem;">Aucune candidature pour le moment.</div>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{not empty agentInstitutionBean.mesDemandes}" layout="block">
+              <table class="ai-dash-tbl">
+                <thead>
+                  <tr>
+                    <th>Formation</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ui:repeat value="#{agentInstitutionBean.mesDemandes}" var="dem">
+                    <tr>
+                      <td>
+                        <div class="ai-dash-tbl-name">
+                          <h:panelGroup rendered="#{dem.offre != null}">
+                            <h:outputText value="#{dem.offre.titre}"/>
+                          </h:panelGroup>
+                          <h:panelGroup rendered="#{dem.offre == null}">
+                            Formation #<h:outputText value="#{dem.id}"/>
+                          </h:panelGroup>
+                        </div>
+                        <h:panelGroup rendered="#{dem.offre != null and not empty dem.offre.duree}" layout="block">
+                          <div class="ai-dash-tbl-sub"><h:outputText value="#{dem.offre.duree}"/></div>
+                        </h:panelGroup>
+                      </td>
+                      <td style="color:#9ca3af;font-size:.8125rem;">
+                        <h:outputText value="#{dem.dateDemande}"/>
+                      </td>
+                      <td>
+                        <h:panelGroup rendered="#{dem.statut eq 'VALIDEE'}">
+                          <span class="ai-badge ai-badge-green">&#10003; Valid&#233;e</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}">
+                          <span class="ai-badge ai-badge-orange">&#9203; En attente</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{dem.statut eq 'REJETEE'}">
+                          <span class="ai-badge ai-badge-red">&#10007; Rejet&#233;e</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{dem.statut ne 'VALIDEE' and dem.statut ne 'EN_ATTENTE' and dem.statut ne 'REJETEE'}">
+                          <span class="ai-badge ai-badge-gray"><h:outputText value="#{dem.statut}"/></span>
+                        </h:panelGroup>
+                      </td>
+                      <td>
+                        <h:form>
+                          <p:commandButton value="D&#233;tails" icon="pi pi-external-link"
+                                           styleClass="ai-btn-cancel"
+                                           style="font-size:.75rem;padding:.25rem .625rem;background:#0B2545;color:#D9A441;border-color:#0B2545;"
+                                           action="#{agentInstitutionBean.ouvrirDetailDemande(dem)}"
+                                           update=":fDetailDemande"
+                                           oncomplete="PF('wvDetailDemande').show(); ddTab('participants');"/>
+                        </h:form>
+                      </td>
+                    </tr>
+                  </ui:repeat>
+                </tbody>
+              </table>
+            </h:panelGroup>
+          </div>
+        </div>
+
+        <!-- Deux colonnes : membres + institution -->
+        <div class="ai-two-col">
+
+          <!-- Mini membres -->
+          <div>
+            <div class="ai-dash-sec-hd">
+              <div class="ai-dash-sec-title">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Membres
+                <span class="ai-dash-badge green"><h:outputText value="#{agentInstitutionBean.nbMembres}"/> actifs</span>
+              </div>
+              <button type="button" class="ai-see-all" style="background:none;border:none;cursor:pointer;font-size:.8125rem;"
+                      onclick="aiTab('membres', document.getElementById('nav-membres'))">
+                Voir tout &#8594;
+              </button>
+            </div>
+            <div class="ai-mini-list">
+              <h:panelGroup rendered="#{empty agentInstitutionBean.membres}" layout="block">
+                <div style="padding:1.5rem;text-align:center;color:#9ca3af;font-size:.8125rem;">Aucun membre li&#233; &#224; cette institution.</div>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{not empty agentInstitutionBean.membres}" layout="block">
+                <ui:repeat value="#{agentInstitutionBean.membres}" var="m">
+                  <div class="ai-mini-row">
+                    <div class="ai-mini-av" style="background:#dbeafe;color:#1d4ed8;">
+                      <h:outputText value="#{not empty m.nom ? m.nom.substring(0,1).toUpperCase() : '?'}"/>
+                    </div>
+                    <div>
+                      <div class="ai-mini-name"><h:outputText value="#{m.prenom} #{m.nom}"/></div>
+                      <div class="ai-mini-sub"><h:outputText value="#{m.email}"/></div>
+                    </div>
+                  </div>
+                </ui:repeat>
+              </h:panelGroup>
+            </div>
+          </div>
+
+          <!-- Mini institution -->
+          <div>
+            <div class="ai-dash-sec-hd">
+              <div class="ai-dash-sec-title">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21V9h6v12"/>
+                </svg>
+                Mon institution
+                <h:panelGroup rendered="#{agentInstitutionBean.institutionActive}">
+                  <span class="ai-dash-badge green">Valid&#233;e</span>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{agentInstitutionBean.institutionEnAttente}">
+                  <span class="ai-dash-badge">En attente</span>
+                </h:panelGroup>
+              </div>
+              <button type="button" class="ai-see-all" style="background:none;border:none;cursor:pointer;font-size:.8125rem;"
+                      onclick="aiTab('institution', document.getElementById('nav-institution'))">
+                Modifier &#8594;
+              </button>
+            </div>
+            <h:panelGroup rendered="#{agentInstitutionBean.institution != null}" layout="block">
+              <div class="ai-mini-list">
+                <div class="ai-mini-row" style="gap:.75rem;">
+                  <div style="width:36px;height:36px;border-radius:.625rem;background:rgba(11,37,69,.08);
+                              display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#0B2545;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21V9h6v12"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="ai-mini-name" style="font-size:.875rem;"><h:outputText value="#{agentInstitutionBean.institution.nom}"/></div>
+                    <h:panelGroup rendered="#{not empty agentInstitutionBean.institution.secteur}" layout="block">
+                      <div class="ai-mini-sub"><h:outputText value="#{agentInstitutionBean.institution.secteur}"/></div>
+                    </h:panelGroup>
+                  </div>
+                </div>
+                <h:panelGroup rendered="#{not empty agentInstitutionBean.institution.type}" layout="block">
+                  <div class="ai-mini-inst-row">
+                    <span class="ai-mini-inst-lbl">Type</span>
+                    <span class="ai-mini-inst-val"><h:outputText value="#{agentInstitutionBean.institution.type}"/></span>
+                  </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not empty agentInstitutionBean.institution.ninea}" layout="block">
+                  <div class="ai-mini-inst-row">
+                    <span class="ai-mini-inst-lbl">NINEA</span>
+                    <span class="ai-mini-inst-val"><h:outputText value="#{agentInstitutionBean.institution.ninea}"/></span>
+                  </div>
+                </h:panelGroup>
+                <div class="ai-mini-inst-row">
+                  <span class="ai-mini-inst-lbl">Statut</span>
+                  <h:panelGroup rendered="#{agentInstitutionBean.institutionActive}">
+                    <span class="ai-badge ai-badge-green">&#10003; Valid&#233;e</span>
+                  </h:panelGroup>
+                  <h:panelGroup rendered="#{agentInstitutionBean.institutionEnAttente}">
+                    <span class="ai-badge ai-badge-orange">&#9203; En attente</span>
+                  </h:panelGroup>
+                </div>
+              </div>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{agentInstitutionBean.institution == null}" layout="block">
+              <div class="ai-mini-list">
+                <div style="padding:1.5rem;text-align:center;color:#9ca3af;font-size:.8125rem;">Aucune institution rattach&#233;e.</div>
+              </div>
+            </h:panelGroup>
+          </div>
+
+        </div><!-- /two-col -->
+
+        <!-- Formations sur mesure -->
+        <h:panelGroup rendered="#{agentInstitutionBean.nbFormationsSurMesure gt 0}" layout="block">
+          <div class="ai-card">
+            <div class="ai-card-hd">
+              <span class="ai-card-title">&#128218; Mes formations sur mesure</span>
+              <button type="button" class="ai-see-all" style="background:none;border:none;cursor:pointer;"
+                      onclick="aiTab('carte', document.getElementById('nav-carte'))">
+                Voir mes demandes &#8594;
+              </button>
+            </div>
+            <ui:repeat value="#{agentInstitutionBean.formationsSurMesure}" var="dl">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:.625rem .75rem;border-radius:.625rem;background:#f0fdf4;border:1px solid #bbf7d0;margin-bottom:.5rem;">
+                <div style="display:flex;align-items:center;gap:.625rem;">
+                  <div style="width:34px;height:34px;border-radius:.5rem;background:#0d9488;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style="font-size:.8125rem;font-weight:700;color:#0B2545;">
+                      Formation sur mesure &#8212; <h:outputText value="#{dl.domaine}"/>
+                    </div>
+                    <div style="font-size:.75rem;color:#6b7280;">
+                      <h:outputText value="#{dl.nbParticipants}"/> participant(s)
+                      <h:panelGroup rendered="#{not empty dl.periodeDebut}">
+                        &#160;&#183;&#160;<h:outputText value="#{dl.periodeDebut}"/>
+                      </h:panelGroup>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                  <span style="font-size:11px;font-weight:600;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:999px;">&#10003; Valid&#233;e</span>
+                  <h:panelGroup rendered="#{dl.offreId != null}">
+                    <a href="#{request.contextPath}/ma-formation.xhtml?offreId=#{dl.offreId}"
+                       style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;background:#dbeafe;color:#1d4ed8;text-decoration:none;border:1px solid #bfdbfe;">
+                      &#128218; Voir la formation
+                    </a>
+                  </h:panelGroup>
+                  <h:panelGroup rendered="#{dl.offreId == null}">
+                    <span style="font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:999px;">&#9203; En pr&#233;paration</span>
+                  </h:panelGroup>
+                </div>
+              </div>
+            </ui:repeat>
+          </div>
+        </h:panelGroup>
+
+        <!-- Accès rapide -->
+        <div class="ai-card" style="margin-bottom:0;">
+          <div class="ai-card-hd" style="margin-bottom:.875rem;">
+            <span class="ai-card-title">Acc&#232;s rapide</span>
+          </div>
+          <div class="ai-quick-grid">
+            <h:outputLink value="catalogue.xhtml" styleClass="ai-quick-btn">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              Catalogue offres
+            </h:outputLink>
+            <button type="button" class="ai-quick-btn"
+                    onclick="aiTab('carte', document.getElementById('nav-carte'))">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Demande &#224; la carte
+            </button>
+            <button type="button" class="ai-quick-btn"
+                    onclick="aiTab('institution', document.getElementById('nav-institution'))">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              Membres
+            </button>
+            <button type="button" class="ai-quick-btn"
+                    onclick="aiTab('institution', document.getElementById('nav-institution'))">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21V9h6v12"/>
+              </svg>
+              Mon institution
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /dashboard -->
+
+
+      <!-- ═════════════════════════════
+           PAGE : MES FORMATIONS
+      ══════════════════════════════ -->
+      <div id="ai-formations" class="ai-page">
+
+        <div class="ai-page-hd">
+          <div class="ai-page-row">
+            <div class="ai-icon-badge">
+              <svg width="16" height="16" fill="none" stroke="#D9A441" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+            </div>
+            <h2 class="ai-page-title">Mes formations</h2>
+          </div>
+          <p class="ai-page-sub">Formations valid&#233;es — candidatures accept&#233;es et demandes sur mesure.</p>
+        </div>
+
+        <h:panelGroup id="pgFormationsSections" layout="block">
+        <!-- Section 0 : En attente de paiement (VALIDEE) -->
+        <h:panelGroup rendered="#{agentInstitutionBean.nbDemandesEnAttentePaiement gt 0}" layout="block">
+          <div class="ai-card" style="margin-bottom:1.25rem;border-color:#fde68a;">
+            <div class="ai-card-hd" style="margin-bottom:.875rem;">
+              <span class="ai-card-title">
+                <svg width="14" height="14" fill="none" stroke="#b45309" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+                En attente de paiement
+                <span style="background:#fef3c7;color:#b45309;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-left:6px;">
+                  <h:outputText value="#{agentInstitutionBean.nbDemandesEnAttentePaiement}"/>
+                </span>
+              </span>
+              <span style="font-size:.75rem;color:#b45309;font-weight:600;">Paiement requis pour confirmer</span>
+            </div>
+            <h:form id="fPaiementAttente">
+              <ui:repeat value="#{agentInstitutionBean.demandesEnAttentePaiement}" var="dem">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;
+                            border-radius:.75rem;background:#fffbeb;border:1px solid #fde68a;margin-bottom:.625rem;gap:.75rem;">
+                  <div style="display:flex;align-items:center;gap:.75rem;min-width:0;flex:1;">
+                    <div style="width:36px;height:36px;background:#f59e0b;border-radius:.625rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                      </svg>
+                    </div>
+                    <div style="min-width:0;">
+                      <div style="font-size:.875rem;font-weight:700;color:#0B2545;">
+                        <h:panelGroup rendered="#{dem.offre != null}"><h:outputText value="#{dem.offre.titre}"/></h:panelGroup>
+                        <h:panelGroup rendered="#{dem.offre == null}">Formation #<h:outputText value="#{dem.id}"/></h:panelGroup>
+                      </div>
+                      <div style="font-size:.75rem;color:#92400e;margin-top:2px;font-weight:600;">
+                        &#9203; Candidature accept&#233;e — paiement requis pour confirmer votre inscription
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0;">
+                    <span class="ai-badge ai-badge-orange">&#9203; Paiement requis</span>
+                    <p:commandButton value="Payer" icon="pi pi-credit-card"
+                                     styleClass="ai-btn-cancel"
+                                     style="font-size:.75rem;padding:.25rem .75rem;background:#f59e0b;color:#fff;border-color:#f59e0b;"
+                                     action="#{agentInstitutionBean.ouvrirDetailDemande(dem)}"
+                                     update=":fPaiementSimple"
+                                     oncomplete="PF('wvPaiementSimple').show();"/>
+                  </div>
+                </div>
+              </ui:repeat>
+            </h:form>
+          </div>
+        </h:panelGroup>
+
+        <!-- Section 1 : Formations confirmées (CONFIRMEE = payées) -->
+        <div class="ai-card" style="margin-bottom:1.25rem;">
+          <div class="ai-card-hd" style="margin-bottom:.875rem;">
+            <span class="ai-card-title">
+              <svg width="14" height="14" fill="none" stroke="#15803d" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Formations confirm&#233;es
+              <span style="background:#dcfce7;color:#15803d;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-left:6px;">
+                <h:outputText value="#{agentInstitutionBean.nbDemandesConfirmees}"/>
+              </span>
+            </span>
+          </div>
+
+          <h:panelGroup rendered="#{empty agentInstitutionBean.mesFormationsValidees}" layout="block">
+            <p style="font-size:.8125rem;color:#9ca3af;font-style:italic;padding:.5rem 0;">Aucune formation confirm&#233;e pour le moment. Le paiement est requis apr&#232;s acceptation.</p>
+          </h:panelGroup>
+
+          <h:panelGroup rendered="#{not empty agentInstitutionBean.mesFormationsValidees}" layout="block">
+            <h:form id="fFormationsValideesInst">
+              <ui:repeat value="#{agentInstitutionBean.mesFormationsValidees}" var="dem">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;
+                            border-radius:.75rem;background:#f0fdf4;border:1px solid #bbf7d0;margin-bottom:.625rem;gap:.75rem;">
+                  <div style="display:flex;align-items:center;gap:.75rem;min-width:0;flex:1;">
+                    <div style="width:36px;height:36px;background:#15803d;border-radius:.625rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </div>
+                    <div style="min-width:0;">
+                      <div style="font-size:.875rem;font-weight:700;color:#0B2545;">
+                        <h:panelGroup rendered="#{dem.offre != null}"><h:outputText value="#{dem.offre.titre}"/></h:panelGroup>
+                        <h:panelGroup rendered="#{dem.offre == null}">Formation #<h:outputText value="#{dem.id}"/></h:panelGroup>
+                      </div>
+                      <div style="font-size:.75rem;color:#6b7280;margin-top:2px;">
+                        <h:panelGroup rendered="#{not empty dem.dateDemande}">
+                          Confirm&#233;e le <h:outputText value="#{dem.dateDemande}"/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{dem.offre != null and not empty dem.offre.duree}">
+                          &#160;&#183;&#160;<h:outputText value="#{dem.offre.duree}"/>
+                        </h:panelGroup>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0;">
+                    <span class="ai-badge ai-badge-green">&#10003; Confirm&#233;e</span>
+                    <p:commandButton value="D&#233;tails" icon="pi pi-external-link"
+                                     styleClass="ai-btn-cancel"
+                                     style="font-size:.75rem;padding:.25rem .625rem;background:#0B2545;color:#D9A441;border-color:#0B2545;"
+                                     action="#{agentInstitutionBean.ouvrirDetailDemande(dem)}"
+                                     update=":fDetailDemande"
+                                     oncomplete="PF('wvDetailDemande').show(); ddTab('participants');"/>
+                  </div>
+                </div>
+              </ui:repeat>
+            </h:form>
+          </h:panelGroup>
+        </div>
+        </h:panelGroup><!-- /pgFormationsSections -->
+
+        <!-- Section 2 : Formations sur mesure validées -->
+        <div class="ai-card">
+          <div class="ai-card-hd" style="margin-bottom:.875rem;">
+            <span class="ai-card-title">
+              <svg width="14" height="14" fill="none" stroke="#0d9488" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+              Formations sur mesure
+              <span style="background:#ccfbf1;color:#0f766e;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-left:6px;">
+                <h:outputText value="#{agentInstitutionBean.nbFormationsSurMesure}"/>
+              </span>
+            </span>
+            <button type="button" class="ai-see-all" style="background:none;border:none;cursor:pointer;font-size:.8125rem;"
+                    onclick="aiTab('carte', document.getElementById('nav-carte'))">
+              Toutes mes demandes &#8594;
+            </button>
+          </div>
+
+          <h:panelGroup rendered="#{empty agentInstitutionBean.formationsSurMesure}" layout="block">
+            <p style="font-size:.8125rem;color:#9ca3af;font-style:italic;padding:.5rem 0;">Aucune formation sur mesure valid&#233;e.</p>
+          </h:panelGroup>
+
+          <h:panelGroup rendered="#{not empty agentInstitutionBean.formationsSurMesure}" layout="block">
+            <ui:repeat value="#{agentInstitutionBean.formationsSurMesure}" var="dl">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;
+                          border-radius:.75rem;background:#f0fdfa;border:1px solid #99f6e4;margin-bottom:.625rem;gap:.75rem;">
+                <div style="display:flex;align-items:center;gap:.75rem;min-width:0;flex:1;">
+                  <div style="width:36px;height:36px;background:#0d9488;border-radius:.625rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                  </div>
+                  <div style="min-width:0;">
+                    <div style="font-size:.875rem;font-weight:700;color:#0B2545;">
+                      Formation sur mesure — <h:outputText value="#{dl.domaine}"/>
+                    </div>
+                    <div style="font-size:.75rem;color:#6b7280;margin-top:2px;">
+                      <h:outputText value="#{dl.nbParticipants}"/> participant(s)
+                      <h:panelGroup rendered="#{not empty dl.periodeDebut}">
+                        &#160;&#183;&#160;<h:outputText value="#{dl.periodeDebut}"/>
+                      </h:panelGroup>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0;">
+                  <span class="ai-badge ai-badge-green">&#10003; Valid&#233;e</span>
+                  <h:panelGroup rendered="#{dl.offreId != null}">
+                    <a href="#{request.contextPath}/ma-formation.xhtml?offreId=#{dl.offreId}"
+                       style="font-size:.75rem;font-weight:600;padding:.25rem .625rem;border-radius:.5rem;
+                              background:#dbeafe;color:#1d4ed8;text-decoration:none;border:1px solid #bfdbfe;">
+                      Voir la formation
+                    </a>
+                  </h:panelGroup>
+                </div>
+              </div>
+            </ui:repeat>
+          </h:panelGroup>
+        </div>
+
+      </div><!-- /formations -->
+
+
+      <!-- ═════════════════════════════
+           PAGE : CANDIDATURES
+      ══════════════════════════════ -->
+      <div id="ai-candidatures" class="ai-page">
+
+        <div class="ai-page-hd">
+          <div class="ai-page-row">
+            <div class="ai-icon-badge">
+              <svg width="16" height="16" fill="none" stroke="#D9A441" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                <line x1="9" y1="7" x2="15" y2="7"/>
+              </svg>
+            </div>
+            <h2 class="ai-page-title">Nos candidatures</h2>
+          </div>
+          <p class="ai-page-sub">Suivez l'état des candidatures soumises par votre institution.</p>
+        </div>
+
+        <h:panelGroup rendered="#{empty agentInstitutionBean.mesDemandes}" layout="block">
+          <div class="ai-empty">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/>
+            </svg>
+            <p>Aucune candidature soumise pour le moment.</p>
+          </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{not empty agentInstitutionBean.mesDemandes}" layout="block">
+          <h:form id="fCandidatures">
+            <div class="ai-cands">
+              <ui:repeat value="#{agentInstitutionBean.mesDemandes}" var="dem">
+                <div class="ai-cand">
+                  <div class="ai-cand-top">
+                    <div style="min-width:0;flex:1;">
+                      <div class="ai-cand-title">
+                        <h:panelGroup rendered="#{dem.offre != null}">
+                          <h:outputText value="#{dem.offre.titre}"/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{dem.offre == null}">
+                          Formation #<h:outputText value="#{dem.offreId}"/>
+                        </h:panelGroup>
+                      </div>
+                      <div class="ai-cand-date">
+                        <h:panelGroup rendered="#{not empty dem.dateDemande}">
+                          Déposée le <h:outputText value="#{dem.dateDemande}"/>
+                        </h:panelGroup>
+                      </div>
+                      <div class="ai-cand-info">
+                        <h:panelGroup rendered="#{not empty dem.fichierParticipantsNom}">
+                          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px;">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                          </svg>
+                          Liste de participants fournie
+                        </h:panelGroup>
+                      </div>
+                    </div>
+                    <div>
+                      <h:panelGroup rendered="#{dem.statut eq 'VALIDEE'}">
+                        <span class="ai-badge ai-badge-green">✓ Validée</span>
+                      </h:panelGroup>
+                      <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}">
+                        <span class="ai-badge ai-badge-orange">⏳ En attente</span>
+                      </h:panelGroup>
+                      <h:panelGroup rendered="#{dem.statut eq 'REJETEE'}">
+                        <span class="ai-badge ai-badge-red">✗ Rejetée</span>
+                      </h:panelGroup>
+                      <h:panelGroup rendered="#{dem.statut ne 'VALIDEE' and dem.statut ne 'EN_ATTENTE' and dem.statut ne 'REJETEE'}">
+                        <span class="ai-badge ai-badge-gray"><h:outputText value="#{dem.statut}"/></span>
+                      </h:panelGroup>
+                    </div>
+                  </div>
+                  <div class="ai-cand-foot" style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
+                    <!-- Bouton Détail (toujours visible pour les demandes validées) -->
+                    <p:commandButton value="Voir les détails" icon="pi pi-external-link"
+                                     styleClass="ai-btn-cancel"
+                                     style="background:#0B2545;color:#D9A441;border-color:#0B2545;"
+                                     action="#{agentInstitutionBean.ouvrirDetailDemande(dem)}"
+                                     update=":fDetailDemande"
+                                     oncomplete="PF('wvDetailDemande').show(); ddTab('participants');"/>
+                    <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}" layout="block">
+                      <p:commandButton value="Annuler" styleClass="ai-btn-cancel"
+                                       action="#{agentInstitutionBean.annulerDemande(dem.id)}"
+                                       onclick="return confirm('Confirmer l\'annulation ?')"
+                                       update=":fCandidatures :aiMsgs"/>
+                    </h:panelGroup>
+                  </div>
+                </div>
+              </ui:repeat>
+            </div>
+          </h:form>
+        </h:panelGroup>
+
+      </div><!-- /candidatures -->
+
+
+      <!-- ═════════════════════════════
+           PAGE : INSTITUTION
+      ══════════════════════════════ -->
+      <div id="ai-institution" class="ai-page">
+
+        <div class="ai-page-hd">
+          <div class="ai-page-row">
+            <div class="ai-icon-badge">
+              <svg width="16" height="16" fill="none" stroke="#D9A441" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21V9h6v12"/>
+              </svg>
+            </div>
+            <h2 class="ai-page-title">Mon institution</h2>
+          </div>
+          <p class="ai-page-sub">Informations et statut de validation.</p>
+        </div>
+
+        <h:panelGroup rendered="#{agentInstitutionBean.institution == null}" layout="block">
+          <div class="ai-empty">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21V9h6v12"/>
+            </svg>
+            <p>Aucune institution associée à votre compte.</p>
+          </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{agentInstitutionBean.institution != null}" layout="block">
+
+          <!-- Statut banner -->
+          <h:panelGroup rendered="#{agentInstitutionBean.institutionActive}" layout="block">
+            <div class="ai-banner ai-banner-navy" style="margin-bottom:1.5rem;">
+              <div class="ai-banner-ico">✓</div>
+              <div>
+                <div class="ai-banner-title"><h:outputText value="#{agentInstitutionBean.institution.nom}"/> — Validée</div>
+                <div class="ai-banner-sub">
+                  Votre institution a été approuvée. Vous pouvez soumettre des candidatures.
+                  <h:panelGroup rendered="#{not empty agentInstitutionBean.institution.dateValidation}">
+                    Depuis le <h:outputText value="#{agentInstitutionBean.institution.dateValidation}"/>.
+                  </h:panelGroup>
+                </div>
+              </div>
+            </div>
+          </h:panelGroup>
+          <h:panelGroup rendered="#{agentInstitutionBean.institutionEnAttente}" layout="block">
+            <div class="ai-banner ai-banner-warn" style="margin-bottom:1.5rem;">
+              <div class="ai-banner-ico">⏳</div>
+              <div>
+                <div class="ai-banner-title">En attente de validation</div>
+                <div class="ai-banner-sub">Votre dossier est en cours d'examen par l'administrateur.</div>
+              </div>
+            </div>
+          </h:panelGroup>
+
+          <!-- Fiche institution -->
+          <h:form id="fInstitution">
+          <div class="ai-card">
+            <div class="ai-card-hd">
+              <span class="ai-card-title"><h:outputText value="#{agentInstitutionBean.institution.nom}"/></span>
+              <div style="display:flex;gap:.5rem;align-items:center;">
+                <span class="ai-badge #{agentInstitutionBean.institutionActive ? 'ai-badge-green' : 'ai-badge-orange'}">
+                  <h:outputText value="#{agentInstitutionBean.institutionActive ? '✓ Validée' : '⏳ En attente'}"/>
+                </span>
+                <p:commandButton value="#{agentInstitutionBean.instEnEdition ? 'Annuler' : 'Modifier'}"
+                                 icon="#{agentInstitutionBean.instEnEdition ? 'pi pi-times' : 'pi pi-pencil'}"
+                                 styleClass="#{agentInstitutionBean.instEnEdition ? 'ai-btn-outline' : 'ai-btn-secondary'}"
+                                 style="font-size:.8rem;padding:.35rem .75rem;"
+                                 action="#{agentInstitutionBean.toggleInstEdition}"
+                                 update="fInstitution" process="@this"/>
+              </div>
+            </div>
+
+            <!-- Vue lecture -->
+            <h:panelGroup rendered="#{!agentInstitutionBean.instEnEdition}" layout="block">
+              <div class="ai-info-grid">
+                <div>
+                  <div class="ai-info-label">Adresse</div>
+                  <div class="ai-info-val"><h:outputText value="#{agentInstitutionBean.institution.adresse}"/></div>
+                </div>
+                <div>
+                  <div class="ai-info-label">Type</div>
+                  <div class="ai-info-val"><h:outputText value="#{agentInstitutionBean.institution.type}"/></div>
+                </div>
+                <h:panelGroup rendered="#{not empty agentInstitutionBean.institution.secteur}" layout="block">
+                  <div>
+                    <div class="ai-info-label">Secteur d'activité</div>
+                    <div class="ai-info-val"><h:outputText value="#{agentInstitutionBean.institution.secteur}"/></div>
+                  </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not empty agentInstitutionBean.institution.ninea}" layout="block">
+                  <div>
+                    <div class="ai-info-label">NINEA</div>
+                    <div class="ai-info-val"><h:outputText value="#{agentInstitutionBean.institution.ninea}"/></div>
+                  </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not empty agentInstitutionBean.institution.domainesInteret}" layout="block">
+                  <div style="grid-column:1/-1;">
+                    <div class="ai-info-label">Domaines d'intérêt</div>
+                    <div class="ai-info-val"><h:outputText value="#{agentInstitutionBean.institution.domainesInteret}"/></div>
+                  </div>
+                </h:panelGroup>
+              </div>
+            </h:panelGroup>
+
+            <!-- Formulaire édition -->
+            <h:panelGroup rendered="#{agentInstitutionBean.instEnEdition}" layout="block">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem;">
+                <div style="grid-column:1/-1;">
+                  <label class="ai-lbl">Nom de l'institution <span style="color:#ef4444;">*</span></label>
+                  <h:inputText value="#{agentInstitutionBean.instNom}" styleClass="ai-inp" style="width:100%;"/>
+                </div>
+                <div style="grid-column:1/-1;">
+                  <label class="ai-lbl">Adresse</label>
+                  <h:inputText value="#{agentInstitutionBean.instAdresse}" styleClass="ai-inp" style="width:100%;"/>
+                </div>
+                <div>
+                  <label class="ai-lbl">Secteur d'activité</label>
+                  <h:inputText value="#{agentInstitutionBean.instSecteur}" placeholder="ex : Éducation, Santé…" styleClass="ai-inp" style="width:100%;"/>
+                </div>
+                <div>
+                  <label class="ai-lbl">NINEA</label>
+                  <h:inputText value="#{agentInstitutionBean.instNinea}" placeholder="ex : 00123456789" styleClass="ai-inp" style="width:100%;"/>
+                </div>
+                <div style="grid-column:1/-1;">
+                  <label class="ai-lbl">Domaines d'intérêt en formation</label>
+                  <h:inputTextarea value="#{agentInstitutionBean.instDomainesInteret}"
+                                   placeholder="ex : Management, Bureautique, Leadership…"
+                                   styleClass="ai-inp" style="width:100%;min-height:70px;resize:vertical;"/>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem;">
+                <p:commandButton value="Enregistrer"
+                                 icon="pi pi-check"
+                                 styleClass="ai-btn-primary"
+                                 action="#{agentInstitutionBean.sauvegarderInstitution}"
+                                 update="fInstitution :aiMsgs"/>
+              </div>
+            </h:panelGroup>
+          </div>
+          </h:form>
+
+          <!-- Membres -->
+          <div class="ai-card">
+            <div class="ai-card-hd">
+              <span class="ai-card-title">
+                Membres
+                <span style="background:#f1f5f9;color:#475569;font-size:.75rem;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:600;">
+                  <h:outputText value="#{agentInstitutionBean.nbMembres}"/>
+                </span>
+              </span>
+            </div>
+            <h:panelGroup rendered="#{empty agentInstitutionBean.membres}" layout="block">
+              <p style="font-size:.875rem;color:#9ca3af;font-style:italic;">Aucun membre lié à cette institution.</p>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{not empty agentInstitutionBean.membres}" layout="block">
+              <ui:repeat value="#{agentInstitutionBean.membres}" var="m">
+                <div class="ai-membre">
+                  <div class="ai-membre-av">
+                    <h:outputText value="#{not empty m.nom ? m.nom.substring(0,1).toUpperCase() : '?'}"/>
+                  </div>
+                  <div>
+                    <div class="ai-membre-name"><h:outputText value="#{m.prenom} #{m.nom}"/></div>
+                    <div class="ai-membre-mail"><h:outputText value="#{m.email}"/></div>
+                  </div>
+                </div>
+              </ui:repeat>
+            </h:panelGroup>
+          </div>
+
+        </h:panelGroup>
+
+      </div><!-- /institution -->
+
+
+      <!-- ═════════════════════════════
+           PAGE : MEMBRES
+      ══════════════════════════════ -->
+      <div id="ai-membres" class="ai-page">
+
+        <div class="ai-page-hd">
+          <div class="ai-page-row">
+            <div class="ai-icon-badge">
+              <svg width="16" height="16" fill="none" stroke="#D9A441" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <h2 class="ai-page-title">Membres</h2>
+          </div>
+          <p class="ai-page-sub">
+            Participants rattach&#233;s &#224; votre institution —&#160;
+            <strong><h:outputText value="#{agentInstitutionBean.nbMembres}"/></strong> membre(s).
+          </p>
+        </div>
+
+        <h:panelGroup rendered="#{empty agentInstitutionBean.membres}" layout="block">
+          <div class="ai-empty">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+            <p>Aucun membre li&#233; &#224; cette institution.</p>
+          </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{not empty agentInstitutionBean.membres}" layout="block">
+          <div class="ai-card">
+            <ui:repeat value="#{agentInstitutionBean.membres}" var="m">
+              <div class="ai-membre">
+                <div class="ai-membre-av">
+                  <h:outputText value="#{not empty m.nom ? m.nom.substring(0,1).toUpperCase() : '?'}"/>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div class="ai-membre-name"><h:outputText value="#{m.prenom} #{m.nom}"/></div>
+                  <div class="ai-membre-mail"><h:outputText value="#{m.email}"/></div>
+                </div>
+                <span class="ai-badge ai-badge-gray" style="font-size:.7rem;">Participant</span>
+              </div>
+            </ui:repeat>
+          </div>
+        </h:panelGroup>
+
+      </div><!-- /membres -->
+
+
+      <!-- ═════════════════════════════
+           PAGE : MON COMPTE
+      ══════════════════════════════ -->
+      <div id="ai-compte" class="ai-page">
+
+        <div class="ai-page-hd">
+          <div class="ai-page-row">
+            <div class="ai-icon-badge">
+              <svg width="16" height="16" fill="none" stroke="#D9A441" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <h2 class="ai-page-title">Mon compte</h2>
+          </div>
+          <p class="ai-page-sub">Gérez vos informations personnelles et votre mot de passe.</p>
+        </div>
+
+        <!-- Infos personnelles -->
+        <h:form id="fProfil">
+        <div class="ai-card" style="margin-bottom:1.25rem;">
+          <div class="ai-card-hd">
+            <span class="ai-card-title">Informations personnelles</span>
+            <p:commandButton value="#{agentInstitutionBean.profilEnEdition ? 'Annuler' : 'Modifier'}"
+                             icon="#{agentInstitutionBean.profilEnEdition ? 'pi pi-times' : 'pi pi-pencil'}"
+                             styleClass="#{agentInstitutionBean.profilEnEdition ? 'ai-btn-outline' : 'ai-btn-secondary'}"
+                             style="font-size:.8rem;padding:.35rem .75rem;"
+                             action="#{agentInstitutionBean.toggleProfilEdition}"
+                             update="fProfil" process="@this"/>
+          </div>
+
+          <!-- Vue lecture -->
+          <h:panelGroup rendered="#{!agentInstitutionBean.profilEnEdition}" layout="block">
+            <div class="ai-info-grid">
+              <div>
+                <div class="ai-info-label">Prénom</div>
+                <div class="ai-info-val"><h:outputText value="#{sessionBean.prenom}"/></div>
+              </div>
+              <div>
+                <div class="ai-info-label">Nom</div>
+                <div class="ai-info-val"><h:outputText value="#{agentInstitutionBean.editNom}"/></div>
+              </div>
+              <div>
+                <div class="ai-info-label">Email</div>
+                <div class="ai-info-val"><h:outputText value="#{sessionBean.email}"/></div>
+              </div>
+              <div>
+                <div class="ai-info-label">Téléphone</div>
+                <div class="ai-info-val">
+                  <h:panelGroup rendered="#{not empty agentInstitutionBean.editTelephone}">
+                    <h:outputText value="#{agentInstitutionBean.editTelephone}"/>
+                  </h:panelGroup>
+                  <h:panelGroup rendered="#{empty agentInstitutionBean.editTelephone}">
+                    <span style="color:#9ca3af;font-style:italic;">Non renseigné</span>
+                  </h:panelGroup>
+                </div>
+              </div>
+            </div>
+          </h:panelGroup>
+
+          <!-- Formulaire édition profil -->
+          <h:panelGroup rendered="#{agentInstitutionBean.profilEnEdition}" layout="block">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem;">
+              <div>
+                <label class="ai-lbl">Prénom <span style="color:#ef4444;">*</span></label>
+                <h:inputText value="#{agentInstitutionBean.editPrenom}" styleClass="ai-inp" style="width:100%;"/>
+              </div>
+              <div>
+                <label class="ai-lbl">Nom <span style="color:#ef4444;">*</span></label>
+                <h:inputText value="#{agentInstitutionBean.editNom}" styleClass="ai-inp" style="width:100%;"/>
+              </div>
+              <div style="grid-column:1/-1;">
+                <label class="ai-lbl">Téléphone</label>
+                <h:inputText value="#{agentInstitutionBean.editTelephone}" placeholder="ex : +221 77 000 00 00" styleClass="ai-inp" style="width:100%;"/>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+              <p:commandButton value="Enregistrer"
+                               icon="pi pi-check"
+                               styleClass="ai-btn-primary"
+                               action="#{agentInstitutionBean.sauvegarderProfil}"
+                               update="fProfil :aiMsgs"/>
+            </div>
+          </h:panelGroup>
+        </div>
+        </h:form>
+
+        <!-- Changer mot de passe -->
+        <h:form id="fMdp">
+        <div class="ai-card">
+          <div class="ai-card-hd">
+            <span class="ai-card-title">Mot de passe</span>
+            <p:commandButton value="#{agentInstitutionBean.mdpEnEdition ? 'Annuler' : 'Changer'}"
+                             icon="#{agentInstitutionBean.mdpEnEdition ? 'pi pi-times' : 'pi pi-lock'}"
+                             styleClass="#{agentInstitutionBean.mdpEnEdition ? 'ai-btn-outline' : 'ai-btn-secondary'}"
+                             style="font-size:.8rem;padding:.35rem .75rem;"
+                             action="#{agentInstitutionBean.toggleMdpEdition}"
+                             update="fMdp" process="@this"/>
+          </div>
+
+          <h:panelGroup rendered="#{!agentInstitutionBean.mdpEnEdition}" layout="block">
+            <p style="font-size:.875rem;color:#6b7280;">
+              Pour votre sécurité, utilisez un mot de passe d'au moins 8 caractères mêlant lettres, chiffres et symboles.
+            </p>
+          </h:panelGroup>
+
+          <h:panelGroup rendered="#{agentInstitutionBean.mdpEnEdition}" layout="block">
+            <div style="display:flex;flex-direction:column;gap:.75rem;margin-top:.75rem;max-width:420px;">
+              <div>
+                <label class="ai-lbl">Mot de passe actuel <span style="color:#ef4444;">*</span></label>
+                <h:inputSecret value="#{agentInstitutionBean.ancienMdp}" styleClass="ai-inp" style="width:100%;" redisplay="false"/>
+              </div>
+              <div>
+                <label class="ai-lbl">Nouveau mot de passe <span style="color:#ef4444;">*</span></label>
+                <h:inputSecret value="#{agentInstitutionBean.nouveauMdp}" styleClass="ai-inp" style="width:100%;" redisplay="false"/>
+              </div>
+              <div>
+                <label class="ai-lbl">Confirmer le nouveau mot de passe <span style="color:#ef4444;">*</span></label>
+                <h:inputSecret value="#{agentInstitutionBean.confirmerMdp}" styleClass="ai-inp" style="width:100%;" redisplay="false"/>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+              <p:commandButton value="Mettre à jour"
+                               icon="pi pi-check"
+                               styleClass="ai-btn-primary"
+                               action="#{agentInstitutionBean.changerMotDePasse}"
+                               update="fMdp :aiMsgs"/>
+            </div>
+          </h:panelGroup>
+        </div>
+        </h:form>
+
+      </div><!-- /compte -->
+
+      <!-- ═════════════════════════════
+           PAGE : MESSAGERIE
+      ══════════════════════════════ -->
+      <div id="ai-messagerie" class="ai-page">
+
+        <div class="ai-page-hd">
+          <div class="ai-page-row">
+            <div class="ai-icon-badge">
+              <svg width="16" height="16" fill="none" stroke="#D9A441" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <h2 class="ai-page-title">Messagerie</h2>
+          </div>
+          <p class="ai-page-sub">Échangez avec l'administration concernant vos dossiers.</p>
+        </div>
+
+        <div class="ai-card">
+          <p style="color:#6b7280;font-size:.875rem;text-align:center;padding:2rem 0;font-style:italic;">
+            La messagerie est accessible depuis le détail de chacune de vos candidatures ou demandes à la carte.
+          </p>
+          <!-- Raccourcis rapides -->
+          <div style="display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center;margin-top:1rem;">
+            <button class="ai-btn-secondary" type="button"
+                    onclick="aiTab('candidatures', document.getElementById('nav-candidatures'))" style="font-size:.875rem;">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px;">
+                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                <line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="12" x2="15" y2="12"/>
+              </svg>
+              Mes candidatures
+            </button>
+            <button class="ai-btn-secondary" type="button"
+                    onclick="aiTab('carte', document.getElementById('nav-carte'))" style="font-size:.875rem;">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px;">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+              </svg>
+              Demandes à la carte
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /messagerie -->
+
+
+      <!-- ═════════════════════════════
+           PAGE : DEMANDE À LA CARTE
+      ══════════════════════════════ -->
+      <div id="ai-carte" class="ai-page">
+
+        <div class="ai-page-hd">
+          <div class="ai-page-row">
+            <div class="ai-icon-badge">
+              <svg width="16" height="16" fill="none" stroke="#D9A441" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+                <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+              </svg>
+            </div>
+            <h2 class="ai-page-title">Demande à la carte</h2>
+          </div>
+          <p class="ai-page-sub">Décrivez vos besoins en formation sur mesure pour vos équipes.</p>
+        </div>
+
+        <!-- ── Formulaire nouvelle demande ── -->
+        <h:form id="fCarteNew">
+          <div class="ai-card" style="margin-bottom:1.5rem;">
+            <div class="ai-card-hd">
+              <span class="ai-card-title">Nouvelle demande sur mesure</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+              <!-- Ligne 1 : domaine + nb participants -->
+              <div>
+                <label class="ai-lbl">Domaine / thème <span style="color:#ef4444;">*</span></label>
+                <h:inputText value="#{agentInstitutionBean.libreDomaine}"
+                             placeholder="ex : Leadership, Bureautique, Sécurité…"
+                             styleClass="ai-inp" style="width:100%;"/>
+              </div>
+              <div>
+                <label class="ai-lbl">Nombre de participants</label>
+                <h:inputText value="#{agentInstitutionBean.libreNbParticipants}"
+                             placeholder="ex : 15" styleClass="ai-inp" style="width:100%;"/>
+              </div>
+              <!-- Ligne 2 : calendriers période -->
+              <div>
+                <label class="ai-lbl">Date de début souhaitée</label>
+                <p:datePicker value="#{agentInstitutionBean.librePeriodeDebut}"
+                              pattern="dd/MM/yyyy"
+                              mindate="#{agentInstitutionBean.today}"
+                              showIcon="true"
+                              touchUI="false"
+                              styleClass="ai-inp"
+                              style="width:100%;"
+                              placeholder="jj/mm/aaaa"/>
+              </div>
+              <div>
+                <label class="ai-lbl">Date de fin souhaitée</label>
+                <p:datePicker value="#{agentInstitutionBean.librePeriodeFin}"
+                              pattern="dd/MM/yyyy"
+                              mindate="#{agentInstitutionBean.today}"
+                              showIcon="true"
+                              touchUI="false"
+                              styleClass="ai-inp"
+                              style="width:100%;"
+                              placeholder="jj/mm/aaaa"/>
+              </div>
+              <!-- Ligne 3 : description -->
+              <div style="grid-column:1/-1;">
+                <label class="ai-lbl">Description du besoin <span style="color:#ef4444;">*</span></label>
+                <h:inputTextarea value="#{agentInstitutionBean.libreDescription}"
+                                 placeholder="Objectifs, public cible, contraintes particulières…"
+                                 styleClass="ai-inp" style="width:100%;min-height:72px;resize:vertical;"/>
+              </div>
+
+              <!-- Ligne 4 : modules souhaités -->
+              <div style="grid-column:1/-1;">
+                <label class="ai-lbl" style="margin-bottom:.6rem;">
+                  <i class="pi pi-list" style="margin-right:.35rem;color:#0B2545;"/>
+                  Modules souhaités <span style="font-weight:400;color:#6b7280;font-size:.75rem;">(optionnel)</span>
+                </label>
+                <!-- Saisie d'un module -->
+                <h:panelGroup id="moduleInputs" layout="block"
+                              style="display:flex;gap:.5rem;margin-bottom:.6rem;align-items:flex-end;">
+                  <div style="flex:1;">
+                    <h:inputText id="tempThemInput"
+                                 value="#{agentInstitutionBean.tempThematique}"
+                                 placeholder="Thématique du module…"
+                                 styleClass="ai-inp" style="width:100%;"/>
+                  </div>
+                  <div style="width:90px;">
+                    <h:inputText id="tempDureeInput"
+                                 value="#{agentInstitutionBean.tempDuree}"
+                                 placeholder="Durée (h)"
+                                 styleClass="ai-inp" style="width:100%;"/>
+                  </div>
+                  <p:commandButton icon="pi pi-plus"
+                                   title="Ajouter le module"
+                                   styleClass="ai-btn-primary"
+                                   style="min-width:38px;padding:.55rem .75rem;flex-shrink:0;"
+                                   action="#{agentInstitutionBean.ajouterModuleTemp}"
+                                   process="@this fCarteNew:tempThemInput fCarteNew:tempDureeInput"
+                                   update="moduleInputs listeModulesTemp"/>
+                </h:panelGroup>
+                <!-- Liste des modules ajoutés -->
+                <h:panelGroup id="listeModulesTemp" layout="block">
+                  <ui:repeat value="#{agentInstitutionBean.modulesTemporaires}" var="modItem" varStatus="st">
+                    <div style="display:flex;align-items:center;gap:.6rem;padding:.4rem .75rem;
+                                background:#eef2ff;border:1px solid #c7d2fe;border-radius:.5rem;
+                                margin-bottom:.35rem;">
+                      <i class="pi pi-book" style="color:#4f46e5;font-size:.85rem;flex-shrink:0;"/>
+                      <span style="flex:1;font-size:.875rem;color:#1e1b4b;">#{modItem[0]}</span>
+                      <span rendered="#{not empty modItem[1]}"
+                            style="font-size:.8rem;color:#6b7280;white-space:nowrap;">#{modItem[1]} h</span>
+                      <p:commandButton icon="pi pi-times"
+                                       styleClass="p-button-text p-button-sm p-button-danger"
+                                       style="padding:.25rem;"
+                                       action="#{agentInstitutionBean.supprimerModuleTemp(st.index)}"
+                                       update=":fCarteNew:listeModulesTemp"
+                                       process="@this"/>
+                    </div>
+                  </ui:repeat>
+                  <div rendered="#{empty agentInstitutionBean.modulesTemporaires}"
+                       style="font-size:.8rem;color:#9ca3af;font-style:italic;padding:.35rem .1rem;">
+                    Aucun module ajout&#233; — vous pourrez en ajouter apr&#232;s soumission.
+                  </div>
+                </h:panelGroup>
+              </div>
+            </div>
+            <div style="margin-top:1rem;display:flex;justify-content:flex-end;">
+              <p:commandButton value="Soumettre la demande"
+                               icon="pi pi-send"
+                               styleClass="ai-btn-primary"
+                               action="#{agentInstitutionBean.soumettreDemandeLibre}"
+                               update=":aiMsgs :fCarteNew :fCarteList"/>
+            </div>
+          </div>
+        </h:form>
+
+        <!-- ── Liste des demandes en cours ── -->
+        <h:form id="fCarteList">
+          <h:panelGroup rendered="#{!agentInstitutionBean.hasDemandesEnCours}" layout="block">
+            <div class="ai-empty">
+              <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+              </svg>
+              <p>Aucune demande en cours. Les demandes valid&#233;es apparaissent dans votre tableau de bord.</p>
+            </div>
+          </h:panelGroup>
+
+          <h:panelGroup rendered="#{agentInstitutionBean.hasDemandesEnCours}" layout="block">
+            <div class="ai-card" style="padding:0;overflow:hidden;">
+              <!-- En-tête tableau -->
+              <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;
+                          padding:.625rem 1.25rem;background:#f8fafc;
+                          border-bottom:1px solid #f0f0f0;">
+                <span style="font-size:.7rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Domaine</span>
+                <span style="font-size:.7rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;width:100px;text-align:center;">Date</span>
+                <span style="font-size:.7rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;width:140px;text-align:center;">Statut</span>
+                <span style="font-size:.7rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;width:220px;text-align:center;">Actions</span>
+              </div>
+
+              <!-- Lignes -->
+              <ui:repeat value="#{agentInstitutionBean.mesDemandesLibresEnCours}" var="dl">
+                <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;
+                            padding:.875rem 1.25rem;border-bottom:1px solid #f8fafc;
+                            align-items:center;transition:background .12s;"
+                     onmouseover="this.style.background='#fafbfc'" onmouseout="this.style.background=''">
+
+                  <!-- Domaine + participants -->
+                  <div>
+                    <div style="font-weight:700;color:#0B2545;font-size:.875rem;">
+                      <h:outputText value="#{dl.domaine}"/>
+                    </div>
+                    <div style="font-size:.75rem;color:#9ca3af;margin-top:2px;">
+                      <h:panelGroup rendered="#{dl.nbParticipants != null}">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:2px;">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        </svg>
+                        <h:outputText value="#{dl.nbParticipants}"/> participant(s)
+                      </h:panelGroup>
+                    </div>
+                  </div>
+
+                  <!-- Date -->
+                  <div style="width:100px;text-align:center;font-size:.8125rem;color:#6b7280;">
+                    <h:outputText value="#{dl.dateDemande}"/>
+                  </div>
+
+                  <!-- Statut -->
+                  <div style="width:140px;text-align:center;">
+                    <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}">
+                      <span style="display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;
+                                   background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:20px;">
+                        &#9203; Attente
+                      </span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{dl.statut eq 'PROPOSITION_RECUE'}">
+                      <span style="display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;
+                                   background:#ede9fe;color:#5b21b6;padding:3px 10px;border-radius:20px;">
+                        &#128203; Proposition
+                      </span>
+                    </h:panelGroup>
+                  </div>
+
+                  <!-- Actions -->
+                  <div style="width:220px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
+                    <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE' or dl.statut eq 'PROPOSITION_RECUE'}" layout="block">
+                      <p:commandButton value="D&#233;tails"
+                                       styleClass="ai-btn-cancel"
+                                       style="background:#0B2545;color:#D9A441;border-color:#0B2545;font-size:.75rem;padding:4px 10px;"
+                                       action="#{agentInstitutionBean.ouvrirDetailDemandeLibre(dl)}"
+                                       update=":fCarteDetail"
+                                       oncomplete="PF('wvCarteDetail').show();"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{dl.statut eq 'PROPOSITION_RECUE'}" layout="block">
+                      <p:commandButton value="Voir proposition"
+                                       styleClass="ai-btn-primary"
+                                       style="background:#6d28d9;border-color:#6d28d9;font-size:.75rem;padding:4px 10px;"
+                                       action="#{agentInstitutionBean.ouvrirDetailDemandeLibre(dl)}"
+                                       update=":fCarteDetail"
+                                       oncomplete="PF('wvCarteDetail').show();"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}" layout="block">
+                      <p:commandButton value="Annuler"
+                                       styleClass="ai-btn-cancel"
+                                       style="font-size:.75rem;padding:4px 10px;"
+                                       action="#{agentInstitutionBean.annulerDemandeLibre(dl.id)}"
+                                       onclick="return confirm('Confirmer l\'annulation ?')"
+                                       update=":aiMsgs :fCarteList"/>
+                    </h:panelGroup>
+                  </div>
+
+                </div>
+              </ui:repeat>
+            </div>
+          </h:panelGroup>
+        </h:form>
+
+      </div><!-- /ai-carte -->
+
+
+    </div><!-- /ai-content -->
+  </div><!-- /ai-main -->
+
+</h:panelGroup><!-- /ai-app -->
+
+
+
+
+<!-- ══════════════════════════════════════
+     DIALOG : DÉTAILS OFFRE
+══════════════════════════════════════ -->
+<h:form id="fDetailOffre">
+  <p:dialog id="dlgDetailOffre" widgetVar="wvDetailOffre"
+            modal="true" width="660" closable="true" closeOnEscape="true"
+            appendTo="@(body)" style="font-size:13px;border-radius:12px;overflow:hidden;" dynamic="true">
+
+    <f:facet name="header">
+      <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee != null}">
+        <span style="font-size:15px;font-weight:700;color:#0B2545;">
+          <h:outputText value="#{agentInstitutionBean.offreSelectionnee.titre}"/>
+        </span>
+      </h:panelGroup>
+    </f:facet>
+
+    <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee != null}" layout="block" style="padding:8px 0;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+        <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee.domaine != null}">
+          <span class="sef-domain-tag"><h:outputText value="#{agentInstitutionBean.offreSelectionnee.domaine.libelle}"/></span>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee.type eq 'EN_LIGNE'}">
+          <span class="sef-domain-tag" style="background:#dcfce7;color:#166534;">En ligne</span>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee.type eq 'PRESENTIEL'}">
+          <span class="sef-domain-tag" style="background:#fef3c7;color:#92400e;">Présentiel</span>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee.type eq 'HYBRIDE'}">
+          <span class="sef-domain-tag" style="background:#ede9fe;color:#5b21b6;">Hybride</span>
+        </h:panelGroup>
+      </div>
+
+      <h:panelGroup rendered="#{not empty agentInstitutionBean.offreSelectionnee.description}">
+        <div style="background:#f8fafc;border-radius:8px;padding:14px 16px;margin-bottom:18px;
+                    border-left:3px solid #D9A441;font-size:13px;color:#374151;line-height:1.6;">
+          <h:outputText value="#{agentInstitutionBean.offreSelectionnee.description}" escape="false"/>
+        </div>
+      </h:panelGroup>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;margin-bottom:18px;">
+        <div class="sef-info-item">
+          <label>Durée</label>
+          <div><h:outputText value="#{agentInstitutionBean.offreSelectionnee.duree}"/></div>
+        </div>
+        <div class="sef-info-item">
+          <label>Coût</label>
+          <div>
+            <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee.payante}">
+              <strong><h:outputText value="#{agentInstitutionBean.offreSelectionnee.coutFormate}"/></strong>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{!agentInstitutionBean.offreSelectionnee.payante}">
+              <span class="sef-badge sef-badge-success">Gratuit</span>
+            </h:panelGroup>
+          </div>
+        </div>
+        <div class="sef-info-item">
+          <label>Date de début</label>
+          <div>
+            <h:panelGroup rendered="#{not empty agentInstitutionBean.offreSelectionnee.dateDebut}">
+              <h:outputText value="#{agentInstitutionBean.offreSelectionnee.dateDebut}"/>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{empty agentInstitutionBean.offreSelectionnee.dateDebut}">
+              <span style="color:#94a3b8;font-style:italic;">Non précisée</span>
+            </h:panelGroup>
+          </div>
+        </div>
+        <div class="sef-info-item">
+          <label>Places disponibles</label>
+          <div>
+            <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee.placesDisponibles != null}">
+              <h:outputText value="#{agentInstitutionBean.offreSelectionnee.placesDisponibles}"/>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee.placesDisponibles == null}">
+              <span style="color:#94a3b8;font-style:italic;">Non précisé</span>
+            </h:panelGroup>
+          </div>
+        </div>
+      </div>
+
+      <h:panelGroup rendered="#{not empty agentInstitutionBean.offreSelectionnee.documentsRequis}">
+        <div style="margin-bottom:16px;">
+          <p style="font-size:11.5px;font-weight:700;color:#0B2545;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Documents à fournir</p>
+          <ul style="padding-left:18px;font-size:12.5px;color:#6b7280;line-height:1.8;">
+            <ui:repeat value="#{agentInstitutionBean.offreSelectionnee.documentsRequis}" var="doc">
+              <li><h:outputText value="#{doc}"/></li>
+            </ui:repeat>
+          </ul>
+        </div>
+      </h:panelGroup>
+    </h:panelGroup>
+
+    <f:facet name="footer">
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <p:commandButton value="Fermer" styleClass="sef-btn sef-btn-outline"
+                         onclick="PF('wvDetailOffre').hide(); return false;"/>
+        <h:panelGroup rendered="#{agentInstitutionBean.actionsDisponibles}">
+          <p:commandButton value="Candidater à cette offre" styleClass="sef-btn sef-btn-primary"
+                           update=":fPostuler"
+                           oncomplete="PF('wvDetailOffre').hide(); PF('wvPostuler').show();"/>
+        </h:panelGroup>
+      </div>
+    </f:facet>
+  </p:dialog>
+</h:form>
+
+
+<!-- ══════════════════════════════════════
+     DIALOG : POSTULER
+══════════════════════════════════════ -->
+<h:form id="fPostuler">
+  <p:dialog id="dlgPostuler" widgetVar="wvPostuler" appendTo="@(body)"
+            header="Inscription collective" modal="true" width="520"
+            closable="true" closeOnEscape="true" style="font-size:13px;" dynamic="true">
+
+    <div style="padding:4px 0 16px;">
+      <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee != null}">
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;
+                    background:rgba(217,164,65,.08);border-radius:10px;padding:12px 14px;">
+          <div style="width:36px;height:36px;background:#0B2545;border-radius:8px;
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#D9A441;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#0B2545;">
+              <h:outputText value="#{agentInstitutionBean.offreSelectionnee.titre}"/>
+            </div>
+            <h:panelGroup rendered="#{agentInstitutionBean.offreSelectionnee.domaine != null}">
+              <div style="font-size:11.5px;color:#9ca3af;margin-top:2px;">
+                <h:outputText value="#{agentInstitutionBean.offreSelectionnee.domaine.libelle}"/>
+              </div>
+            </h:panelGroup>
+          </div>
+        </div>
+
+        <p:messages showDetail="true" closable="true" style="margin-bottom:12px;font-size:12.5px;"/>
+
+        <!-- Documents requis -->
+        <h:panelGroup rendered="#{not empty agentInstitutionBean.offreSelectionnee.documentsRequis}">
+          <p style="font-size:12px;font-weight:700;color:#0B2545;margin-bottom:6px;">Documents requis :</p>
+          <ul style="font-size:12px;color:#6b7280;padding-left:18px;margin-bottom:12px;">
+            <ui:repeat value="#{agentInstitutionBean.offreSelectionnee.documentsRequis}" var="doc">
+              <li><h:outputText value="#{doc}"/></li>
+            </ui:repeat>
+          </ul>
+          <p:fileUpload mode="simple" auto="true"
+                        listener="#{agentInstitutionBean.handleDocumentUpload}"
+                        update=":fPostuler"
+                        label="Joindre un document"
+                        style="margin-bottom:10px;font-size:12px;"/>
+          <h:panelGroup rendered="#{not empty agentInstitutionBean.nomsDocuments}" layout="block">
+            <div style="font-size:11.5px;color:#6b7280;margin-bottom:10px;">
+              <h:outputText value="#{agentInstitutionBean.nbDocumentsPostulation}"/> document(s) joint(s)
+            </div>
+          </h:panelGroup>
+        </h:panelGroup>
+
+        <!-- Participants -->
+        <div style="margin-bottom:4px;">
+          <p style="font-size:12px;font-weight:700;color:#0B2545;margin-bottom:6px;">
+            Liste des participants
+            <span style="font-weight:400;color:#9ca3af;font-size:11px;">(optionnel — PDF ou Excel)</span>
+          </p>
+          <p:fileUpload mode="simple" auto="true"
+                        listener="#{agentInstitutionBean.handleParticipantsUpload}"
+                        update=":fPostuler"
+                        label="Joindre la liste"
+                        style="font-size:12px;"/>
+          <h:panelGroup rendered="#{agentInstitutionBean.hasFichierParticipants}" layout="block">
+            <div style="font-size:11.5px;color:#16a34a;margin-top:6px;">
+              ✓ <h:outputText value="#{agentInstitutionBean.fichierParticipantsNom}"/>
+            </div>
+          </h:panelGroup>
+        </div>
+
+      </h:panelGroup>
+    </div>
+
+    <f:facet name="footer">
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <p:commandButton value="Annuler" styleClass="sef-btn sef-btn-outline"
+                         onclick="PF('wvPostuler').hide(); return false;"/>
+        <p:commandButton value="Soumettre la candidature" styleClass="sef-btn sef-btn-primary"
+                         action="#{agentInstitutionBean.postulerAvecDocuments}"
+                         update=":aiMsgs :fPostuler :fCandidatures"
+                         oncomplete="if(!args.validationFailed) PF('wvPostuler').hide();"/>
+      </div>
+    </f:facet>
+  </p:dialog>
+</h:form>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     Dialog : Détail demande (Participants · Messages · Paiement · Attestation)
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<h:form id="fDetailDemande">
+<p:dialog id="dDetailDemande" header="Détail de la candidature"
+          widgetVar="wvDetailDemande"
+          modal="true" resizable="false" closable="true"
+          style="width:min(96vw,860px);"
+          contentStyle="height:65vh;overflow-y:auto;">
+<style>
+.dd-tabs { display:flex; gap:6px; border-bottom:2px solid #e2e8f0; margin-bottom:16px; padding-bottom:0; }
+.dd-tab  { padding:8px 16px; font-size:13px; font-weight:700; color:#64748b; cursor:pointer;
+           border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .15s; }
+.dd-tab.active { color:#0B2545; border-bottom-color:#D9A441; }
+.dd-pane { display:none; } .dd-pane.active { display:block; }
+
+/* Participants */
+.dd-part-row { display:flex; align-items:center; gap:10px; padding:8px 0;
+               border-bottom:1px solid #f1f5f9; font-size:13px; }
+.dd-part-name { flex:1; font-weight:600; color:#1e293b; }
+.dd-part-info { color:#64748b; font-size:12px; }
+.dd-statut-sel { font-size:11px; padding:3px 8px; border:1px solid #cbd5e1;
+                 border-radius:6px; color:#334155; background:#fff; cursor:pointer; }
+.dd-add-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+.dd-input { width:100%; padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px;
+            font-size:12px; color:#1e293b; }
+
+/* Messages */
+.dd-chat { display:flex; flex-direction:column; gap:8px; max-height:300px;
+           overflow-y:auto; padding:8px 0; margin-bottom:12px; }
+/* dd-msg-wrap / dd-msg-bubble définis dans le CSS principal */
+.dd-chat-input { display:flex; gap:8px; margin-top:4px; }
+.dd-chat-textarea { flex:1; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px;
+                    font-size:13px; resize:none; height:60px; }
+
+/* Paiement */
+.dd-pay-status { display:flex; align-items:center; gap:8px; padding:12px;
+                 background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px;
+                 font-weight:700; color:#166534; font-size:14px; margin-bottom:12px; }
+.dd-pay-form   { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; }
+
+/* Attestation */
+.dd-attest-box { text-align:center; padding:24px; background:#f8fafc;
+                 border:1px dashed #cbd5e1; border-radius:12px; }
+.dd-attest-icon { font-size:40px; color:#D9A441; margin-bottom:10px; }
+.dd-attest-btn  { display:inline-flex; align-items:center; gap:6px;
+                  padding:10px 24px; background:#0B2545; color:#D9A441;
+                  border-radius:8px; font-weight:700; font-size:13px; text-decoration:none; }
+.dd-attest-btn:hover { background:#1a3a6b; }
+</style>
+
+  <p:messages id="ddMsgs" showDetail="true" closable="true" style="margin-bottom:10px;"/>
+
+
+  <!-- Onglets JS -->
+  <div class="dd-tabs">
+    <button type="button" class="dd-tab active" id="ddt-participants"
+            onclick="ddTab('participants')">
+      <i class="pi pi-users" style="margin-right:5px;"/>Participants
+    </button>
+    <button type="button" class="dd-tab" id="ddt-messages"
+            onclick="ddTab('messages')">
+      <i class="pi pi-comments" style="margin-right:5px;"/>Messages
+    </button>
+    <button type="button" class="dd-tab" id="ddt-paiement"
+            onclick="ddTab('paiement')">
+      <i class="pi pi-credit-card" style="margin-right:5px;"/>Paiement
+    </button>
+    <button type="button" class="dd-tab" id="ddt-attestation"
+            onclick="ddTab('attestation')">
+      <i class="pi pi-file-pdf" style="margin-right:5px;"/>Attestation
+    </button>
+  </div>
+
+  <!-- ── Onglet Participants ── -->
+  <div class="dd-pane active" id="ddp-participants">
+  <h:panelGroup layout="block" id="ddParticipants">
+    <h:panelGroup rendered="#{empty agentInstitutionBean.participants}" layout="block">
+      <p style="font-size:13px;color:#94a3b8;font-style:italic;">Aucun participant enregistré.</p>
+    </h:panelGroup>
+    <h:panelGroup rendered="#{not empty agentInstitutionBean.participants}" layout="block">
+      <ui:repeat value="#{agentInstitutionBean.participants}" var="part">
+        <div class="dd-part-row">
+          <div class="dd-part-name">
+            <h:outputText value="#{part.prenom}"/>&#160;<h:outputText value="#{part.nom}"/>
+            <span class="dd-part-email"><h:outputText value="#{part.email}"/></span>
+          </div>
+          <div class="dd-part-tel"><h:outputText value="#{part.telephone}"/></div>
+          <div class="dd-part-statut">
+            <h:selectOneMenu value="#{part.statut}"
+                             onchange="updateStatutFromSelect(this, '#{part.id}')"
+                             style="font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;">
+              <f:selectItem itemValue="INSCRIT"  itemLabel="Inscrit"/>
+              <f:selectItem itemValue="EN_COURS" itemLabel="En cours"/>
+              <f:selectItem itemValue="TERMINE"  itemLabel="Termin&#233;"/>
+              <f:selectItem itemValue="ABSENT"   itemLabel="Absent"/>
+            </h:selectOneMenu>
+            <!-- bouton caché déclenché par JS pour mise à jour statut -->
+            <p:commandButton id="btnStatut_#{part.id}" style="display:none;"
+                             data-partid="#{part.id}"
+                             action="#{agentInstitutionBean.updateStatutParticipant(part.id, part.statut)}"
+                             update=":fDetailDemande:ddParticipants"/>
+          </div>
+          <p:commandButton icon="pi pi-trash" styleClass="dd-del-btn"
+                           action="#{agentInstitutionBean.supprimerParticipant(part.id)}"
+                           update=":fDetailDemande:ddParticipants"
+                           title="Supprimer"/>
+        </div>
+      </ui:repeat>
+    </h:panelGroup>
+
+    <!-- Ajouter participant -->
+    <div class="dd-add-form">
+      <div style="font-size:13px;font-weight:700;color:#0B2545;margin-bottom:10px;">Ajouter un participant</div>
+      <div class="dd-add-grid">
+        <span class="p-float-label">
+          <p:inputText id="pNom" value="#{agentInstitutionBean.participantNom}" styleClass="dd-input"/>
+          <label for="pNom">Nom *</label>
+        </span>
+        <span class="p-float-label">
+          <p:inputText id="pPrenom" value="#{agentInstitutionBean.participantPrenom}" styleClass="dd-input"/>
+          <label for="pPrenom">Pr&#233;nom *</label>
+        </span>
+        <span class="p-float-label">
+          <p:inputText id="pEmail" value="#{agentInstitutionBean.participantEmail}" styleClass="dd-input"/>
+          <label for="pEmail">Email</label>
+        </span>
+        <span class="p-float-label">
+          <p:inputText id="pTel" value="#{agentInstitutionBean.participantTelephone}" styleClass="dd-input"/>
+          <label for="pTel">T&#233;l&#233;phone</label>
+        </span>
+      </div>
+      <p:commandButton value="Ajouter" icon="pi pi-plus" styleClass="dd-btn-add"
+                       action="#{agentInstitutionBean.ajouterParticipant()}"
+                       update=":fDetailDemande:ddParticipants :aiMsgs"/>
+    </div>
+  </h:panelGroup>
+  </div><!-- /ddp-participants -->
+
+  <!-- ── Onglet Messages ── -->
+  <div class="dd-pane" id="ddp-messages">
+  <h:panelGroup layout="block" id="ddMessages">
+    <div class="dd-chat" id="ddChatScroll">
+      <h:panelGroup rendered="#{empty agentInstitutionBean.messagesConversation}" layout="block">
+        <p style="font-size:13px;color:#94a3b8;text-align:center;padding:2rem 0;">Aucun message. Commencez la conversation.</p>
+      </h:panelGroup>
+      <ui:repeat value="#{agentInstitutionBean.messagesConversation}" var="msg">
+        <div class="dd-msg-wrap #{msg.expediteurId == sessionBean.utilisateurId ? 'moi' : 'autre'}">
+          <div class="dd-msg-bubble">
+            <h:outputText value="#{msg.contenu}"/>
+          </div>
+          <div class="dd-msg-time">
+            <h:outputText value="#{msg.expediteurNom}"/>
+            <h:panelGroup rendered="#{not empty msg.dateEnvoi}">
+              &#160;&#183;&#160;<h:outputText value="#{msg.dateEnvoi}"/>
+            </h:panelGroup>
+          </div>
+        </div>
+      </ui:repeat>
+    </div>
+    <div class="dd-chat-input">
+      <p:inputTextarea id="msgContenu" value="#{agentInstitutionBean.messageContenu}"
+                       rows="2" autoResize="true" placeholder="Votre message..."
+                       styleClass="dd-input" style="flex:1;resize:none;"/>
+      <p:commandButton icon="pi pi-send" styleClass="dd-btn-send"
+                       action="#{agentInstitutionBean.envoyerMessageDemande()}"
+                       update=":fDetailDemande:ddMessages :aiMsgs"
+                       oncomplete="scrollChat()" title="Envoyer"/>
+    </div>
+  </h:panelGroup>
+  </div><!-- /ddp-messages -->
+
+  <!-- ── Onglet Paiement ── -->
+  <div class="dd-pane" id="ddp-paiement">
+  <h:panelGroup layout="block" id="ddPaiement">
+
+    <!-- ── Paiement confirmé → certificat ── -->
+    <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionneePayee}" layout="block">
+      <div style="text-align:center;padding:2rem 1rem;">
+        <div style="width:56px;height:56px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;
+                    justify-content:center;margin:0 auto .875rem;">
+          <svg width="28" height="28" fill="none" stroke="#15803d" stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div style="font-size:1rem;font-weight:700;color:#15803d;margin-bottom:.375rem;">
+          Paiement confirm&#233; !
+        </div>
+        <div style="font-size:.8125rem;color:#6b7280;margin-bottom:1.5rem;">
+          Votre inscription est d&#233;finitivement valid&#233;e.<br/>
+          T&#233;l&#233;chargez votre certificat d&#8217;inscription ci-dessous.
+        </div>
+        <a href="#{agentInstitutionBean.urlCertificatInscription}" target="_blank"
+           style="display:inline-flex;align-items:center;gap:.5rem;background:#0B2545;color:#D9A441;
+                  padding:.75rem 1.75rem;border-radius:.75rem;font-weight:700;font-size:.9rem;
+                  text-decoration:none;transition:opacity .2s;">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          T&#233;l&#233;charger le certificat d&#8217;inscription (PDF)
+        </a>
+      </div>
+    </h:panelGroup>
+
+    <!-- ── Formulaire simplifié ── -->
+    <h:panelGroup rendered="#{!agentInstitutionBean.demandeSelectionneePayee}" layout="block">
+
+      <!-- Résumé formation + montant (lecture seule) -->
+      <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee != null}" layout="block">
+        <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:.75rem;padding:1rem;margin-bottom:1.25rem;">
+          <div style="font-size:.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;
+                      letter-spacing:.05em;margin-bottom:.5rem;">Formation</div>
+          <div style="font-size:.9375rem;font-weight:700;color:#0B2545;margin-bottom:.25rem;">
+            <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre != null}">
+              <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.titre}"/>
+            </h:panelGroup>
+          </div>
+          <div style="display:flex;gap:1.25rem;margin-top:.625rem;flex-wrap:wrap;">
+            <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre != null and not empty agentInstitutionBean.demandeSelectionnee.offre.dateDebut}" layout="block">
+              <span style="font-size:.75rem;color:#6b7280;">
+                <svg width="12" height="12" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px;">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                </svg>
+                <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.dateDebut}"/>
+                &#160;&#8594;&#160;
+                <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.dateFin}"/>
+              </span>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre != null and not empty agentInstitutionBean.demandeSelectionnee.offre.duree}" layout="block">
+              <span style="font-size:.75rem;color:#6b7280;">
+                <svg width="12" height="12" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px;">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.duree}"/>
+              </span>
+            </h:panelGroup>
+          </div>
+          <!-- Montant mis en avant -->
+          <div style="margin-top:.875rem;padding-top:.875rem;border-top:1px solid #e5e7eb;
+                      display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:.8125rem;font-weight:600;color:#374151;">Montant &#224; r&#233;gler</span>
+            <span style="font-size:1.25rem;font-weight:800;color:#0B2545;">
+              <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre != null and agentInstitutionBean.demandeSelectionnee.offre.cout != null and agentInstitutionBean.demandeSelectionnee.offre.cout gt 0}">
+                <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.coutFormate}"/>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre == null or agentInstitutionBean.demandeSelectionnee.offre.cout == null or agentInstitutionBean.demandeSelectionnee.offre.cout le 0}">
+                Gratuit
+              </h:panelGroup>
+            </span>
+          </div>
+        </div>
+      </h:panelGroup>
+
+      <!-- Choix de la méthode de paiement uniquement -->
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <div style="font-size:.8125rem;font-weight:600;color:#374151;margin-bottom:.5rem;">
+            Mode de paiement
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+            <!-- Virement -->
+            <label style="display:flex;align-items:center;gap:.625rem;padding:.75rem;border-radius:.625rem;
+                          cursor:pointer;border:2px solid #e5e7eb;transition:border-color .15s;
+                          background:#{agentInstitutionBean.paiementMethode eq 'VIREMENT' ? '#eff6ff' : '#fff'};
+                          border-color:#{agentInstitutionBean.paiementMethode eq 'VIREMENT' ? '#3b82f6' : '#e5e7eb'};">
+              <input type="radio" name="payMode" value="VIREMENT" style="accent-color:#3b82f6;"
+                     onclick="document.getElementById('fDetailDemande:pMethodeH').value='VIREMENT';"/>
+              <span style="font-size:.8125rem;font-weight:600;color:#374151;">Virement</span>
+            </label>
+            <!-- Chèque -->
+            <label style="display:flex;align-items:center;gap:.625rem;padding:.75rem;border-radius:.625rem;
+                          cursor:pointer;border:2px solid #e5e7eb;background:#fff;">
+              <input type="radio" name="payMode" value="CHEQUE" style="accent-color:#3b82f6;"
+                     onclick="document.getElementById('fDetailDemande:pMethodeH').value='CHEQUE';"/>
+              <span style="font-size:.8125rem;font-weight:600;color:#374151;">Ch&#232;que</span>
+            </label>
+            <!-- Espèces -->
+            <label style="display:flex;align-items:center;gap:.625rem;padding:.75rem;border-radius:.625rem;
+                          cursor:pointer;border:2px solid #e5e7eb;background:#fff;">
+              <input type="radio" name="payMode" value="ESPECES" style="accent-color:#3b82f6;"
+                     onclick="document.getElementById('fDetailDemande:pMethodeH').value='ESPECES';"/>
+              <span style="font-size:.8125rem;font-weight:600;color:#374151;">Esp&#232;ces</span>
+            </label>
+            <!-- Mobile Money -->
+            <label style="display:flex;align-items:center;gap:.625rem;padding:.75rem;border-radius:.625rem;
+                          cursor:pointer;border:2px solid #e5e7eb;background:#fff;">
+              <input type="radio" name="payMode" value="MOBILE_MONEY" style="accent-color:#3b82f6;"
+                     onclick="document.getElementById('fDetailDemande:pMethodeH').value='MOBILE_MONEY';"/>
+              <span style="font-size:.8125rem;font-weight:600;color:#374151;">Mobile Money</span>
+            </label>
+          </div>
+          <!-- Champ caché lié au bean -->
+          <h:inputHidden id="pMethodeH" value="#{agentInstitutionBean.paiementMethode}"/>
+        </div>
+
+        <!-- Bouton confirmer -->
+        <p:commandButton value="Confirmer le paiement" icon="pi pi-check-circle"
+                         styleClass="dd-btn-primary" style="width:100%;font-size:.9375rem;padding:.875rem;"
+                         action="#{agentInstitutionBean.enregistrerPaiementDemande()}"
+                         update=":fDetailDemande:ddPaiement :aiMsgs"/>
+
+        <div style="font-size:.75rem;color:#9ca3af;text-align:center;margin-top:-.25rem;">
+          Apr&#232;s confirmation, votre certificat d&#8217;inscription sera disponible imm&#233;diatement.
+        </div>
+      </div>
+    </h:panelGroup>
+
+  </h:panelGroup>
+  </div><!-- /ddp-paiement -->
+
+  <!-- ── Onglet Attestation ── -->
+  <div class="dd-pane" id="ddp-attestation">
+    <div style="text-align:center;padding:2rem 1rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">&#128196;</div>
+      <div style="font-size:15px;font-weight:700;color:#0B2545;margin-bottom:.5rem;">
+        Attestation de participation
+      </div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:1.5rem;">
+        T&#233;l&#233;chargez le PDF g&#233;n&#233;r&#233; avec la liste des participants et leurs statuts.
+      </div>
+      <a href="#{agentInstitutionBean.urlAttestation}" target="_blank"
+         style="display:inline-flex;align-items:center;gap:.5rem;background:#0B2545;color:#D9A441;
+                padding:.625rem 1.5rem;border-radius:.75rem;font-weight:700;font-size:.875rem;text-decoration:none;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        T&#233;l&#233;charger le PDF
+      </a>
+    </div>
+  </div><!-- /ddp-attestation -->
+
+  <f:facet name="footer">
+    <p:commandButton value="Fermer" icon="pi pi-times" styleClass="sef-btn sef-btn-outline"
+                     onclick="PF('wvDetailDemande').hide(); return false;"/>
+  </f:facet>
+</p:dialog>
+
+</h:form><!-- /fDetailDemande -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     Dialog : Paiement simple (ouvert depuis le bouton "Payer")
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<h:form id="fPaiementSimple">
+<p:dialog id="dlgPaiementSimple" header="Paiement de la formation"
+          widgetVar="wvPaiementSimple"
+          modal="true" resizable="false" closable="true"
+          style="width:min(96vw,480px);background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.35);"
+          contentStyle="padding:1.5rem;background:#fff;"
+          appendTo="@(body)">
+
+  <p:messages id="dlgPayMsgs" showDetail="true" closable="true" style="margin-bottom:10px;"/>
+
+  <h:panelGroup layout="block" id="panelPaiementSimple">
+
+    <!-- ── Paiement déjà confirmé → certificat ── -->
+    <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionneePayee}" layout="block">
+      <div style="text-align:center;padding:1.5rem 1rem;">
+        <div style="width:56px;height:56px;background:#dcfce7;border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;margin:0 auto .875rem;">
+          <svg width="28" height="28" fill="none" stroke="#15803d" stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div style="font-size:1rem;font-weight:700;color:#15803d;margin-bottom:.375rem;">
+          Paiement confirm&#233; !
+        </div>
+        <div style="font-size:.8125rem;color:#6b7280;margin-bottom:1.5rem;">
+          Votre inscription est d&#233;finitivement valid&#233;e.
+        </div>
+        <a href="#{agentInstitutionBean.urlCertificatInscription}" target="_blank"
+           style="display:inline-flex;align-items:center;gap:.5rem;background:#0B2545;color:#D9A441;
+                  padding:.75rem 1.5rem;border-radius:.75rem;font-weight:700;font-size:.875rem;
+                  text-decoration:none;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          T&#233;l&#233;charger le certificat (PDF)
+        </a>
+      </div>
+    </h:panelGroup>
+
+    <!-- ── Formulaire de paiement ── -->
+    <h:panelGroup rendered="#{!agentInstitutionBean.demandeSelectionneePayee}" layout="block">
+
+      <!-- Résumé formation + montant -->
+      <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee != null}" layout="block">
+        <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:.75rem;
+                    padding:1rem;margin-bottom:1.25rem;">
+          <div style="font-size:.6875rem;font-weight:700;color:#9ca3af;text-transform:uppercase;
+                      letter-spacing:.05em;margin-bottom:.375rem;">Formation</div>
+          <div style="font-size:.9375rem;font-weight:700;color:#0B2545;margin-bottom:.5rem;">
+            <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre != null}">
+              <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.titre}"/>
+            </h:panelGroup>
+          </div>
+          <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre != null}" layout="block">
+            <div style="font-size:.75rem;color:#6b7280;margin-bottom:.75rem;">
+              <h:panelGroup rendered="#{not empty agentInstitutionBean.demandeSelectionnee.offre.dateDebut}">
+                <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.dateDebut}"/>
+                &#160;&#8594;&#160;
+                <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.dateFin}"/>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{not empty agentInstitutionBean.demandeSelectionnee.offre.duree}">
+                &#160;&#183;&#160;<h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.duree}"/>
+              </h:panelGroup>
+            </div>
+          </h:panelGroup>
+          <!-- Montant -->
+          <div style="padding-top:.75rem;border-top:1px solid #e5e7eb;
+                      display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:.8125rem;font-weight:600;color:#374151;">Montant &#224; r&#233;gler</span>
+            <span style="font-size:1.375rem;font-weight:800;color:#0B2545;">
+              <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre != null
+                             and agentInstitutionBean.demandeSelectionnee.offre.cout != null
+                             and agentInstitutionBean.demandeSelectionnee.offre.cout gt 0}">
+                <h:outputText value="#{agentInstitutionBean.demandeSelectionnee.offre.coutFormate}"/>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{agentInstitutionBean.demandeSelectionnee.offre == null
+                             or agentInstitutionBean.demandeSelectionnee.offre.cout == null
+                             or agentInstitutionBean.demandeSelectionnee.offre.cout le 0}">
+                Gratuit
+              </h:panelGroup>
+            </span>
+          </div>
+        </div>
+      </h:panelGroup>
+
+      <!-- Mode de paiement -->
+      <div style="font-size:.8125rem;font-weight:600;color:#374151;margin-bottom:.625rem;">
+        Mode de paiement
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.25rem;">
+        <label style="display:flex;align-items:center;gap:.625rem;padding:.75rem;border-radius:.625rem;
+                      cursor:pointer;border:2px solid #e5e7eb;background:#fff;transition:border-color .15s;">
+          <input type="radio" name="sPayMode" value="VIREMENT" style="accent-color:#3b82f6;"
+                 onclick="document.getElementById('fPaiementSimple:sPayMethodeH').value='VIREMENT';"/>
+          <span style="font-size:.8125rem;font-weight:600;color:#374151;">Virement</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:.625rem;padding:.75rem;border-radius:.625rem;
+                      cursor:pointer;border:2px solid #e5e7eb;background:#fff;">
+          <input type="radio" name="sPayMode" value="CHEQUE" style="accent-color:#3b82f6;"
+                 onclick="document.getElementById('fPaiementSimple:sPayMethodeH').value='CHEQUE';"/>
+          <span style="font-size:.8125rem;font-weight:600;color:#374151;">Ch&#232;que</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:.625rem;padding:.75rem;border-radius:.625rem;
+                      cursor:pointer;border:2px solid #e5e7eb;background:#fff;">
+          <input type="radio" name="sPayMode" value="ESPECES" style="accent-color:#3b82f6;"
+                 onclick="document.getElementById('fPaiementSimple:sPayMethodeH').value='ESPECES';"/>
+          <span style="font-size:.8125rem;font-weight:600;color:#374151;">Esp&#232;ces</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:.625rem;padding:.75rem;border-radius:.625rem;
+                      cursor:pointer;border:2px solid #e5e7eb;background:#fff;">
+          <input type="radio" name="sPayMode" value="MOBILE_MONEY" style="accent-color:#3b82f6;"
+                 onclick="document.getElementById('fPaiementSimple:sPayMethodeH').value='MOBILE_MONEY';"/>
+          <span style="font-size:.8125rem;font-weight:600;color:#374151;">Mobile Money</span>
+        </label>
+      </div>
+      <h:inputHidden id="sPayMethodeH" value="#{agentInstitutionBean.paiementMethode}"/>
+
+      <!-- Bouton confirmer -->
+      <p:commandButton value="Confirmer le paiement" icon="pi pi-check-circle"
+                       style="width:100%;font-size:.9375rem;padding:.875rem;
+                              background:#0B2545;color:#D9A441;border:none;border-radius:.75rem;
+                              font-weight:700;cursor:pointer;"
+                       action="#{agentInstitutionBean.enregistrerPaiementDemande()}"
+                       update=":fPaiementSimple:panelPaiementSimple :pgFormationsSections :aiMsgs"/>
+      <div style="font-size:.75rem;color:#9ca3af;text-align:center;margin-top:.5rem;">
+        Apr&#232;s confirmation, votre certificat d&#8217;inscription sera disponible imm&#233;diatement.
+      </div>
+    </h:panelGroup>
+
+  </h:panelGroup>
+
+  <f:facet name="footer">
+    <p:commandButton value="Fermer" icon="pi pi-times"
+                     style="background:#f1f5f9;color:#374151;border:1px solid #e2e8f0;
+                            border-radius:.5rem;padding:.5rem 1rem;font-weight:600;cursor:pointer;"
+                     onclick="PF('wvPaiementSimple').hide(); return false;"/>
+  </f:facet>
+</p:dialog>
+</h:form><!-- /fPaiementSimple -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DIALOG : GÉRER LES FORMATIONS SOUHAITÉES (demande à la carte)
+════════════════════════════════════════════════════════════════════════════ -->
+<h:form id="fCarteDetail">
+<p:dialog id="dlgCarteDetail" widgetVar="wvCarteDetail"
+          header="Détail de la demande"
+          modal="true" width="750" closable="true" closeOnEscape="true"
+          appendTo="@(body)" dynamic="true"
+          contentStyle="height:65vh;overflow-y:auto;padding:1.25rem;"
+          style="max-height:90vh;">
+
+  <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail != null}" layout="block">
+
+    <!-- En-tête demande -->
+    <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:.75rem;padding:1rem;margin-bottom:1.25rem;">
+      <div style="font-weight:700;color:#0B2545;font-size:.9375rem;margin-bottom:.25rem;">
+        <h:outputText value="#{agentInstitutionBean.demandeLibreDetail.domaine}"/>
+      </div>
+      <div style="font-size:.8125rem;color:#6b7280;">
+        <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail.description != null}">
+          <h:outputText value="#{agentInstitutionBean.demandeLibreDetail.description}"/>
+        </h:panelGroup>
+      </div>
+      <div style="margin-top:.5rem;display:flex;gap:.75rem;font-size:.75rem;color:#9ca3af;">
+        <span>
+          <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail.nbParticipants != null}">
+            <h:outputText value="#{agentInstitutionBean.demandeLibreDetail.nbParticipants}"/> participants
+          </h:panelGroup>
+        </span>
+        <span>
+          Statut :
+          <strong>
+            <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail.statut eq 'EN_ATTENTE'}">En attente</h:panelGroup>
+            <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail.statut eq 'VALIDEE'}">Validée</h:panelGroup>
+            <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail.statut eq 'REJETEE'}">Rejetée</h:panelGroup>
+          </strong>
+        </span>
+      </div>
+    </div>
+
+  <!-- ── Proposition de formation reçue ── -->
+  <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail != null and (agentInstitutionBean.demandeLibreDetail.statut eq 'EN_ATTENTE' or agentInstitutionBean.demandeLibreDetail.statut eq 'PROPOSITION_RECUE' or agentInstitutionBean.demandeLibreDetail.statut eq 'VALIDEE')}" layout="block">
+    <div style="margin-top:1.25rem;">
+
+      <!-- Poll auto toutes les 30s quand pas encore de proposition -->
+      <p:poll interval="30"
+              listener="#{agentInstitutionBean.chargerProposition}"
+              update="panelProposition"
+              rendered="#{agentInstitutionBean.propositionCourante == null}"
+              global="false"/>
+
+      <p:outputPanel id="panelProposition" layout="block">
+
+      <!-- Aucune proposition encore -->
+      <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante == null}" layout="block">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:.75rem;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <svg width="20" height="20" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div style="flex:1;">
+              <div style="font-weight:700;color:#15803d;font-size:.875rem;">En attente d'une proposition de l'administration</div>
+              <div style="font-size:.8rem;color:#16a34a;margin-top:2px;">L'administration va vous envoyer une proposition de formation (dates, montant, programme) sous peu.</div>
+            </div>
+            <p:commandButton value="🔄 Actualiser"
+                             action="#{agentInstitutionBean.chargerProposition}"
+                             update="panelProposition"
+                             process="@none"
+                             style="font-size:.78rem;padding:5px 14px;background:#dcfce7;color:#15803d;border:1px solid #86efac;border-radius:.5rem;cursor:pointer;"
+                             styleClass="ui-button-text-only"/>
+          </div>
+        </div>
+      </h:panelGroup>
+
+      <!-- Proposition reçue -->
+      <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante != null}" layout="block">
+        <div style="background:#faf5ff;border:2px solid #c4b5fd;border-radius:.75rem;padding:1.25rem;">
+
+          <!-- En-tête proposition -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+            <div>
+              <div style="font-weight:700;color:#5b21b6;font-size:.9375rem;">Proposition de formation</div>
+              <div style="font-size:.75rem;color:#7c3aed;margin-top:2px;">
+                Reçue le <h:outputText value="#{agentInstitutionBean.propositionCourante.dateProposition}"/>
+              </div>
+            </div>
+            <h:panelGroup layout="block">
+              <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.statut eq 'EN_ATTENTE'}">
+                <span style="background:#fef3c7;color:#92400e;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">⏳ En attente de réponse</span>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.statut eq 'ACCEPTEE'}">
+                <span style="background:#d1fae5;color:#065f46;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">✓ Acceptée</span>
+              </h:panelGroup>
+              <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.statut eq 'REFUSEE'}">
+                <span style="background:#fee2e2;color:#991b1b;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:20px;">✗ Refusée</span>
+              </h:panelGroup>
+            </h:panelGroup>
+          </div>
+
+          <!-- Détails proposition -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;font-size:.8125rem;margin-bottom:1rem;">
+            <div>
+              <div style="color:#6b7280;font-size:.75rem;margin-bottom:2px;">Formateur / Prestataire</div>
+              <div style="font-weight:600;color:#1f2937;"><h:outputText value="#{agentInstitutionBean.propositionCourante.formateurNom}"/></div>
+            </div>
+            <div>
+              <div style="color:#6b7280;font-size:.75rem;margin-bottom:2px;">Montant</div>
+              <div style="font-weight:700;color:#7c3aed;font-size:1rem;">
+                <h:outputText value="#{agentInstitutionBean.propositionCourante.montant}"/> FCFA
+              </div>
+            </div>
+            <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.dateDebut != null}" layout="block">
+              <div>
+                <div style="color:#6b7280;font-size:.75rem;margin-bottom:2px;">Période</div>
+                <div style="font-weight:600;color:#1f2937;">
+                  <h:outputText value="#{agentInstitutionBean.propositionCourante.dateDebut}"/>
+                  <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.dateFin != null}">
+                    → <h:outputText value="#{agentInstitutionBean.propositionCourante.dateFin}"/>
+                  </h:panelGroup>
+                </div>
+              </div>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.lieu != null}" layout="block">
+              <div>
+                <div style="color:#6b7280;font-size:.75rem;margin-bottom:2px;">Lieu</div>
+                <div style="font-weight:600;color:#1f2937;"><h:outputText value="#{agentInstitutionBean.propositionCourante.lieu}"/></div>
+              </div>
+            </h:panelGroup>
+          </div>
+
+          <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.programme != null}" layout="block">
+            <div style="background:#fff;border:1px solid #e9d5ff;border-radius:.5rem;padding:.75rem;margin-bottom:.75rem;">
+              <div style="font-size:.75rem;font-weight:700;color:#7c3aed;margin-bottom:.35rem;">Programme</div>
+              <div style="font-size:.8125rem;color:#374151;white-space:pre-wrap;"><h:outputText value="#{agentInstitutionBean.propositionCourante.programme}"/></div>
+            </div>
+          </h:panelGroup>
+
+          <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.noteAdmin != null}" layout="block">
+            <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:.5rem;padding:.75rem;margin-bottom:.75rem;">
+              <div style="font-size:.75rem;font-weight:700;color:#92400e;margin-bottom:.35rem;">Note de l'administration</div>
+              <div style="font-size:.8125rem;color:#78350f;"><h:outputText value="#{agentInstitutionBean.propositionCourante.noteAdmin}"/></div>
+            </div>
+          </h:panelGroup>
+
+          <!-- Actions si EN_ATTENTE -->
+          <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.statut eq 'EN_ATTENTE'}" layout="block">
+            <div style="display:flex;gap:.75rem;margin-top:.5rem;">
+              <p:commandButton value="✓ Accepter la proposition"
+                               styleClass="ai-btn-primary"
+                               style="background:#16a34a;border-color:#16a34a;flex:1;"
+                               action="#{agentInstitutionBean.accepterPropositionCourante}"
+                               update="@form :aiMsgs"/>
+              <p:commandButton value="✗ Refuser"
+                               styleClass="ai-btn-outline"
+                               style="color:#dc2626;border-color:#dc2626;flex:1;"
+                               action="#{agentInstitutionBean.refuserPropositionCourante}"
+                               update="@form :aiMsgs"/>
+            </div>
+            <div style="margin-top:.5rem;">
+              <h:inputText value="#{agentInstitutionBean.motifRefusProposition}"
+                           placeholder="Motif de refus (optionnel)…"
+                           styleClass="ai-inp" style="width:100%;"/>
+            </div>
+          </h:panelGroup>
+
+          <!-- Section paiement si ACCEPTEE -->
+          <h:panelGroup rendered="#{agentInstitutionBean.propositionCourante.statut eq 'ACCEPTEE'}" layout="block">
+            <div style="border-top:1px solid #e9d5ff;margin-top:.75rem;padding-top:.75rem;">
+              <div style="font-weight:700;color:#5b21b6;margin-bottom:.75rem;font-size:.875rem;">Procéder au paiement</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                <div>
+                  <label class="ai-lbl">Méthode de paiement <span style="color:#ef4444;">*</span></label>
+                  <h:selectOneMenu value="#{agentInstitutionBean.paiementMethode}" styleClass="ai-inp" style="width:100%;">
+                    <f:selectItem itemValue=""       itemLabel="— Choisir —"/>
+                    <f:selectItem itemValue="WAVE"   itemLabel="Wave"/>
+                    <f:selectItem itemValue="ORANGE_MONEY" itemLabel="Orange Money"/>
+                    <f:selectItem itemValue="VIREMENT" itemLabel="Virement bancaire"/>
+                    <f:selectItem itemValue="ESPECES" itemLabel="Espèces"/>
+                  </h:selectOneMenu>
+                </div>
+                <div>
+                  <label class="ai-lbl">Référence / N° transaction <span style="color:#ef4444;">*</span></label>
+                  <h:inputText value="#{agentInstitutionBean.paiementReference}"
+                               placeholder="ex : WV-123456"
+                               styleClass="ai-inp" style="width:100%;"/>
+                </div>
+              </div>
+              <div style="margin-top:.75rem;display:flex;justify-content:flex-end;">
+                <p:commandButton value="Confirmer le paiement"
+                                 icon="pi pi-credit-card"
+                                 styleClass="ai-btn-primary"
+                                 action="#{agentInstitutionBean.payerProposition}"
+                                 update="@form :aiMsgs"/>
+              </div>
+            </div>
+          </h:panelGroup>
+
+        </div>
+      </h:panelGroup>
+
+      </p:outputPanel><!-- /panelProposition -->
+    </div>
+  </h:panelGroup>
+
+
+    <!-- Liste des formations souhaitées -->
+    <div style="margin-bottom:1rem;">
+      <div style="font-weight:700;color:#0B2545;margin-bottom:.75rem;font-size:.875rem;">
+        Formations souhaitées
+        (<h:outputText value="#{agentInstitutionBean.nbFormationsSouhaitees}"/>)
+      </div>
+
+      <h:panelGroup id="listeFormations" layout="block">
+        <h:panelGroup rendered="#{empty agentInstitutionBean.demandeLibreDetail.formationsSouhaitees}" layout="block">
+          <p style="font-size:.8125rem;color:#9ca3af;font-style:italic;">
+            Aucune formation ajoutée. Utilisez le formulaire ci-dessous.
+          </p>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{not empty agentInstitutionBean.demandeLibreDetail.formationsSouhaitees}" layout="block">
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <ui:repeat value="#{agentInstitutionBean.demandeLibreDetail.formationsSouhaitees}" var="fs">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;
+                           padding:.875rem 1rem;background:#f8fafc;border:1px solid #e5e7eb;
+                           border-radius:.75rem;">
+                <div style="min-width:0;flex:1;">
+                  <div style="font-weight:700;color:#0B2545;font-size:.875rem;margin-bottom:.25rem;">
+                    <h:outputText value="#{fs.thematique}"/>
+                  </div>
+                  <div style="font-size:.75rem;color:#6b7280;display:flex;gap:.75rem;flex-wrap:wrap;">
+                    <h:panelGroup rendered="#{fs.duree != null}">
+                      <span>&#128337; <h:outputText value="#{fs.duree}"/> j</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{fs.nbParticipants != null}">
+                      <span>&#128100; <h:outputText value="#{fs.nbParticipants}"/> pers.</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{not empty fs.niveauRequis}">
+                      <span>Niveau : <h:outputText value="#{fs.niveauRequis}"/></span>
+                    </h:panelGroup>
+                  </div>
+                  <h:panelGroup rendered="#{not empty fs.objectifs}" layout="block">
+                    <div style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">
+                      <h:outputText value="#{fs.objectifs}"/>
+                    </div>
+                  </h:panelGroup>
+                </div>
+                <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail.statut eq 'EN_ATTENTE'}" layout="block">
+                  <p:commandButton icon="pi pi-trash"
+                                   styleClass="ai-btn-cancel"
+                                   style="color:#ef4444;border-color:#fecaca;background:#fff;padding:.375rem .625rem;"
+                                   title="Supprimer"
+                                   action="#{agentInstitutionBean.supprimerFormationSouhaitee(fs.id)}"
+                                   onclick="return confirm('Supprimer cette formation ?')"
+                                   update=":fCarteDetail:listeFormations :fCarteList :aiMsgs"/>
+                </h:panelGroup>
+              </div>
+            </ui:repeat>
+          </div>
+        </h:panelGroup>
+      </h:panelGroup>
+    </div>
+
+    <!-- Formulaire ajout formation (seulement si EN_ATTENTE) -->
+    <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail.statut eq 'EN_ATTENTE'}" layout="block">
+      <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:.75rem;padding:1rem;">
+        <div style="font-weight:700;color:#92400e;margin-bottom:.75rem;font-size:.875rem;">
+          &#43; Ajouter une formation
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+          <div style="grid-column:1/-1;">
+            <label class="ai-lbl">Thématique <span style="color:#ef4444;">*</span></label>
+            <h:inputText value="#{agentInstitutionBean.fThematique}"
+                         placeholder="ex : Gestion de projet Agile"
+                         styleClass="ai-inp" style="width:100%;"/>
+          </div>
+          <div>
+            <label class="ai-lbl">Durée (jours)</label>
+            <h:inputText value="#{agentInstitutionBean.fDuree}"
+                         placeholder="ex : 3"
+                         styleClass="ai-inp" style="width:100%;"/>
+          </div>
+          <div>
+            <label class="ai-lbl">Nb participants</label>
+            <h:inputText value="#{agentInstitutionBean.fNbParticipants}"
+                         placeholder="ex : 10"
+                         styleClass="ai-inp" style="width:100%;"/>
+          </div>
+          <div>
+            <label class="ai-lbl">Niveau requis</label>
+            <h:selectOneMenu value="#{agentInstitutionBean.fNiveauRequis}"
+                             styleClass="ai-inp" style="width:100%;">
+              <f:selectItem itemValue="" itemLabel="— Choisir —"/>
+              <f:selectItem itemValue="DEBUTANT"      itemLabel="Débutant"/>
+              <f:selectItem itemValue="INTERMEDIAIRE" itemLabel="Intermédiaire"/>
+              <f:selectItem itemValue="AVANCE"        itemLabel="Avancé"/>
+            </h:selectOneMenu>
+          </div>
+          <div style="grid-column:1/-1;">
+            <label class="ai-lbl">Objectifs pédagogiques</label>
+            <h:inputTextarea value="#{agentInstitutionBean.fObjectifs}"
+                             placeholder="Décrivez les objectifs attendus…"
+                             styleClass="ai-inp" style="width:100%;min-height:60px;resize:vertical;"/>
+          </div>
+        </div>
+        <div style="margin-top:.75rem;display:flex;justify-content:flex-end;">
+          <p:commandButton value="Ajouter"
+                           icon="pi pi-plus"
+                           styleClass="ai-btn-primary"
+                           action="#{agentInstitutionBean.ajouterFormationSouhaitee}"
+                           update=":fCarteDetail:listeFormations :fCarteList :aiMsgs"/>
+        </div>
+      </div>
+    </h:panelGroup>
+
+  </h:panelGroup>
+
+  <!-- ── Membres participants ── -->
+  <h:panelGroup rendered="#{agentInstitutionBean.demandeLibreDetail != null and not empty agentInstitutionBean.membres}" layout="block">
+    <div style="margin-top:1.25rem;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:.75rem;padding:1rem;">
+      <div style="font-weight:700;color:#5b21b6;margin-bottom:.75rem;font-size:.875rem;">
+        Membres participants
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem;">
+        <ui:repeat value="#{agentInstitutionBean.membres}" var="mb">
+          <h:panelGroup layout="block">
+            <p:commandButton
+              value="#{mb.prenom} #{mb.nom}"
+              styleClass="#{agentInstitutionBean.isMembreLibreSelectionne(mb.id) ? 'ai-btn-primary' : 'ai-btn-outline'}"
+              style="font-size:.8rem;padding:.35rem .75rem;margin:0;"
+              action="#{agentInstitutionBean.toggleMembreLibre(mb.id)}"
+              update="@form"
+              process="@this"/>
+          </h:panelGroup>
+        </ui:repeat>
+      </div>
+      <div style="display:flex;justify-content:flex-end;">
+        <p:commandButton value="Enregistrer les participants"
+                         icon="pi pi-check"
+                         styleClass="ai-btn-primary"
+                         action="#{agentInstitutionBean.sauvegarderParticipantsLibre}"
+                         update=":fCarteList :aiMsgs @form"/>
+      </div>
+    </div>
+  </h:panelGroup>
+
+</p:dialog>
+</h:form><!-- /fCarteDetail -->
+
+
+
+<script>
+//<![CDATA[
+
+var aiTitles = {
+  'dashboard'    : ['Tableau de bord',    'Vue d\'ensemble de votre activité'],
+  'formations'   : ['Mes formations',      'Candidatures validées et formations sur mesure'],
+  'candidatures' : ['Mes candidatures',   'Suivi de vos demandes de formation'],
+  'institution'  : ['Fiche institution',  'Informations et statut de validation'],
+  'membres'      : ['Membres',            'Participants rattachés à votre institution'],
+  'compte'       : ['Mon compte',         'Informations personnelles'],
+  'messagerie'   : ['Messagerie',         'Échanges avec l\'administration'],
+  'carte'        : ['Demande à la carte', 'Formation sur mesure pour vos équipes'],
+  'profil'       : ['Mon profil',         'Paramètres de votre compte']
+};
+
+function aiTab(id, btn) {
+  document.querySelectorAll('.ai-page').forEach(function(p){ p.classList.remove('active'); });
+  var pg = document.getElementById('ai-' + id);
+  if (pg) pg.classList.add('active');
+
+  document.querySelectorAll('.ai-nav-btn').forEach(function(b){ b.classList.remove('active'); });
+  var nb = document.getElementById('nav-' + id);
+  if (nb) nb.classList.add('active');
+  else if (btn) btn.classList.add('active');
+
+  var info = aiTitles[id];
+  if (info) {
+    var t = document.getElementById('ai-hdr-title');
+    if (t) t.textContent = info[0];
+    /* ✅ CORRECTION : mise à jour du sous-titre */
+    var s = document.getElementById('ai-hdr-sub');
+    if (s) s.textContent = info[1];
+  }
+
+  /* Sur mobile, on referme le tiroir après avoir choisi une page */
+  if (window.innerWidth <= 767) aiSidebarClose();
+}
+
+/* ── Tiroir sidebar mobile ── */
+function aiSidebarOpen() {
+  var sb = document.getElementById('aiSidebar');
+  var ov = document.getElementById('aiSidebarOverlay');
+  if (sb) sb.classList.add('open');
+  if (ov) ov.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function aiSidebarClose() {
+  var sb = document.getElementById('aiSidebar');
+  var ov = document.getElementById('aiSidebarOverlay');
+  if (sb) sb.classList.remove('open');
+  if (ov) ov.classList.remove('show');
+  document.body.style.overflow = '';
+}
+window.addEventListener('resize', function () {
+  if (window.innerWidth > 767) aiSidebarClose();
+});
+
+/* ✅ CORRECTION : initialisation au chargement de la page */
+document.addEventListener('DOMContentLoaded', function() {
+  aiTab('dashboard', document.getElementById('nav-dashboard'));
+});
+
+/* ── Dialog détail demande ── */
+function ddTab(id) {
+  document.querySelectorAll('.dd-pane').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.dd-tab').forEach(function(b){ b.classList.remove('active'); });
+  var pane = document.getElementById('ddp-' + id);
+  if (pane) pane.classList.add('active');
+  var tab = document.getElementById('ddt-' + id);
+  if (tab) tab.classList.add('active');
+  if (id === 'messages') setTimeout(scrollChat, 100);
+}
+
+function scrollChat() {
+  var el = document.getElementById('ddChatScroll');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function updateStatutFromSelect(sel, partId) {
+  /* ✅ CORRECTION : utiliser data-partid au lieu du sélecteur id$= fragile avec les IDs JSF */
+  var btn = document.querySelector('[data-partid="' + partId + '"]');
+  if (btn) btn.click();
+}
+
+//]]>
+</script>
+
+</ui:define>
+</ui:composition>
+</html>

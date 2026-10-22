@@ -1,0 +1,75 @@
+##############################################
+# Deployment — frontend (Wildfly + PrimeFaces)
+##############################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: senexpert
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: senexpert/frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: USER_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: senexpert-config
+                  key: user-service-url
+            - name: FORMATION_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: senexpert-config
+                  key: formation-service-url
+          readinessProbe:
+            httpGet:
+              path: /frontend_service/login.xhtml
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /frontend_service/login.xhtml
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "300m"
+            limits:
+              memory: "1Gi"
+              cpu: "800m"
+
+---
+##############################################
+# Service — frontend (NodePort)
+##############################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+  namespace: senexpert
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+  type: NodePort

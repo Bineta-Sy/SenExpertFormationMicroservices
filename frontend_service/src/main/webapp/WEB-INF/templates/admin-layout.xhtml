@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:c="jakarta.tags.core">
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SenExpertFormation — <ui:insert name="title">Admin</ui:insert></title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+
+    <style>
+    :root {
+      --navy:        #EA580C; 
+      --blue:        #F97316; 
+      --bg-page:     #FAFAFA; 
+      --bg-muted:    #F4F4F5; 
+      --border:      #E4E4E7; 
+      --text-1:      #18181B; 
+      --text-2:      #52525B;
+      --text-3:      #A1A1AA;
+      --success:     #16A34A; --success-bg: #F0FDF4; --success-bd: #BBF7D0;
+      --warning:     #D97706; --warning-bg: #FFFBEB; --warning-bd: #FDE68A;
+      --danger:      #DC2626; --danger-bg:  #FEF2F2; --danger-bd:  #FECACA;
+      --info:        #0284C7; --info-bg:    #F0F9FF; --info-bd:    #BAE6FD;
+      --radius-sm:   6px; --radius-md: 8px; --radius-lg: 12px;
+      --font-sans:   'Inter', system-ui, sans-serif;
+
+      /* Compatibilité classes existantes admin-zone */
+      --primary:          #EA580C;
+      --primary-dark:     #C2410C;
+      --primary-glow:     rgba(234, 88, 12, 0.15);
+      --bg-card:          #FFFFFF;
+      --bg-card-hover:    #FAFAFA;
+      --bg-topbar:        #EA580C;
+      --bg-sidebar:       #FFFFFF;
+      --bg-muted-dark:    #F4F4F5;
+      --border-dark:      #D4D4D8;
+      --text-primary:     #18181B;
+      --text-secondary:   #52525B;
+      --text-muted:       #A1A1AA;
+      --text-white:       #FFFFFF;
+      --shadow-sm:        0 1px 2px rgba(0,0,0,.05);
+      --shadow-md:        0 4px 12px rgba(0,0,0,.05);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: var(--font-sans); background: var(--bg-page); color: var(--text-1); font-size: 14px; -webkit-font-smoothing: antialiased; }
+
+    /* ── Shell ── */
+    .adm-shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* ── Topbar ── */
+    .adm-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.25rem; height: 52px; background: var(--navy);
+      flex-shrink: 0; position: relative; z-index: 200;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+    .adm-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+    .adm-logo-icon { width: 32px; height: 32px; background: #FFFFFF; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .adm-logo-text { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -.2px; }
+    .adm-logo-badge { font-size: 11px; color: #FFEDD5; margin-left: 6px; padding: 2px 8px; background: rgba(255,255,255,.15); border-radius: 20px; }
+    .adm-topbar-right { display: flex; align-items: center; gap: 14px; }
+    .adm-notif { position: relative; cursor: pointer; color: #FFEDD5; font-size: 20px; text-decoration: none; }
+    .adm-notif-badge { position: absolute; top: -4px; right: -4px; width: 16px; height: 16px; border-radius: 50%; background: #DC2626; font-size: 9px; color: #fff; display: flex; align-items: center; justify-content: center; border: 2px solid var(--navy); }
+    .adm-user { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: background .15s; position: relative; }
+    .adm-user:hover { background: rgba(255,255,255,.12); }
+    .adm-avatar { width: 32px; height: 32px; border-radius: 50%; background: #F97316; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .adm-uname { font-size: 12px; color: #fff; font-weight: 500; }
+    .adm-urole { font-size: 10px; color: #FFEDD5; }
+
+    /* Dropdown utilisateur */
+    .adm-user-menu { position: absolute; top: calc(100% + 6px); right: 0; background: #fff; border: 1px solid var(--border); border-radius: 12px; min-width: 210px; overflow: hidden; z-index: 300; display: none; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+    .adm-user-menu.open { display: block; }
+    .adm-um-head { padding: .75rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-muted); }
+    .adm-um-name { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .adm-um-email { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+    .adm-um-role { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: var(--info-bg); color: var(--info); display: inline-block; margin-top: 5px; border: 1px solid var(--info-bd); }
+    .adm-um-item { display: flex; align-items: center; gap: 9px; padding: 8px 1rem; font-size: 13px; color: var(--text-2); cursor: pointer; transition: background .1s; text-decoration: none; }
+    .adm-um-item:hover { background: var(--bg-muted); color: var(--text-1); }
+    .adm-um-item i { font-size: 15px; }
+    .adm-um-sep { height: 1px; background: var(--border); margin: 4px 0; }
+    .adm-um-logout { display: flex; align-items: center; gap: 9px; padding: 8px 1rem; font-size: 13px; color: var(--danger); cursor: pointer; transition: background .1s; font-weight: 500; }
+    .adm-um-logout:hover { background: var(--danger-bg); }
+
+    /* ── Body ── */
+    .adm-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .adm-sidebar { width: 210px; background: #fff; border-right: 1px solid var(--border); padding: .5rem 0; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+    .adm-ns { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; padding: .6rem 1rem .2rem; }
+    .adm-ni { display: flex; align-items: center; gap: 8px; padding: 7px 1rem; font-size: 12.5px; color: var(--text-2); cursor: pointer; transition: background .1s; border-left: 2px solid transparent; text-decoration: none; }
+    .adm-ni:hover { background: var(--bg-muted); }
+    .adm-ni.active { background: #FFF7ED; color: var(--navy); font-weight: 600; border-left-color: var(--navy); }
+    .adm-ni i { font-size: 15px; flex-shrink: 0; }
+    .adm-nb { margin-left: auto; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 10px; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-bd); }
+    .adm-nb.w { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-bd); }
+    .adm-nb.b { background: var(--info-bg); color: var(--info); border-color: var(--info-bd); }
+    .adm-nb.g { background: var(--success-bg); color: var(--success); border-color: var(--success-bd); }
+    .adm-sidebar-foot { border-top: 1px solid var(--border); padding: .5rem 0; margin-top: auto; }
+    .adm-logout-btn { display: flex; align-items: center; gap: 6px; padding: 7px 1rem; font-size: 12.5px; color: var(--danger); cursor: pointer; transition: background .1s; width: 100%; background: none; border: none; font-family: var(--font-sans); }
+    .adm-logout-btn:hover { background: var(--danger-bg); }
+
+    /* ── Main ── */
+    .adm-main { flex: 1; padding: 1.5rem; overflow-y: auto; background: var(--bg-page); }
+
+    /* ── Modale déconnexion ── */
+    .adm-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 500; align-items: center; justify-content: center; }
+    .adm-modal-bg.open { display: flex; }
+    .adm-modal { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); width: 340px; overflow: hidden; box-shadow: 0 16px 48px rgba(0,0,0,.12); }
+    .adm-modal-head { padding: 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .adm-modal-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--danger-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .adm-modal-body { padding: 1rem; font-size: 13px; color: var(--text-2); line-height: 1.6; }
+    .adm-modal-foot { display: flex; gap: 8px; justify-content: flex-end; padding: .75rem 1rem; border-top: 1px solid var(--border); }
+
+    /* ── Boutons communs ── */
+    .btn-p { padding: 0 14px; height: 33px; border: none; border-radius: var(--radius-md); background: var(--navy); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+    .btn-p:hover { background: var(--blue); }
+    .btn-s { padding: 0 10px; height: 28px; border: 1px solid var(--border); border-radius: var(--radius-md); background: #fff; color: var(--text-2); font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; }
+    .btn-s:hover { background: var(--bg-muted); }
+    .btn-ok { border-color: var(--success-bd) !important; color: var(--success) !important; background: var(--success-bg) !important; }
+    .btn-ko { border-color: var(--danger-bd) !important; color: var(--danger) !important; background: var(--danger-bg) !important; }
+
+    /* ── Badges / pills ── */
+    .pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 20px; border: 1px solid transparent; white-space: nowrap; }
+    .p-pend { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-bd); }
+    .p-ok   { background: var(--success-bg); color: var(--success); border-color: var(--success-bd); }
+    .p-ko   { background: var(--danger-bg);  color: var(--danger);  border-color: var(--danger-bd); }
+    .p-info { background: var(--info-bg);    color: var(--info);    border-color: var(--info-bd); }
+    .p-gray { background: var(--bg-muted);   color: var(--text-2);  border-color: var(--border); }
+
+    /* ── Compatibilité classes existantes (a-*) ── */
+    .a-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .a-header-left h1 { font-size: 1.2rem; font-weight: 700; color: var(--text-1); margin-bottom: 3px; }
+    .a-header-left p  { font-size: .82rem; color: var(--text-2); }
+    .a-back { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #fff; color: var(--text-2); border-radius: var(--radius-md); text-decoration: none; font-size: 12px; font-weight: 500; border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: all .15s; }
+    .a-back:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .a-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+    .a-stat { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; box-shadow: var(--shadow-sm); border-top: 3px solid var(--blue); }
+    .a-stat .sv { font-size: 1.7rem; font-weight: 700; color: var(--text-1); }
+    .a-stat .sl { font-size: 11px; color: var(--text-2); margin-top: 3px; text-transform: uppercase; letter-spacing: .4px; }
+    .a-card { background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
+    .a-card-header { display: flex; justify-content: space-between; align-items: center; padding: 13px 18px; border-bottom: 1px solid var(--border); background: var(--bg-muted); }
+    .a-card-header h2 { font-size: 13px; font-weight: 600; color: var(--text-1); margin: 0; }
+    .a-card-header .a-count { font-size: 12px; color: var(--text-3); }
+    .a-card-body { padding: 20px; }
+    .a-grid2 { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+    .a-grid-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .a-field { margin-bottom: 14px; }
+    .a-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
+    .a-field .req { color: var(--danger); }
+    .a-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .a-input { width: 100% !important; padding: 9px 12px !important; border: 1px solid var(--border) !important; border-radius: var(--radius-md) !important; font-size: 13px !important; color: var(--text-1) !important; background: #fff !important; box-sizing: border-box; transition: border-color .15s; }
+    .a-input:focus { border-color: var(--blue) !important; outline: none !important; box-shadow: 0 0 0 3px rgba(234,88,12,.08) !important; }
+    .a-select { width: 100% !important; padding: 9px 12px !important; border: 1px solid var(--border) !important; border-radius: var(--radius-md) !important; font-size: 13px !important; color: var(--text-1) !important; background: #fff !important; }
+    .a-textarea { min-height: 80px; resize: vertical; }
+    .abtn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 8px 18px; border-radius: var(--radius-md); border: none; cursor: pointer; font-weight: 600; transition: all .2s; }
+    .abtn:hover { filter: brightness(1.08); }
+    .abtn-primary  { background: var(--blue); color: #fff; }
+    .abtn-success  { background: var(--success); color: #fff; }
+    .abtn-warning  { background: var(--warning); color: #fff; }
+    .abtn-danger   { background: var(--danger);  color: #fff; }
+    .abtn-secondary { background: #fff; color: var(--text-2); border: 1px solid var(--border); }
+    .abtn-full { width: 100%; justify-content: center; }
+    .abtn-sm { font-size: 11px; padding: 4px 11px; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer; background: #fff; color: var(--text-2); font-weight: 500; transition: all .15s; }
+    .abtn-sm:hover { background: var(--bg-muted); }
+    .abtn-sm-ok { color: var(--success); border-color: var(--success-bd); background: var(--success-bg); }
+    .abtn-sm-ko { color: var(--danger);  border-color: var(--danger-bd);  background: var(--danger-bg); }
+    .ab { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; display: inline-block; border: 1px solid transparent; }
+    .ab-wait   { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-bd); }
+    .ab-ok     { background: var(--success-bg); color: var(--success); border-color: var(--success-bd); }
+    .ab-ko     { background: var(--danger-bg);  color: var(--danger);  border-color: var(--danger-bd); }
+    .ab-info   { background: var(--info-bg);    color: var(--info);    border-color: var(--info-bd); }
+    .ab-gray   { background: var(--bg-muted);   color: var(--text-2);  border-color: var(--border); }
+    .a-actions { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+    .a-empty { padding: 40px; text-align: center; color: var(--text-3); font-size: 13px; }
+    .a-denied { text-align: center; padding: 80px 20px; }
+    .a-denied .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .a-denied h2 { color: var(--text-1); font-size: 1.2rem; }
+    .a-info-box { background: var(--info-bg); border: 1px solid var(--info-bd); border-left: 3px solid var(--info); border-radius: var(--radius-lg); padding: 12px 16px; font-size: 12px; color: var(--info); margin-top: 16px; }
+
+    /* ── PrimeFaces overrides ── */
+    .ui-datatable { border: none !important; }
+    .ui-datatable thead th { background: var(--bg-muted) !important; color: var(--text-2) !important; font-weight: 600 !important; font-size: 11px !important; text-transform: uppercase !important; letter-spacing: .5px !important; border: none !important; border-bottom: 1px solid var(--border) !important; padding: 10px 14px !important; }
+    .ui-datatable tbody td { border: none !important; border-bottom: 1px solid var(--border) !important; padding: 10px 14px !important; font-size: 13px !important; color: var(--text-1) !important; background: #fff !important; }
+    .ui-datatable tbody tr:hover td { background: var(--bg-muted) !important; }
+    .ui-datatable tbody tr:last-child td { border-bottom: none !important; }
+    .ui-paginator { background: var(--bg-muted) !important; border-top: 1px solid var(--border) !important; }
+    .ui-paginator .ui-paginator-page.ui-state-active { background: var(--navy) !important; color: #fff !important; border-radius: var(--radius-sm) !important; }
+    .ui-messages { border-radius: var(--radius-md) !important; font-size: 12px !important; margin-bottom: 12px !important; }
+    .ui-messages-info  { background: var(--info-bg)    !important; border-color: var(--info-bd)    !important; color: var(--info)    !important; }
+    .ui-messages-error { background: var(--danger-bg)  !important; border-color: var(--danger-bd)  !important; color: var(--danger)  !important; }
+    .ui-messages-warn  { background: var(--warning-bg) !important; border-color: var(--warning-bd) !important; color: var(--warning) !important; }
+    .ui-commandbutton { font-family: var(--font-sans) !important; }
+    </style>
+    <style><ui:insert name="pageStyle"/></style>
+
+    <ui:insert name="head"/>
+</h:head>
+
+<h:body>
+
+<h:panelGroup rendered="#{!sessionBean.connecte or !sessionBean.adminOrFormateur}">
+    <div class="a-denied" style="padding:80px 20px;">
+        <div class="icon">🚫</div>
+        <h2>Accès refusé</h2>
+        <p style="color:var(--text-2);font-size:13px;margin-top:8px;">Vous devez être administrateur.</p>
+        <a href="#{request.contextPath}/login.xhtml"
+           style="display:inline-flex;align-items:center;gap:6px;margin-top:20px;padding:8px 18px;background:var(--navy);color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">
+            Connexion
+        </a>
+    </div>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{sessionBean.connecte and sessionBean.adminOrFormateur}" layout="block" styleClass="adm-shell">
+
+  <div class="adm-topbar">
+    <a class="adm-logo" href="#{request.contextPath}/admin/dashboard.xhtml">
+      <div class="adm-logo-icon"><i class="ti ti-award" style="font-size:17px;color:var(--navy);"></i></div>
+      <span class="adm-logo-text">SenExpertFormation</span>
+      <span class="adm-logo-badge">Administration</span>
+    </a>
+
+    <div class="adm-topbar-right">
+      <h:panelGroup rendered="#{notifBean.hasPending}">
+        <a class="adm-notif" href="#{request.contextPath}/admin/admin-personnes.xhtml" title="Comptes en attente">
+          <i class="ti ti-bell"></i>
+          <div class="adm-notif-badge"><h:outputText value="#{notifBean.totalPending}"/></div>
+        </a>
+      </h:panelGroup>
+
+      <div class="adm-user" onclick="admToggleMenu()" id="adm-user-btn">
+        <div class="adm-avatar">
+          <h:outputText value="#{sessionBean.email != null ? sessionBean.email.substring(0,1).toUpperCase() : 'A'}"/>
+        </div>
+        <div>
+          <div class="adm-uname"><h:outputText value="#{sessionBean.nomComplet != null ? sessionBean.nomComplet : 'Administrateur'}"/></div>
+          <div class="adm-urole"><h:outputText value="#{sessionBean.email}"/></div>
+        </div>
+        <i class="ti ti-chevron-down" style="font-size:13px;color:#FFEDD5;"></i>
+
+        <div class="adm-user-menu" id="adm-user-menu">
+          <div class="adm-um-head">
+            <div class="adm-um-name"><h:outputText value="#{sessionBean.nomComplet != null ? sessionBean.nomComplet : 'Administrateur'}"/></div>
+            <div class="adm-um-email"><h:outputText value="#{sessionBean.email}"/></div>
+            <span class="adm-um-role">Administrateur</span>
+          </div>
+          <a class="adm-um-item" href="#{request.contextPath}/profile.xhtml">
+            <i class="ti ti-user"></i>Mon profil
+          </a>
+          <div class="adm-um-sep"></div>
+          <div class="adm-um-logout" onclick="admDemanderDeconnexion(event)">
+            <i class="ti ti-logout"></i>Se déconnecter
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="adm-body">
+
+    <div class="adm-sidebar">
+      <div class="adm-ns">Tableau de bord</div>
+      <a class="adm-ni" href="#{request.contextPath}/admin/dashboard.xhtml">
+        <i class="ti ti-home"></i>Vue d'ensemble
+      </a>
+
+      <div class="adm-ns">UTILISATEURS</div>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-personnes.xhtml">
+        Comptes &amp; personnes
+        <h:panelGroup rendered="#{notifBean.hasPending}"><span class="adm-nb"><h:outputText value="#{notifBean.totalPending}"/></span></h:panelGroup>
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-profils.xhtml">
+        Profils et rôles
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-permissions.xhtml">
+        Permissions
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/institutions-list.xhtml">
+        Institutions
+      </a>
+
+      <div class="adm-ns">FORMATIONS</div>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-offres.xhtml">
+        Offres de formation
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-sessions.xhtml">
+        Sessions
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-domaines.xhtml">
+        Domaines
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-demandes.xhtml">
+        Demandes
+        <h:panelGroup rendered="#{notifBean.pendingDemandes gt 0}" style="margin-left:auto;">
+          <span style="background:#F97316;color:#fff;font-size:9px;padding:1px 6px;border-radius:20px;font-weight:700;">
+            <h:outputText value="#{notifBean.pendingDemandes}"/>
+          </span>
+        </h:panelGroup>
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-candidatures.xhtml">
+        Candidatures
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-demandes-libre.xhtml">
+        Demande Carte
+        <h:panelGroup rendered="#{notifBean.pendingDemandesLibres gt 0}" style="margin-left:auto;">
+          <span style="background:#F97316;color:#fff;font-size:9px;padding:1px 6px;border-radius:20px;font-weight:700;">
+            <h:outputText value="#{notifBean.pendingDemandesLibres}"/>
+          </span>
+        </h:panelGroup>
+      </a>
+
+      <div class="adm-ns">Analyse et Système</div>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-analytics.xhtml">
+        Statistiques
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-audit.xhtml">
+        Audit log
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-import.xhtml">
+        Import CSV
+      </a>
+      <a class="adm-ni" href="#{request.contextPath}/admin/admin-annonces.xhtml">
+       Annonces
+      </a>
+
+      <div class="adm-sidebar-foot">
+        <button class="adm-logout-btn" onclick="admDemanderDeconnexion(event)">
+          Se déconnecter
+        </button>
+      </div>
+    </div>
+
+    <div class="adm-main">
+      <p:messages id="globalMessages" showDetail="true" closable="true" style="margin-bottom:16px;"/>
+      <ui:insert name="content"/>
+    </div>
+
+  </div>
+</h:panelGroup>
+
+<div class="adm-modal-bg" id="adm-logout-confirm">
+  <div class="adm-modal">
+    <div class="adm-modal-head">
+      <div class="adm-modal-icon"><i class="ti ti-logout" style="font-size:18px;color:var(--danger);"></i></div>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--text-1);">Vous voulez vraiment quitter ?</div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:1px;">Votre session sera fermée</div>
+      </div>
+    </div>
+    <div class="adm-modal-body">
+      Attention ! Vous êtes sur le point de vous déconnecter de votre espace administrateur.
+    </div>
+    <div class="adm-modal-foot">
+      <button class="btn-s" onclick="admAnnulerDeconnexion()">Annuler</button>
+      <h:form style="display:inline;margin:0;">
+        <h:commandButton value="Se déconnecter" styleClass="btn-p"
+                         style="background:#991B1B;"
+                         action="#{authBean.logout}"/>
+      </h:form>
+    </div>
+  </div>
+</div>
+
+<script>//<![CDATA[
+(function() {
+  var path = window.location.pathname;
+  document.querySelectorAll('.adm-ni').forEach(function(a) {
+    if (a.href && path.indexOf(a.getAttribute('href').replace(/^.*\/admin\//, '/admin/')) !== -1) {
+      a.classList.add('active');
+    }
+  });
+})();
+
+function admToggleMenu() {
+  document.getElementById('adm-user-menu').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  var btn = document.getElementById('adm-user-btn');
+  var menu = document.getElementById('adm-user-menu');
+  if (btn && menu && !btn.contains(e.target)) menu.classList.remove('open');
+});
+function admDemanderDeconnexion(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('adm-user-menu').classList.remove('open');
+  document.getElementById('adm-logout-confirm').classList.add('open');
+}
+function admAnnulerDeconnexion() {
+  document.getElementById('adm-logout-confirm').classList.remove('open');
+}
+//]]></script>
+
+<ui:insert name="scripts"/>
+</h:body>
+</html>

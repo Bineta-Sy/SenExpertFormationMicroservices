@@ -1,0 +1,90 @@
+##############################################
+# Deployment — formation-service
+##############################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: formation-service
+  namespace: senexpert
+  labels:
+    app: formation-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: formation-service
+  template:
+    metadata:
+      labels:
+        app: formation-service
+    spec:
+      containers:
+        - name: formation-service
+          image: senexpert/formation-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+          env:
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: senexpert-config
+                  key: db-formations-url
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: senexpert-config
+                  key: db-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: senexpert-secret
+                  key: db-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: senexpert-secret
+                  key: jwt-secret
+            - name: USER_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: senexpert-config
+                  key: user-service-url
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 40
+            periodSeconds: 15
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+---
+##############################################
+# Service — formation-service (NodePort)
+##############################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: formation-service-svc
+  namespace: senexpert
+spec:
+  selector:
+    app: formation-service
+  ports:
+    - port: 8082
+      targetPort: 8082
+      nodePort: 30082
+  type: NodePort

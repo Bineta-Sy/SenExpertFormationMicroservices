@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+<ui:define name="title">Détail de la formation</ui:define>
+
+<ui:define name="pageStyle">
+/* ─── Layout général ─────────────────────────────────────────────────── */
+.od-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-3);text-decoration:none;padding:6px 12px;border-radius:6px;background:var(--bg-muted);border:1px solid var(--border);margin-bottom:18px;transition:.15s;}
+.od-back:hover{background:var(--border);color:var(--text-1);}
+.od-hero{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:20px;}
+.od-hero-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+.od-titre{font-size:22px;font-weight:700;color:var(--text-1);margin:0 0 8px;}
+.od-badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.od-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid transparent;}
+.od-meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
+.od-meta-item label{display:block;font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.od-meta-item span{font-size:13px;font-weight:600;color:var(--text-1);}
+/* ─── Stats cards ────────────────────────────────────────────────────── */
+.od-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+@media(max-width:760px){.od-stats{grid-template-columns:repeat(2,1fr);}}
+.od-stat{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;}
+.od-stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.od-stat-num{font-size:22px;font-weight:700;color:var(--text-1);line-height:1;}
+.od-stat-label{font-size:11px;color:var(--text-3);margin-top:2px;}
+/* ─── Sections ───────────────────────────────────────────────────────── */
+.od-grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+@media(max-width:900px){.od-grid2{grid-template-columns:1fr;}}
+.od-section{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.od-section-full{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;}
+.od-sec-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--bg-muted);border-bottom:1px solid var(--border);}
+.od-sec-hd h3{font-size:13px;font-weight:700;color:var(--text-1);margin:0;display:flex;align-items:center;gap:7px;}
+.od-sec-count{font-size:11px;font-weight:600;background:var(--border);color:var(--text-2);padding:2px 8px;border-radius:20px;}
+.od-sec-body{padding:16px 18px;}
+/* ─── Formateurs ─────────────────────────────────────────────────────── */
+.od-fmt-list{display:flex;flex-direction:column;gap:10px;}
+.od-fmt-card{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-muted);border:1px solid var(--border);border-radius:8px;}
+.od-fmt-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.od-fmt-name{font-size:13px;font-weight:600;color:var(--text-1);}
+.od-fmt-meta{font-size:11px;color:var(--text-3);}
+/* ─── Cours ──────────────────────────────────────────────────────────── */
+.od-cours-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);}
+.od-cours-row:last-child{border-bottom:none;}
+.od-cours-row:hover{background:var(--bg-muted);}
+.od-cours-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.od-cours-type{font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;}
+.od-cours-title{font-size:13px;font-weight:600;color:var(--text-1);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.od-cours-meta{font-size:11px;color:var(--text-3);}
+/* ─── Sessions ───────────────────────────────────────────────────────── */
+.od-ses-row{display:grid;grid-template-columns:80px 1fr 110px 100px;gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;}
+.od-ses-row:last-child{border-bottom:none;}
+.od-ses-row:hover{background:var(--bg-muted);}
+.od-ses-hdr{background:var(--bg-muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);padding:8px 18px;display:grid;grid-template-columns:80px 1fr 110px 100px;gap:10px;border-bottom:1px solid var(--border);}
+/* ─── Apprenants ─────────────────────────────────────────────────────── */
+.od-apr-row{display:grid;grid-template-columns:36px 1fr 100px 80px 150px;gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12px;}
+.od-apr-row:last-child{border-bottom:none;}
+.od-apr-row:hover{background:var(--bg-muted);}
+.od-apr-hdr{background:var(--bg-muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);padding:8px 18px;display:grid;grid-template-columns:36px 1fr 100px 80px 150px;gap:10px;border-bottom:1px solid var(--border);}
+.od-apr-avatar{width:30px;height:30px;border-radius:50%;background:#E0E7FF;color:#4338CA;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.od-apr-actions{display:flex;gap:5px;}
+/* ─── Description ────────────────────────────────────────────────────── */
+.od-desc{font-size:13px;color:var(--text-2);line-height:1.65;white-space:pre-wrap;}
+.od-empty{text-align:center;padding:28px;color:var(--text-3);font-size:12px;}
+</ui:define>
+
+<ui:define name="content">
+<f:metadata>
+    <f:viewParam name="offreId" value="#{offreDetailBean.offreId}"/>
+    <f:viewAction action="#{offreDetailBean.charger}"/>
+</f:metadata>
+
+<h:form id="fDetail">
+<p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:14px;"/>
+
+<!-- ══ BOUTON RETOUR ══════════════════════════════════════════════════════ -->
+<a href="#{request.contextPath}/admin/admin-offres.xhtml" class="od-back">
+    <i class="ti ti-arrow-left"></i> Retour aux offres
+</a>
+
+<!-- ══ HERO : TITRE + STATUT + BADGES ════════════════════════════════════ -->
+<h:panelGroup rendered="#{offreDetailBean.offre != null}" layout="block">
+<div class="od-hero">
+    <div class="od-hero-top">
+        <div>
+            <h1 class="od-titre"><h:outputText value="#{offreDetailBean.offre.titre}"/></h1>
+            <div class="od-badges">
+                <!-- Statut -->
+                <span class="od-badge"
+                      style="background:#{offreDetailBean.getStatutBg(offreDetailBean.offre.statut)};color:#{offreDetailBean.getStatutColor(offreDetailBean.offre.statut)};">
+                    <h:outputText value="#{offreDetailBean.getStatutLabel(offreDetailBean.offre.statut)}"/>
+                </span>
+                <!-- Domaine -->
+                <h:panelGroup rendered="#{offreDetailBean.offre.domaine != null}">
+                    <span class="od-badge" style="background:#EFF6FF;color:#1D4ED8;">
+                        <h:outputText value="#{offreDetailBean.offre.domaine.libelle}"/>
+                    </span>
+                </h:panelGroup>
+                <!-- Type -->
+                <span class="od-badge" style="background:#F5F3FF;color:#7C3AED;">
+                    <h:outputText value="#{offreDetailBean.offre.type}"/>
+                </span>
+                <!-- Niveau -->
+                <h:panelGroup rendered="#{not empty offreDetailBean.offre.niveau}">
+                    <span class="od-badge" style="background:#FDF4FF;color:#A21CAF;">
+                        <h:outputText value="#{offreDetailBean.offre.niveau}"/>
+                    </span>
+                </h:panelGroup>
+            </div>
+        </div>
+        <!-- Actions rapides -->
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+            <a href="#{request.contextPath}/admin/gerer-cours.xhtml?offreId=#{offreDetailBean.offreId}&amp;titre=#{offreDetailBean.offre.titre}"
+               class="abtn abtn-secondary" style="font-size:12px;display:inline-flex;align-items:center;gap:5px;text-decoration:none;">
+                <i class="ti ti-books"></i> Gérer les cours
+            </a>
+        </div>
+    </div>
+
+    <!-- Meta grid -->
+    <div class="od-meta-grid">
+        <div class="od-meta-item">
+            <label><i class="ti ti-calendar-event"></i> Date début</label>
+            <span><h:outputText value="#{not empty offreDetailBean.offre.dateDebut ? offreDetailBean.offre.dateDebut : '—'}"/></span>
+        </div>
+        <div class="od-meta-item">
+            <label><i class="ti ti-calendar-x"></i> Date fin</label>
+            <span><h:outputText value="#{not empty offreDetailBean.offre.dateFin ? offreDetailBean.offre.dateFin : '—'}"/></span>
+        </div>
+        <div class="od-meta-item">
+            <label><i class="ti ti-clock"></i> Durée</label>
+            <span><h:outputText value="#{not empty offreDetailBean.offre.duree ? offreDetailBean.offre.duree : '—'}"/></span>
+        </div>
+        <div class="od-meta-item">
+            <label><i class="ti ti-users"></i> Places</label>
+            <span><h:outputText value="#{offreDetailBean.offre.places != null ? offreDetailBean.offre.places : '—'}"/></span>
+        </div>
+        <div class="od-meta-item">
+            <label><i class="ti ti-coin"></i> Coût</label>
+            <span>
+                <h:panelGroup rendered="#{offreDetailBean.offre.cout != null and offreDetailBean.offre.cout gt 0}">
+                    <h:outputText value="#{offreDetailBean.offre.cout}">
+                        <f:convertNumber pattern="#,##0 FCFA" locale="fr"/>
+                    </h:outputText>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{offreDetailBean.offre.cout == null or offreDetailBean.offre.cout le 0}">
+                    Gratuit
+                </h:panelGroup>
+            </span>
+        </div>
+        <div class="od-meta-item">
+            <label><i class="ti ti-category"></i> Type</label>
+            <span><h:outputText value="#{offreDetailBean.offre.type != null ? offreDetailBean.offre.type : '—'}"/></span>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <h:panelGroup rendered="#{not empty offreDetailBean.offre.description}" layout="block">
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
+                <i class="ti ti-file-description"></i> Description
+            </div>
+            <p class="od-desc"><h:outputText value="#{offreDetailBean.offre.description}" escape="false"/></p>
+        </div>
+    </h:panelGroup>
+</div>
+
+<!-- ══ STATS ══════════════════════════════════════════════════════════════ -->
+<div class="od-stats">
+    <div class="od-stat">
+        <div class="od-stat-icon" style="background:#EDE9FE;">
+            <i class="ti ti-books" style="color:#7C3AED;"></i>
+        </div>
+        <div>
+            <div class="od-stat-num"><h:outputText value="#{offreDetailBean.nbCours}"/></div>
+            <div class="od-stat-label">Modules</div>
+        </div>
+    </div>
+    <div class="od-stat">
+        <div class="od-stat-icon" style="background:#DBEAFE;">
+            <i class="ti ti-chalkboard" style="color:#2563EB;"></i>
+        </div>
+        <div>
+            <div class="od-stat-num"><h:outputText value="#{offreDetailBean.nbFormateurs}"/></div>
+            <div class="od-stat-label">Formateurs</div>
+        </div>
+    </div>
+    <div class="od-stat">
+        <div class="od-stat-icon" style="background:#D1FAE5;">
+            <i class="ti ti-user-check" style="color:#059669;"></i>
+        </div>
+        <div>
+            <div class="od-stat-num"><h:outputText value="#{offreDetailBean.nbInscrits}"/></div>
+            <div class="od-stat-label">Candidatures (<h:outputText value="#{offreDetailBean.nbEnAttente}"/> en attente)</div>
+        </div>
+    </div>
+    <div class="od-stat">
+        <div class="od-stat-icon" style="background:#FEF3C7;">
+            <i class="ti ti-calendar-time" style="color:#D97706;"></i>
+        </div>
+        <div>
+            <div class="od-stat-num"><h:outputText value="#{offreDetailBean.nbSessions}"/></div>
+            <div class="od-stat-label">Sessions planifiées</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ GRID 2 : FORMATEURS + MODULES ══════════════════════════════════════ -->
+<div class="od-grid2">
+
+    <!-- ─ Formateurs ─ -->
+    <div class="od-section">
+        <div class="od-sec-hd">
+            <h3><i class="ti ti-chalkboard"></i> Formateurs assignés</h3>
+            <span class="od-sec-count"><h:outputText value="#{offreDetailBean.nbFormateurs}"/></span>
+        </div>
+        <div class="od-sec-body">
+            <h:panelGroup rendered="#{empty offreDetailBean.formateurs}" layout="block">
+                <div class="od-empty"><i class="ti ti-user-off" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>Aucun formateur assigné</div>
+            </h:panelGroup>
+            <div class="od-fmt-list">
+                <ui:repeat value="#{offreDetailBean.formateurs}" var="f">
+                    <div class="od-fmt-card">
+                        <div class="od-fmt-avatar">
+                            <h:outputText value="#{offreDetailBean.getInitiales(f)}"/>
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="od-fmt-name"><h:outputText value="#{f.prenom} #{f.nom}"/></div>
+                            <div class="od-fmt-meta">
+                                <h:panelGroup rendered="#{not empty f.specialite}">
+                                    <span><i class="ti ti-star"></i> <h:outputText value="#{f.specialite}"/></span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not empty f.email}">
+                                    <span style="display:block;"><i class="ti ti-mail"></i> <h:outputText value="#{f.email}"/></span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not empty f.telephone}">
+                                    <span><i class="ti ti-phone"></i> <h:outputText value="#{f.telephone}"/></span>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </div>
+                </ui:repeat>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─ Modules / Cours ─ -->
+    <div class="od-section">
+        <div class="od-sec-hd">
+            <h3><i class="ti ti-layout-list"></i> Programme (modules)</h3>
+            <span class="od-sec-count"><h:outputText value="#{offreDetailBean.nbCours}"/> modules</span>
+        </div>
+        <h:panelGroup rendered="#{empty offreDetailBean.cours}" layout="block">
+            <div class="od-empty"><i class="ti ti-books" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>Aucun module créé</div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{not empty offreDetailBean.cours}" layout="block">
+            <ui:repeat value="#{offreDetailBean.cours}" var="c">
+                <div class="od-cours-row">
+                    <span style="font-size:11px;font-weight:700;color:var(--text-3);min-width:20px;">
+                        <h:outputText value="#{c.ordre != null ? c.ordre : ''}"/>
+                    </span>
+                    <div class="od-cours-dot" style="background:#{offreDetailBean.getTypeCoursColor(c.type)};"></div>
+                    <span class="od-cours-type"
+                          style="background:#{offreDetailBean.getTypeCoursColor(c.type)}22;color:#{offreDetailBean.getTypeCoursColor(c.type)};">
+                        <h:outputText value="#{offreDetailBean.getTypeCoursLabel(c.type)}"/>
+                    </span>
+                    <div class="od-cours-title"><h:outputText value="#{c.titre}"/></div>
+                    <div class="od-cours-meta" style="display:flex;gap:8px;flex-shrink:0;">
+                        <h:panelGroup rendered="#{c.dureeMinutes != null}">
+                            <span><i class="ti ti-clock"></i> <h:outputText value="#{c.dureeMinutes}"/> min</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not empty c.formateurNom}">
+                            <span style="color:#7C3AED;"><i class="ti ti-user"></i> <h:outputText value="#{c.formateurNom}"/></span>
+                        </h:panelGroup>
+                        <span style="font-size:10px;padding:2px 6px;border-radius:10px;
+                            background:#{c.publie ? '#D1FAE5' : '#F1F5F9'};
+                            color:#{c.publie ? '#065F46' : '#94A3B8'};">
+                            <h:outputText value="#{c.publie ? 'Publié' : 'Brouillon'}"/>
+                        </span>
+                    </div>
+                </div>
+            </ui:repeat>
+        </h:panelGroup>
+    </div>
+</div>
+
+<!-- ══ SESSIONS ═══════════════════════════════════════════════════════════ -->
+<div class="od-section-full">
+    <div class="od-sec-hd">
+        <h3><i class="ti ti-calendar-time"></i> Sessions planifiées</h3>
+        <span class="od-sec-count"><h:outputText value="#{offreDetailBean.nbSessions}"/></span>
+    </div>
+    <h:panelGroup rendered="#{empty offreDetailBean.sessions}" layout="block">
+        <div class="od-empty"><i class="ti ti-calendar-off" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>Aucune session planifiée</div>
+    </h:panelGroup>
+    <h:panelGroup rendered="#{not empty offreDetailBean.sessions}" layout="block">
+        <div class="od-ses-hdr">
+            <span>Date</span>
+            <span>Formateur / Salle</span>
+            <span>Durée</span>
+            <span>Statut</span>
+        </div>
+        <ui:repeat value="#{offreDetailBean.sessions}" var="s">
+            <div class="od-ses-row">
+                <span style="font-weight:600;color:var(--text-1);">
+                    <h:outputText value="#{s.jour != null ? s.jour : '—'}"/>
+                    <span style="display:block;font-size:10px;color:var(--text-3);">
+                        <h:outputText value="#{s.moisAbr != null ? s.moisAbr : ''}"/>
+                        <h:panelGroup rendered="#{s.heureFormatee != null}">
+                            <h:outputText value=" · #{s.heureFormatee}"/>
+                        </h:panelGroup>
+                    </span>
+                </span>
+                <div>
+                    <h:panelGroup rendered="#{not empty s.formateur}">
+                        <div style="font-weight:500;color:var(--text-1);font-size:12px;"><h:outputText value="#{s.formateur}"/></div>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{not empty s.salle}">
+                        <div style="color:var(--text-3);font-size:11px;"><i class="ti ti-map-pin"></i> <h:outputText value="#{s.salle}"/></div>
+                    </h:panelGroup>
+                </div>
+                <span style="color:var(--text-2);">
+                    <h:outputText value="#{s.dureeLabel != null ? s.dureeLabel : '—'}"/>
+                </span>
+                <span>
+                    <h:panelGroup rendered="#{s.statut != null}">
+                        <span style="font-size:11px;padding:2px 8px;border-radius:12px;font-weight:600;
+                            background:#{s.statut eq 'PLANIFIEE' ? '#DBEAFE' : s.statut eq 'TERMINEE' ? '#D1FAE5' : '#FEE2E2'};
+                            color:#{s.statut eq 'PLANIFIEE' ? '#1D4ED8' : s.statut eq 'TERMINEE' ? '#065F46' : '#991B1B'};">
+                            <h:outputText value="#{s.statut}"/>
+                        </span>
+                    </h:panelGroup>
+                </span>
+            </div>
+        </ui:repeat>
+    </h:panelGroup>
+</div>
+
+<!-- ══ CANDIDATURES / APPRENANTS ══════════════════════════════════════════ -->
+<div class="od-section-full">
+    <div class="od-sec-hd">
+        <h3><i class="ti ti-users"></i> Candidatures &amp; Apprenants</h3>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:#FEF3C7;color:#92400E;">
+                <h:outputText value="#{offreDetailBean.nbEnAttente}"/> en attente
+            </span>
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:#D1FAE5;color:#065F46;">
+                <h:outputText value="#{offreDetailBean.nbValides}"/> acceptées
+            </span>
+            <span class="od-sec-count"><h:outputText value="#{offreDetailBean.nbInscrits}"/> total</span>
+        </div>
+    </div>
+    <h:panelGroup rendered="#{empty offreDetailBean.demandes}" layout="block">
+        <div class="od-empty"><i class="ti ti-inbox" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>Aucune candidature pour le moment</div>
+    </h:panelGroup>
+    <h:panelGroup rendered="#{not empty offreDetailBean.demandes}" layout="block">
+        <div class="od-apr-hdr">
+            <span></span>
+            <span>Candidat</span>
+            <span>Date</span>
+            <span>Statut</span>
+            <span>Actions</span>
+        </div>
+        <ui:repeat value="#{offreDetailBean.demandes}" var="d">
+            <div class="od-apr-row">
+                <div class="od-apr-avatar">
+                    <h:outputText value="#{offreDetailBean.getInitialesNom(d.nomCandidat)}"/>
+                </div>
+                <div>
+                    <div style="font-weight:600;color:var(--text-1);font-size:12px;">
+                        <h:outputText value="#{d.nomCandidat}"/>
+                    </div>
+                    <div style="font-size:10px;color:var(--text-3);">ID #<h:outputText value="#{d.utilisateurId}"/></div>
+                </div>
+                <span style="color:var(--text-3);font-size:11px;">
+                    <h:outputText value="#{d.dateDemande != null ? d.dateDemande.substring(0, 10) : '—'}"/>
+                </span>
+                <span>
+                    <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;
+                        background:#{offreDetailBean.getDemandeBg(d.statut)};
+                        color:#{offreDetailBean.getDemandeColor(d.statut)};">
+                        <h:outputText value="#{offreDetailBean.getDemandeLabel(d.statut)}"/>
+                    </span>
+                </span>
+                <div class="od-apr-actions">
+                    <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}">
+                        <p:commandButton value="✓ Valider"
+                                         styleClass="abtn-sm abtn-sm-ok"
+                                         action="#{offreDetailBean.validerDemande(d.id)}"
+                                         update="fDetail" process="@none"/>
+                        <p:commandButton value="✗ Rejeter"
+                                         styleClass="abtn-sm abtn-sm-ko"
+                                         action="#{offreDetailBean.rejeterDemande(d.id)}"
+                                         update="fDetail" process="@none"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{d.statut ne 'EN_ATTENTE'}">
+                        <span style="font-size:11px;color:var(--text-3);">Traitée</span>
+                    </h:panelGroup>
+                </div>
+            </div>
+        </ui:repeat>
+    </h:panelGroup>
+</div>
+
+</h:panelGroup><!-- fin rendered offre != null -->
+
+<!-- Cas offre introuvable -->
+<h:panelGroup rendered="#{offreDetailBean.offre == null and offreDetailBean.offreId != null}" layout="block">
+    <div style="text-align:center;padding:60px;color:var(--text-3);">
+        <i class="ti ti-mood-sad" style="font-size:3rem;display:block;margin-bottom:12px;"></i>
+        <div style="font-size:16px;font-weight:600;">Offre introuvable</div>
+        <a href="#{request.contextPath}/admin/admin-offres.xhtml" class="abtn abtn-secondary" style="margin-top:16px;display:inline-block;">
+            Retour aux offres
+        </a>
+    </div>
+</h:panelGroup>
+
+</h:form>
+</ui:define>
+</ui:composition>
+</html>

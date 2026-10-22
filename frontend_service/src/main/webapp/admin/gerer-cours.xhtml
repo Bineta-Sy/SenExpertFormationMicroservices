@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+<ui:define name="title">Gérer les cours en ligne</ui:define>
+
+<ui:define name="pageStyle">
+.gc-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.gc-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;}
+.gc-card-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--bg-muted);border-bottom:1px solid var(--border);}
+.gc-card-hd h2{font-size:14px;font-weight:600;color:var(--text-1);margin:0;}
+.gc-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);}
+.gc-row:last-child{border-bottom:none;}
+.gc-row:hover{background:var(--bg-muted);}
+.gc-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.gc-meta{font-size:11px;color:var(--text-3);}
+.gc-actions{display:flex;gap:6px;align-items:center;margin-left:auto;flex-shrink:0;}
+.gc-pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap;border:1px solid transparent;}
+.gc-pill-video{background:#FEE2E2;color:#DC2626;border-color:#FCA5A5;}
+.gc-pill-document{background:#DBEAFE;color:#2563EB;border-color:#93C5FD;}
+.gc-pill-quiz{background:#EDE9FE;color:#7C3AED;border-color:#C4B5FD;}
+.gc-pill-lien{background:#DCFCE7;color:#059669;border-color:#86EFAC;}
+.gc-pill-live{background:#FEF3C7;color:#D97706;border-color:#FDE68A;}
+.gc-pill-on{background:var(--success-bg);color:var(--success);border-color:var(--success-bd);}
+.gc-pill-off{background:var(--bg-muted);color:var(--text-3);border-color:var(--border);}
+.gc-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.gc-form-full{grid-column:1/-1;}
+.gc-quiz-q{background:var(--bg-muted);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;}
+.gc-q-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.gc-q-text{font-size:13px;font-weight:600;color:var(--text-1);}
+.gc-opts{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:var(--text-2);margin-top:6px;}
+.gc-opt-ok{color:var(--success);font-weight:700;}
+/* a-label n'est pas défini dans admin-layout.xhtml comme classe standalone */
+.a-label{display:block;font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+</ui:define>
+
+<ui:define name="content">
+<f:metadata>
+    <f:viewParam name="offreId" value="#{elearningBean.offreId}"/>
+    <f:viewParam name="titre"   value="#{elearningBean.offreTitre}"/>
+    <f:viewAction action="#{elearningBean.charger}"/>
+</f:metadata>
+
+<div class="a-header">
+    <div class="a-header-left">
+        <h1><i class="ti ti-school" style="margin-right:6px;"></i>Contenu en ligne</h1>
+        <p>
+            <h:outputText value="#{not empty elearningBean.offreTitre ? elearningBean.offreTitre : 'Toutes les offres'}"/>
+            — <h:outputText value="#{elearningBean.nbCours}"/> cours
+        </p>
+    </div>
+    <a href="#{request.contextPath}/admin/admin-offres.xhtml" class="abtn abtn-secondary">
+        <i class="ti ti-arrow-left"></i> Retour aux offres
+    </a>
+</div>
+
+<h:form id="fGerer">
+<p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:14px;"/>
+
+<!-- ═══ LISTE DES COURS ════════════════════════════════════════════ -->
+<div class="gc-card">
+    <div class="gc-card-hd">
+        <h2><i class="ti ti-list"></i> Cours de la formation</h2>
+        <p:commandButton value="+ Ajouter un cours"
+                         styleClass="abtn abtn-primary" style="padding:0 14px;height:32px;"
+                         action="#{elearningBean.nouveauCours}"
+                         update="fGerer" oncomplete="PF('dlgCours').show();" process="@none"/>
+    </div>
+
+    <h:panelGroup rendered="#{empty elearningBean.cours}" layout="block">
+        <div style="padding:32px;text-align:center;color:var(--text-3);">
+            <i class="ti ti-books" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+            Aucun cours. Cliquez sur "Ajouter un cours" pour commencer.
+        </div>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{not empty elearningBean.cours}" layout="block">
+        <ui:repeat value="#{elearningBean.cours}" var="c">
+            <div class="gc-row">
+                <div class="gc-icon" style="background:#{c.typeCouleur}22;">
+                    <i class="ti #{c.typeIcon}" style="color:#{c.typeCouleur};"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:var(--text-1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        <h:outputText value="#{c.ordre != null ? c.ordre.toString().concat('. ') : ''}"/>
+                        <h:outputText value="#{c.titre}"/>
+                    </div>
+                    <div class="gc-meta" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:3px;">
+                        <span class="gc-pill gc-pill-#{c.type.toLowerCase()}"><h:outputText value="#{c.typeLabel}"/></span>
+                        <h:panelGroup rendered="#{c.dureeMinutes != null}">
+                            <span><i class="ti ti-clock"></i> #{c.dureeMinutes} min</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{c.type eq 'QUIZ'}">
+                            <span><i class="ti ti-help"></i> #{c.nbQuestions} question(s)</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{c.type eq 'LIVE' and not empty c.dateHeureLive}">
+                            <span><i class="ti ti-calendar-event"></i> <h:outputText value="#{c.dateHeureLive}"/></span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not empty c.formateurNom}">
+                            <span><i class="ti ti-user-check"></i> <h:outputText value="#{c.formateurNom}"/></span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{c.aFichierLocal}">
+                            <span style="color:#059669;">
+                                <i class="ti ti-paperclip"></i>
+                                <h:outputText value="#{c.nomFichierOriginal}"/>
+                                <h:outputText value=" (#{c.tailleFormatee})" style="color:#94A3B8;"/>
+                            </span>
+                        </h:panelGroup>
+                    </div>
+                </div>
+                <span class="gc-pill #{c.publie ? 'gc-pill-on' : 'gc-pill-off'}">
+                    #{c.publie ? 'Publié' : 'Brouillon'}
+                </span>
+                <div class="gc-actions">
+                    <p:commandButton value="#{c.publie ? 'Dépublier' : 'Publier'}"
+                                     styleClass="abtn #{c.publie ? 'abtn-secondary' : 'abtn-primary'}"
+                                     style="padding:0 10px;height:28px;font-size:11px;"
+                                     action="#{elearningBean.togglePublier(c)}"
+                                     update="fGerer" process="@none"/>
+                    <p:commandButton value="✎ Éditer"
+                                     styleClass="abtn abtn-secondary"
+                                     style="padding:0 10px;height:28px;font-size:11px;"
+                                     action="#{elearningBean.editerCours(c)}"
+                                     update="fGerer" oncomplete="PF('dlgCours').show();" process="@none"/>
+                    <h:panelGroup rendered="#{c.type eq 'QUIZ'}">
+                        <p:commandButton value="Questions"
+                                         styleClass="abtn abtn-secondary"
+                                         style="padding:0 10px;height:28px;font-size:11px;color:#7C3AED;"
+                                         action="#{elearningBean.ouvrirGestionQuiz(c)}"
+                                         update="fGerer" oncomplete="PF('dlgQuiz').show();" process="@none"/>
+                    </h:panelGroup>
+                    <!-- Bouton upload pour VIDEO et DOCUMENT -->
+                    <h:panelGroup rendered="#{c.type eq 'VIDEO' or c.type eq 'DOCUMENT'}">
+                        <p:commandButton value="↑ Fichier"
+                                         styleClass="abtn abtn-secondary"
+                                         style="padding:0 10px;height:28px;font-size:11px;color:#059669;"
+                                         action="#{elearningBean.preparerUpload(c)}"
+                                         update=":fUpload" oncomplete="PF('dlgUpload').show();" process="@none"
+                                         title="#{c.aFichierLocal ? 'Remplacer le fichier : '.concat(c.nomFichierOriginal) : 'Uploader un fichier'}"/>
+                    </h:panelGroup>
+                    <p:commandButton value="✕"
+                                     styleClass="abtn abtn-danger"
+                                     style="padding:0 10px;height:28px;font-size:11px;"
+                                     action="#{elearningBean.supprimerCours(c.id)}"
+                                     update="fGerer" process="@none"
+                                     onclick="return confirm('Supprimer ce cours ?');"/>
+                </div>
+            </div>
+        </ui:repeat>
+    </h:panelGroup>
+</div>
+
+<!-- ═══ DIALOG : CRÉER / ÉDITER COURS ════════════════════════════ -->
+<p:dialog id="dlgCoursId" header="#{elearningBean.modeEditionCours ? 'Modifier le cours' : 'Nouveau cours'}"
+          widgetVar="dlgCours" modal="true" responsive="true"
+          style="width:min(620px,95vw);">
+    <div class="gc-form-grid" style="padding:4px 0 12px;">
+
+        <!-- Titre -->
+        <div class="gc-form-full">
+            <label class="a-label">Titre du cours *</label>
+            <p:inputText value="#{elearningBean.coursForm.titre}"
+                         styleClass="a-input" style="width:100%;" required="true"/>
+        </div>
+
+        <!-- Type -->
+        <div>
+            <label class="a-label">Type *</label>
+            <p:selectOneMenu value="#{elearningBean.coursForm.type}"
+                             styleClass="a-input" style="width:100%;" required="true">
+                <f:selectItem itemLabel="— Choisir —" itemValue="#{null}"/>
+                <f:selectItem itemLabel="📹 Vidéo (YouTube, Vimeo…)" itemValue="VIDEO"/>
+                <f:selectItem itemLabel="📄 Document (Drive, PDF…)"  itemValue="DOCUMENT"/>
+                <f:selectItem itemLabel="🔗 Lien externe"             itemValue="LIEN"/>
+                <f:selectItem itemLabel="❓ Quiz interactif"           itemValue="QUIZ"/>
+                <f:selectItem itemLabel="🎥 Session live (Zoom…)"     itemValue="LIVE"/>
+            </p:selectOneMenu>
+        </div>
+
+        <!-- Ordre -->
+        <div>
+            <label class="a-label">Ordre</label>
+            <p:inputText value="#{elearningBean.coursForm.ordre}"
+                         styleClass="a-input" style="width:100%;"/>
+        </div>
+
+        <!-- URL contenu (sauf QUIZ) -->
+        <div class="gc-form-full">
+            <label class="a-label">URL du contenu <span style="font-size:10px;color:var(--text-3);">(vidéo, document, lien — non requis pour quiz)</span></label>
+            <p:inputText value="#{elearningBean.coursForm.urlContenu}"
+                         styleClass="a-input" style="width:100%;"
+                         placeholder="https://youtube.com/embed/… ou https://drive.google.com/…"/>
+        </div>
+
+        <!-- Durée -->
+        <div>
+            <label class="a-label">Durée (minutes)</label>
+            <p:inputText value="#{elearningBean.coursForm.dureeMinutes}"
+                         styleClass="a-input" style="width:100%;"/>
+        </div>
+
+        <!-- Publié -->
+        <div style="display:flex;align-items:center;gap:8px;padding-top:22px;">
+            <p:selectBooleanCheckbox value="#{elearningBean.coursForm.publie}" itemLabel="Publié immédiatement"/>
+        </div>
+
+        <!-- LIVE : lien visio + plateforme + date/heure -->
+        <div class="gc-form-full" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:160px;">
+                <label class="a-label">Lien visio (LIVE)</label>
+                <p:inputText value="#{elearningBean.coursForm.lienVisio}"
+                             styleClass="a-input" style="width:100%;"
+                             placeholder="https://zoom.us/j/…"/>
+            </div>
+            <div style="flex:0 0 130px;">
+                <label class="a-label">Plateforme</label>
+                <p:selectOneMenu value="#{elearningBean.coursForm.plateforme}"
+                                 styleClass="a-input" style="width:100%;">
+                    <f:selectItem itemLabel="—" itemValue="#{null}"/>
+                    <f:selectItem itemLabel="Zoom"       itemValue="ZOOM"/>
+                    <f:selectItem itemLabel="Teams"      itemValue="TEAMS"/>
+                    <f:selectItem itemLabel="Google Meet" itemValue="MEET"/>
+                    <f:selectItem itemLabel="Autre"      itemValue="AUTRE"/>
+                </p:selectOneMenu>
+            </div>
+            <div style="flex:1;min-width:160px;">
+                <label class="a-label">Date/heure (LIVE)</label>
+                <p:inputText value="#{elearningBean.coursForm.dateHeureLive}"
+                             styleClass="a-input" style="width:100%;"
+                             placeholder="2025-09-01T10:00:00"/>
+            </div>
+        </div>
+
+        <!-- Formateur spécifique (optionnel) -->
+        <div class="gc-form-full">
+            <label class="a-label">Formateur du module <span style="font-size:10px;color:var(--text-3);">(optionnel — hérite des formateurs de l'offre par défaut)</span></label>
+            <p:selectOneMenu value="#{elearningBean.coursForm.formateurId}"
+                             styleClass="a-input" style="width:100%;" converter="jakarta.faces.Long">
+                <f:selectItem itemLabel="— Formateurs de l'offre (défaut) —" itemValue="#{null}"/>
+                <f:selectItems value="#{elearningBean.formateursOffre}"
+                               var="fm" itemLabel="#{fm.prenom} #{fm.nom}" itemValue="#{fm.id}"/>
+            </p:selectOneMenu>
+        </div>
+
+        <!-- Description -->
+        <div class="gc-form-full">
+            <label class="a-label">Description / Instructions</label>
+            <p:inputTextarea value="#{elearningBean.coursForm.description}"
+                             styleClass="a-input" style="width:100%;min-height:80px;" autoResize="true"/>
+        </div>
+
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);">
+        <p:commandButton value="Annuler" styleClass="abtn abtn-secondary"
+                         onclick="PF('dlgCours').hide();" type="button"/>
+        <p:commandButton value="#{elearningBean.modeEditionCours ? 'Enregistrer' : 'Créer'}"
+                         styleClass="abtn abtn-primary"
+                         action="#{elearningBean.sauvegarderCours}"
+                         update="fGerer" oncomplete="PF('dlgCours').hide();"/>
+    </div>
+</p:dialog>
+
+<!-- ═══ DIALOG : QUESTIONS QUIZ ══════════════════════════════════ -->
+<p:dialog id="dlgQuizId" header="Questions du quiz : #{elearningBean.coursSelectionne != null ? elearningBean.coursSelectionne.titre : ''}"
+          widgetVar="dlgQuiz" modal="true" responsive="true"
+          style="width:min(680px,95vw);">
+
+    <!-- Liste questions existantes -->
+    <div style="max-height:300px;overflow-y:auto;margin-bottom:16px;">
+        <h:panelGroup rendered="#{empty elearningBean.questions}" layout="block">
+            <div style="text-align:center;color:var(--text-3);padding:20px;">Aucune question. Ajoutez-en ci-dessous.</div>
+        </h:panelGroup>
+        <ui:repeat value="#{elearningBean.questions}" var="q" varStatus="qs">
+            <div class="gc-quiz-q">
+                <div class="gc-q-hd">
+                    <div class="gc-q-text">##{qs.index + 1} — <h:outputText value="#{q.question}"/></div>
+                    <p:commandButton value="✕" styleClass="abtn abtn-danger"
+                                     style="padding:0 8px;height:24px;font-size:11px;"
+                                     action="#{elearningBean.supprimerQuestion(q.id)}"
+                                     update="fGerer" process="@none"/>
+                </div>
+                <div class="gc-opts">
+                    <span class="#{q.bonneReponse eq 'A' ? 'gc-opt-ok' : ''}">A. <h:outputText value="#{q.optionA}"/></span>
+                    <span class="#{q.bonneReponse eq 'B' ? 'gc-opt-ok' : ''}">B. <h:outputText value="#{q.optionB}"/></span>
+                    <h:panelGroup rendered="#{not empty q.optionC}">
+                        <span class="#{q.bonneReponse eq 'C' ? 'gc-opt-ok' : ''}">C. <h:outputText value="#{q.optionC}"/></span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{not empty q.optionD}">
+                        <span class="#{q.bonneReponse eq 'D' ? 'gc-opt-ok' : ''}">D. <h:outputText value="#{q.optionD}"/></span>
+                    </h:panelGroup>
+                </div>
+            </div>
+        </ui:repeat>
+    </div>
+
+    <!-- Formulaire nouvelle question -->
+    <div style="background:var(--bg-muted);border:1px solid var(--border);border-radius:8px;padding:14px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:10px;">Ajouter une question</div>
+        <div style="margin-bottom:8px;">
+            <label class="a-label">Question *</label>
+            <p:inputText value="#{elearningBean.questionForm.question}"
+                         styleClass="a-input" style="width:100%;"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div>
+                <label class="a-label">Option A *</label>
+                <p:inputText value="#{elearningBean.questionForm.optionA}" styleClass="a-input" style="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Option B *</label>
+                <p:inputText value="#{elearningBean.questionForm.optionB}" styleClass="a-input" style="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Option C</label>
+                <p:inputText value="#{elearningBean.questionForm.optionC}" styleClass="a-input" style="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Option D</label>
+                <p:inputText value="#{elearningBean.questionForm.optionD}" styleClass="a-input" style="width:100%;"/>
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+            <div>
+                <label class="a-label">Bonne réponse *</label>
+                <p:selectOneMenu value="#{elearningBean.questionForm.bonneReponse}"
+                                 styleClass="a-input" style="min-width:80px;">
+                    <f:selectItem itemLabel="—" itemValue="#{null}"/>
+                    <f:selectItem itemLabel="A" itemValue="A"/>
+                    <f:selectItem itemLabel="B" itemValue="B"/>
+                    <f:selectItem itemLabel="C" itemValue="C"/>
+                    <f:selectItem itemLabel="D" itemValue="D"/>
+                </p:selectOneMenu>
+            </div>
+            <div>
+                <label class="a-label">Points</label>
+                <p:inputText value="#{elearningBean.questionForm.points}"
+                             styleClass="a-input" style="width:70px;" placeholder="1"/>
+            </div>
+            <p:commandButton value="+ Ajouter" styleClass="abtn abtn-primary"
+                             style="height:36px;padding:0 16px;"
+                             action="#{elearningBean.ajouterQuestion}"
+                             update="fGerer" process="@form"/>
+        </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+        <p:commandButton value="Fermer" styleClass="abtn abtn-secondary"
+                         onclick="PF('dlgQuiz').hide();" type="button"/>
+    </div>
+</p:dialog>
+
+</h:form>
+
+<!-- ═══ DIALOG UPLOAD FICHIER (form séparé) ═══════════════════════ -->
+<h:form id="fUpload">
+<p:dialog id="dlgUploadId" header="Déposer un fichier"
+          widgetVar="dlgUpload" modal="true" responsive="true"
+          style="width:min(480px,95vw);">
+
+    <div style="padding:8px 0 16px;">
+        <h:panelGroup rendered="#{elearningBean.coursUpload != null}" layout="block">
+            <p style="font-size:13px;color:#374151;margin:0 0 14px;">
+                <strong>Cours :</strong>
+                <h:outputText value="#{elearningBean.coursUpload.titre}"/>
+            </p>
+        </h:panelGroup>
+
+        <!-- Fichier actuellement déposé -->
+        <h:panelGroup rendered="#{elearningBean.coursUpload != null and elearningBean.coursUpload.aFichierLocal}" layout="block">
+            <div style="padding:10px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;margin-bottom:14px;font-size:12px;color:#065F46;display:flex;align-items:center;gap:8px;">
+                <i class="ti ti-paperclip"></i>
+                <span>Fichier actuel : <strong><h:outputText value="#{elearningBean.coursUpload.nomFichierOriginal}"/></strong>
+                (<h:outputText value="#{elearningBean.coursUpload.tailleFormatee}"/>)</span>
+            </div>
+        </h:panelGroup>
+
+        <div style="margin-bottom:12px;">
+            <label class="a-label">Sélectionner un fichier</label>
+            <p style="font-size:11px;color:#94A3B8;margin:0 0 8px;">
+                Formats acceptés : PDF, Word, Excel, PowerPoint, MP4, MP3, images, ZIP (max 100 Mo)
+            </p>
+            <p:fileUpload fileUploadListener="#{elearningBean.handleUpload}"
+                          mode="advanced"
+                          auto="true"
+                          allowTypes="/(\.|\/)(pdf|doc|docx|xls|xlsx|ppt|pptx|mp4|webm|mp3|jpg|jpeg|png|gif|zip|txt)$/"
+                          sizeLimit="104857600"
+                          label="Choisir un fichier"
+                          uploadLabel="Envoyer"
+                          cancelLabel="Annuler"
+                          invalidSizeMessage="Fichier trop volumineux (max 100 Mo)"
+                          invalidFileMessage="Format non autorisé"
+                          update=":fGerer :fUpload"
+                          oncomplete="PF('dlgUpload').hide();"
+                          styleClass="abtn abtn-primary"/>
+        </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;padding-top:10px;border-top:1px solid #E2E8F0;">
+        <button type="button" class="abtn abtn-secondary" onclick="PF('dlgUpload').hide();">Fermer</button>
+    </div>
+</p:dialog>
+</h:form>
+
+</ui:define>
+</ui:composition>
+</html>

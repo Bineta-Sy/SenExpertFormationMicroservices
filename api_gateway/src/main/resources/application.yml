@@ -1,0 +1,158 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
+      # Réécriture du header Location des redirections HTTP (ex: JSF faces-redirect)
+      # Remplace l'hôte interne Docker par l'hôte de la requête originale
+      default-filters:
+        - RewriteLocationResponseHeader=AS_IN_REQUEST, Location, ,
+
+      routes:
+
+        # ══ USER SERVICE (port 8081) ═══════════════════════════════════
+
+        # Auth + 2FA
+        - id: user-auth
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/auth/**
+
+        # Utilisateurs (CRUD, reset-password, import-csv, expirer-inactifs)
+        - id: user-utilisateurs
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/utilisateurs/**
+
+        # Institutions
+        - id: user-institutions
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/institutions/**
+
+        # Profils
+        - id: user-profils
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/profils/**
+
+        # Permissions
+        - id: user-permissions
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/permissions/**
+
+        # Branches
+        - id: user-branches
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/branches/**
+
+        # Journal d'audit (persisté en base)
+        - id: user-audit
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/audit/**
+
+        # ══ FORMATION SERVICE (port 8082) ══════════════════════════════
+
+        # Offres de formation
+        - id: formation-offres
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/offres/**
+
+        # Domaines
+        - id: formation-domaines
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/domaines/**
+
+        # Formation Service : Demandes
+        - id: formation-demandes
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/demandes/**
+
+        # Formation Service : Demandes à la carte
+        - id: formation-demandes-libre
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/demandes-libre/**
+
+        # Formation Service : Formateurs
+        - id: formation-formateurs
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/formateurs/**
+
+        # Formation Service : Candidatures (inclut export-csv, rapport-csv)
+        - id: formation-candidatures
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/candidatures/**
+
+        # Formation Service : Sessions de formation
+        - id: formation-sessions
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/sessions/**
+
+        # Formation Service : Analytics (alertes, stats, snapshot)
+        - id: formation-analytics
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/analytics/**
+
+        # Formation Service : Modules de formation
+        - id: formation-modules
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/modules/**
+
+        # Formation Service : Séances
+        - id: formation-seances
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/seances/**
+
+        # Formation Service : Propositions de formation
+        - id: formation-propositions
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/propositions/**
+
+        # Formation Service : Paiements
+        - id: formation-paiements
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/paiements/**
+
+        # Formation Service : Attestations / Certificats
+        - id: formation-attestations
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/attestations/**
+
+        # Formation Service : E-learning (cours, quiz, progression)
+        - id: formation-elearning
+          uri: ${FORMATION_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/elearning/**
+
+        # Frontend JSF/WildFly
+        - id: frontend
+          uri: ${FRONTEND_URL:http://frontend:8083}
+          predicates:
+            - Path=/frontend_service/**

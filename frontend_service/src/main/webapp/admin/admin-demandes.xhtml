@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Demandes</ui:define>
+
+    <ui:define name="pageStyle">
+/* ── Barre de recherche ───────────────────────── */
+.search-bar { display:flex; align-items:center; gap:10px; padding:10px 14px 14px; }
+.search-bar input { width:280px; padding:7px 12px; font-size:13px; border:1px solid #CBD5E1;
+    border-radius:8px; outline:none; font-family:inherit; }
+.search-bar input:focus { border-color:#6366F1; box-shadow:0 0 0 2px #EEF2FF; }
+.search-bar .si { font-size:12px; color:#94A3B8; }
+/* ── Boutons ─────────────────────────────────── */
+.abtn-sm{display:inline-flex!important;align-items:center!important;padding:4px 10px!important;
+    font-size:11px!important;font-weight:600!important;border-radius:6px!important;
+    border:1px solid #CBD5E1!important;cursor:pointer!important;background:#F8FAFC!important;
+    color:#475569!important;white-space:nowrap!important;font-family:inherit!important;}
+.abtn-sm-ok{background:#059669!important;color:#fff!important;border-color:#059669!important;}
+.abtn-sm-ok:hover{background:#047857!important;}
+.abtn-sm-ko{background:#DC2626!important;color:#fff!important;border-color:#DC2626!important;}
+.abtn-sm-ko:hover{background:#B91C1C!important;}
+.ui-button-text{display:inline!important;font-family:inherit!important;}
+/* hide per-column filter inputs */
+.ui-column-filter { display:none !important; }
+    </ui:define>
+
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">🚫</div><h2>Accès refusé</h2></div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{sessionBean.admin}">
+            <div class="a-header">
+                <div class="a-header-left"><h1>Demandes de formation</h1><p>Validez ou rejetez les demandes</p></div>
+            </div>
+            <div class="a-stats">
+                <div class="a-stat"><div class="sv">#{fn:length(adminDashboardBean.demandes)}</div><div class="sl">Total</div></div>
+                <div class="a-stat"><div class="sv" style="color:#633806;">#{adminDashboardBean.countDemandesParStatut('EN_ATTENTE')}</div><div class="sl">En attente</div></div>
+                <div class="a-stat"><div class="sv" style="color:#27500A;">#{adminDashboardBean.countDemandesParStatut('VALIDEE')}</div><div class="sl">Validées</div></div>
+            </div>
+            <div class="a-card">
+                <div class="a-card-header"><h2>Liste des demandes</h2>
+                    <span class="a-count">#{fn:length(adminDashboardBean.demandes)} demande(s)</span>
+                </div>
+                <h:form id="fDem">
+                    <p:messages id="msgs" showDetail="true" closable="true" style="margin:12px;"/>
+                    <p:dataTable id="tblDem" widgetVar="dtDem"
+                                 value="#{adminDashboardBean.demandes}"
+                                 filteredValue="#{adminDashboardBean.filteredDemandes}"
+                                 var="dem" paginator="true" rows="10"
+                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                 emptyMessage="Aucune demande trouvée.">
+
+                        <f:facet name="header">
+                            <div class="search-bar">
+                                <i class="ti ti-search" style="color:#94A3B8;"></i>
+                                <p:inputText id="globalFilter"
+                                             onkeyup="PF('dtDem').filter()"
+                                             placeholder="Rechercher par formation, candidat…"
+                                             style="width:280px;padding:7px 12px;font-size:13px;border:1px solid #CBD5E1;border-radius:8px;font-family:inherit;"/>
+                                <span class="si">Les EN ATTENTE apparaissent en premier</span>
+                            </div>
+                        </f:facet>
+
+                        <p:column headerText="#" style="width:50px;text-align:center;">
+                            <span style="font-size:12px;color:#999;">##{dem.id}</span>
+                        </p:column>
+                        <p:column headerText="Formation" filterBy="#{dem.offre.titre}" filterMatchMode="contains">
+                            <div style="font-weight:600;color:#1a1a1a;font-size:13px;">#{dem.offre.titre}</div>
+                            <span class="ab ab-info" style="margin-top:3px;display:inline-block;">
+                                #{dem.offre.domaine != null ? dem.offre.domaine.libelle : '—'}
+                            </span>
+                        </p:column>
+                        <p:column headerText="Candidat" style="width:160px;"
+                                  filterBy="#{dem.nomCandidat}" filterMatchMode="contains">
+                            <span style="font-size:13px;color:#444;">#{dem.nomCandidat}</span>
+                        </p:column>
+                        <p:column headerText="Date" style="width:110px;">
+                            <span style="font-size:12px;color:#666;">#{dem.dateDemande}</span>
+                        </p:column>
+                        <p:column headerText="Statut" style="width:120px;"
+                                  filterBy="#{dem.statut}" filterMatchMode="contains">
+                            <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}"><span class="ab ab-wait">En attente</span></h:panelGroup>
+                            <h:panelGroup rendered="#{dem.statut eq 'VALIDEE'}"><span class="ab ab-ok">Validée</span></h:panelGroup>
+                            <h:panelGroup rendered="#{dem.statut eq 'REJETEE'}"><span class="ab ab-ko">Rejetée</span></h:panelGroup>
+                        </p:column>
+                        <p:column headerText="Actions" style="width:160px;">
+                            <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}" styleClass="a-actions">
+                                <p:commandButton value="Valider" styleClass="abtn-sm abtn-sm-ok"
+                                                 action="#{adminDashboardBean.validerDemande(dem.id)}" update="@form"/>
+                                <p:commandButton value="Rejeter" styleClass="abtn-sm abtn-sm-ko"
+                                                 action="#{adminDashboardBean.rejeterDemande(dem.id)}" update="@form"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{dem.statut ne 'EN_ATTENTE'}">
+                                <span style="color:#ccc;font-size:12px;">—</span>
+                            </h:panelGroup>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </div>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/formateur-layout.xhtml">
+
+<ui:define name="title">Corrections</ui:define>
+<ui:define name="topbarTitle">Corrections — TP / Devoirs / Examens</ui:define>
+<ui:param name="navActiveCorrections" value="active"/>
+
+<ui:define name="pageStyle">
+/* ── Stats barre ── */
+.corr-stats { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+.corr-stat  { background:#fff; border:1px solid #E2E8F0; border-radius:10px;
+    padding:14px 20px; display:flex; align-items:center; gap:12px; }
+.corr-stat-icon { width:38px; height:38px; border-radius:9px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:18px; }
+.corr-stat-val { font-size:24px; font-weight:700; color:#0F172A; }
+.corr-stat-lbl { font-size:11px; color:#64748B; }
+
+/* ── Filtres ── */
+.corr-filters { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.corr-filter  { padding:6px 14px; border-radius:20px; border:1px solid #E2E8F0;
+    font-size:12px; cursor:pointer; background:#fff; color:#475569; }
+.corr-filter.active { background:#EFF6FF; color:#1D4ED8; border-color:#BFDBFE; font-weight:600; }
+
+/* ── Groupe cours ── */
+.corr-group { background:#fff; border:1px solid #E2E8F0; border-radius:10px;
+    overflow:hidden; margin-bottom:16px; }
+.corr-group-hd { display:flex; align-items:center; gap:12px; padding:14px 18px;
+    background:#F8FAFC; border-bottom:1px solid #E2E8F0; }
+.corr-group-icon { width:36px; height:36px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.corr-group-titre { font-size:14px; font-weight:600; color:#0F172A; }
+.corr-group-meta  { font-size:11px; color:#94A3B8; margin-top:2px; }
+.corr-pill { font-size:10px; padding:2px 8px; border-radius:20px; font-weight:600; }
+.corr-pill-attente { background:#FEF3C7; color:#D97706; }
+.corr-pill-corrige { background:#D1FAE5; color:#065F46; }
+.corr-pill-tard    { background:#FEE2E2; color:#DC2626; }
+
+/* ── Soumission row ── */
+.soum-row { display:flex; align-items:flex-start; gap:12px; padding:14px 18px;
+    border-bottom:1px solid #F1F5F9; }
+.soum-row:last-child { border-bottom:none; }
+.soum-av  { width:36px; height:36px; border-radius:50%; background:#EDE9FE;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; color:#6D28D9; flex-shrink:0; }
+.soum-info { flex:1; min-width:0; }
+.soum-nom { font-size:13px; font-weight:600; color:#0F172A; }
+.soum-meta { font-size:11px; color:#94A3B8; margin-top:2px; display:flex; gap:8px; flex-wrap:wrap; }
+
+/* ── Contenu soumis ── */
+.soum-texte { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px;
+    padding:8px 12px; font-size:12px; color:#374151; margin:8px 0;
+    max-height:100px; overflow-y:auto; white-space:pre-wrap; }
+.soum-fichier { display:inline-flex; align-items:center; gap:5px; margin:6px 0;
+    padding:4px 10px; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;
+    border-radius:6px; font-size:11px; font-weight:600; text-decoration:none; }
+.soum-lien { font-size:11px; color:#059669; word-break:break-all; }
+
+/* ── Note existante ── */
+.soum-corrige-box { background:#F0FDF4; border:1px solid #BBF7D0; border-radius:6px;
+    padding:8px 12px; font-size:12px; margin:6px 0; }
+
+/* ── Formulaire notation ── */
+.nota-box { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px;
+    padding:12px; margin-top:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.nota-label { font-size:11px; font-weight:600; color:#64748B;
+    text-transform:uppercase; white-space:nowrap; }
+.nota-input { width:70px !important; font-size:12px !important; text-align:center !important; }
+.nota-comment { flex:1; min-width:140px; font-size:12px !important; }
+.abtn-ok { display:inline-flex !important; align-items:center !important;
+    padding:5px 12px !important; font-size:11px !important; font-weight:600 !important;
+    border-radius:6px !important; background:#059669 !important; color:#fff !important;
+    border:1px solid #059669 !important; cursor:pointer !important;
+    font-family:inherit !important; }
+
+/* ── Vide ── */
+.corr-empty { text-align:center; padding:60px 20px; color:#94A3B8; }
+.corr-empty i { font-size:40px; display:block; margin-bottom:12px; color:#CBD5E1; }
+</ui:define>
+
+<ui:define name="content">
+<f:metadata>
+    <f:viewParam name="filtre" value="#{formateurCorrectionsBean.filtre}"/>
+    <f:viewAction action="#{formateurCorrectionsBean.charger}"/>
+</f:metadata>
+
+<!-- Accès refusé -->
+<h:panelGroup rendered="#{!sessionBean.admin and sessionBean.role ne 'FORMATEUR'}" layout="block">
+    <div style="text-align:center;padding:60px;color:#EF4444;">
+        <i class="ti ti-lock" style="font-size:48px;display:block;margin-bottom:10px;"></i>
+        <strong>Accès réservé aux formateurs.</strong>
+    </div>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{sessionBean.admin or sessionBean.role eq 'FORMATEUR'}" layout="block">
+
+<h:form id="fCorrections">
+<p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:14px;"/>
+
+<!-- En-tête -->
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
+    <div>
+        <h1 style="font-size:18px;font-weight:700;color:#0F172A;margin:0 0 4px;">
+            <i class="ti ti-clipboard-check" style="margin-right:6px;color:#F59E0B;"></i>
+            Corrections
+        </h1>
+        <p style="font-size:12px;color:#64748B;margin:0;">
+            TP · Devoirs · Examens — Consultez et notez les travaux soumis par vos apprenants.
+        </p>
+    </div>
+    <a href="#{request.contextPath}/dashboard-formateur.xhtml"
+       style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;border-radius:7px;font-size:12px;font-weight:500;text-decoration:none;">
+        <i class="ti ti-arrow-left" style="font-size:13px;"></i> Tableau de bord
+    </a>
+</div>
+
+<!-- Stats barre -->
+<div class="corr-stats">
+    <div class="corr-stat">
+        <div class="corr-stat-icon" style="background:#FEF3C7;color:#D97706;">
+            <i class="ti ti-clock-hour-4"></i>
+        </div>
+        <div>
+            <div class="corr-stat-val">
+                <h:outputText value="#{formateurCorrectionsBean.nbTotalEnAttente}"/>
+            </div>
+            <div class="corr-stat-lbl">à corriger</div>
+        </div>
+    </div>
+    <div class="corr-stat">
+        <div class="corr-stat-icon" style="background:#D1FAE5;color:#059669;">
+            <i class="ti ti-circle-check"></i>
+        </div>
+        <div>
+            <div class="corr-stat-val">
+                <h:outputText value="#{formateurCorrectionsBean.nbTotalSoumissions - formateurCorrectionsBean.nbTotalEnAttente}"/>
+            </div>
+            <div class="corr-stat-lbl">corrigés</div>
+        </div>
+    </div>
+    <div class="corr-stat">
+        <div class="corr-stat-icon" style="background:#EFF6FF;color:#3B82F6;">
+            <i class="ti ti-clipboard-list"></i>
+        </div>
+        <div>
+            <div class="corr-stat-val">
+                <h:outputText value="#{formateurCorrectionsBean.nbTotalSoumissions}"/>
+            </div>
+            <div class="corr-stat-lbl">soumissions au total</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="corr-filters">
+    <button type="button" class="corr-filter #{formateurCorrectionsBean.filtre eq 'tous' ? 'active' : ''}"
+            onclick="setFiltre('tous')">Tous</button>
+    <button type="button" class="corr-filter #{formateurCorrectionsBean.filtre eq 'attente' ? 'active' : ''}"
+            onclick="setFiltre('attente')">
+        À corriger
+        <h:panelGroup rendered="#{formateurCorrectionsBean.nbTotalEnAttente gt 0}">
+            <span style="margin-left:5px;background:#FEF3C7;color:#D97706;padding:1px 6px;border-radius:20px;font-size:10px;font-weight:700;">
+                <h:outputText value="#{formateurCorrectionsBean.nbTotalEnAttente}"/>
+            </span>
+        </h:panelGroup>
+    </button>
+    <button type="button" class="corr-filter #{formateurCorrectionsBean.filtre eq 'corrige' ? 'active' : ''}"
+            onclick="setFiltre('corrige')">Corrigés</button>
+</div>
+
+<!-- Aucun résultat -->
+<h:panelGroup rendered="#{empty formateurCorrectionsBean.groupes}" layout="block">
+    <div class="corr-empty">
+        <i class="ti ti-inbox"></i>
+        Aucun travail soumis pour le moment.<br/>
+        <span style="font-size:11px;margin-top:6px;display:block;">
+            Vos apprenants n'ont pas encore soumis de TP, devoirs ou examens.
+        </span>
+    </div>
+</h:panelGroup>
+
+<!-- Liste groupée par cours -->
+<ui:repeat value="#{formateurCorrectionsBean.groupes}" var="groupe">
+    <div class="corr-group">
+
+        <!-- En-tête cours -->
+        <div class="corr-group-hd">
+            <div class="corr-group-icon"
+                 style="background:#{groupe.cours.typeCouleur}22;color:#{groupe.cours.typeCouleur};">
+                <i class="ti #{groupe.cours.typeIcon}"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div class="corr-group-titre">
+                    <h:outputText value="#{groupe.cours.titre}"/>
+                </div>
+                <div class="corr-group-meta">
+                    <h:outputText value="#{groupe.cours.typeLabel}"/>
+                    <h:panelGroup rendered="#{not empty groupe.cours.offreTitre}">
+                        · <h:outputText value="#{groupe.cours.offreTitre}"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{groupe.cours.baremeNote != null}">
+                        · Barème : <h:outputText value="#{groupe.cours.baremeNote}"/> pts
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{not empty groupe.cours.dateLimite}">
+                        · Limite : <h:outputText value="#{groupe.cours.dateLimite}"/>
+                    </h:panelGroup>
+                </div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+                <h:panelGroup rendered="#{groupe.nbEnAttente gt 0}">
+                    <span class="corr-pill corr-pill-attente">
+                        <h:outputText value="#{groupe.nbEnAttente}"/> en attente
+                    </span>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{groupe.nbCorrige gt 0}">
+                    <span class="corr-pill corr-pill-corrige">
+                        <h:outputText value="#{groupe.nbCorrige}"/> corrigé(s)
+                    </span>
+                </h:panelGroup>
+            </div>
+        </div>
+
+        <!-- Instructions si présentes -->
+        <h:panelGroup rendered="#{not empty groupe.cours.instructionsDetaillees}" layout="block">
+            <div style="padding:10px 18px;background:#FFFBEB;border-bottom:1px solid #FEF3C7;font-size:12px;color:#92400E;">
+                <i class="ti ti-info-circle" style="margin-right:4px;"></i>
+                <h:outputText value="#{groupe.cours.instructionsDetaillees}"/>
+            </div>
+        </h:panelGroup>
+
+        <!-- Liste soumissions -->
+        <ui:repeat value="#{groupe.soumissions}" var="s">
+            <div class="soum-row">
+                <!-- Avatar -->
+                <div class="soum-av">
+                    <h:outputText value="#{not empty s.nomApprenant ? s.nomApprenant.substring(0,1).toUpperCase() : '?'}"/>
+                </div>
+
+                <div class="soum-info">
+                    <!-- Nom + date + statut -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:4px;">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <span class="soum-nom"><h:outputText value="#{s.nomApprenant}"/></span>
+                            <span style="font-size:10px;color:#94A3B8;">
+                                <h:outputText value="#{s.dateCourteSoumission}"/>
+                            </span>
+                            <h:panelGroup rendered="#{s.enRetard}">
+                                <span class="corr-pill corr-pill-tard">⚠ En retard</span>
+                            </h:panelGroup>
+                        </div>
+                        <span class="corr-pill #{s.corrige ? 'corr-pill-corrige' : 'corr-pill-attente'}">
+                            <h:outputText value="#{s.statutLabel}"/>
+                        </span>
+                    </div>
+
+                    <!-- Contenu : texte -->
+                    <h:panelGroup rendered="#{s.aTexte}" layout="block">
+                        <div class="soum-texte">
+                            <h:outputText value="#{s.contenuTexte}"/>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Contenu : fichier -->
+                    <h:panelGroup rendered="#{s.aFichier}" layout="block">
+                        <a href="#{request.contextPath}/../formation_service/#{s.urlFichier}"
+                           target="_blank" class="soum-fichier">
+                            <i class="ti ti-download"></i>
+                            <h:outputText value="#{s.nomFichierOriginal}"/>
+                            (<h:outputText value="#{s.tailleFormatee}"/>)
+                        </a>
+                    </h:panelGroup>
+
+                    <!-- Contenu : lien -->
+                    <h:panelGroup rendered="#{s.aLien}" layout="block">
+                        <a href="#{s.lienUrl}" target="_blank" class="soum-lien">
+                            <i class="ti ti-external-link"></i>
+                            <h:outputText value="#{s.lienUrl}"/>
+                        </a>
+                    </h:panelGroup>
+
+                    <!-- Note existante -->
+                    <h:panelGroup rendered="#{s.corrige}" layout="block">
+                        <div class="soum-corrige-box">
+                            <strong style="color:#065F46;">
+                                Note : <h:outputText value="#{s.note}"/>/<h:outputText value="#{groupe.cours.baremeOu20}"/>
+                            </strong>
+                            <h:panelGroup rendered="#{not empty s.commentaireFormateur}">
+                                <span style="margin-left:10px;color:#374151;">
+                                    <h:outputText value="#{s.commentaireFormateur}"/>
+                                </span>
+                            </h:panelGroup>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Formulaire notation -->
+                    <div class="nota-box">
+                        <span class="nota-label">
+                            Note /<h:outputText value="#{groupe.cours.baremeOu20}"/> :
+                        </span>
+                        <p:inputText value="#{s.noteSaisie}"
+                                     styleClass="a-input nota-input"
+                                     placeholder="0"/>
+                        <p:inputText value="#{s.commentaireSaisie}"
+                                     styleClass="a-input nota-comment"
+                                     placeholder="Commentaire (optionnel)"/>
+                        <p:commandButton value="✓ Valider"
+                                         styleClass="abtn-ok"
+                                         action="#{formateurCorrectionsBean.noter(s, groupe.cours)}"
+                                         update="fCorrections msgs"
+                                         process="fCorrections"/>
+                    </div>
+                </div>
+            </div>
+        </ui:repeat>
+
+    </div><!-- /corr-group -->
+</ui:repeat>
+
+</h:form>
+
+</h:panelGroup>
+
+<script>
+//<![CDATA[
+function setFiltre(val) {
+    // Soumet via un champ caché + ajax — approche simple : reload avec param
+    window.location.href = window.location.pathname + '?filtre=' + val;
+}
+//]]>
+</script>
+
+</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Connexion</ui:define>
+    <ui:define name="content">
+
+        <div style="min-height:80vh; display:flex; align-items:center; justify-content:center;">
+            <div style="width:100%; max-width:440px;">
+
+                <!-- En-tête -->
+                <div style="text-align:center; margin-bottom:28px;">
+                    <div style="width:64px;height:64px;background:linear-gradient(135deg,#0072ff,#00c6ff);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 24px rgba(0,114,255,0.4);font-size:1.8rem;">🎓</div>
+                    <h1 style="color:white;font-size:1.7rem;font-weight:800;margin-bottom:4px;">Bienvenue</h1>
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.95rem;">Connectez-vous à SenExpertFormation</p>
+                </div>
+
+                <!-- Carte -->
+                <div class="glass-card">
+                    <div style="padding:32px 36px;">
+                        <h:form id="loginForm">
+                            <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:16px;border-radius:8px;"/>
+
+                            <div class="field">
+                                <label for="email">Adresse email</label>
+                                <p:inputText id="email" value="#{authBean.email}"
+                                             placeholder="votre@email.sn"
+                                             styleClass="w-full" required="true"
+                                             requiredMessage="Email obligatoire"
+                                             style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                            </div>
+
+                            <div class="field">
+                                <label for="mdp">Mot de passe</label>
+                                <p:password id="mdp" value="#{authBean.motDePasse}"
+                                            placeholder="••••••••" feedback="false"
+                                            required="true" requiredMessage="Mot de passe obligatoire"
+                                            style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                            </div>
+
+                            <p:commandButton value="Se connecter →"
+                                             action="#{authBean.login}"
+                                             icon="pi pi-sign-in"
+                                             update="loginForm"
+                                             style="width:100%;padding:12px;background:linear-gradient(135deg,#0072ff,#00c6ff);border:none;border-radius:8px;color:white;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 4px 15px rgba(0,114,255,0.4);margin-top:6px;"/>
+
+                            <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+                                <span style="color:#888;font-size:0.88rem;">Pas encore de compte ? </span>
+                                <h:link outcome="/register" value="Créer un compte"
+                                        style="color:#0072ff;font-weight:600;font-size:0.88rem;text-decoration:none;"/>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+
+                <p style="text-align:center;color:rgba(255,255,255,0.4);font-size:0.78rem;margin-top:20px;">
+                    © 2026 SenExpertFormation — Tous droits réservés
+                </p>
+            </div>
+        </div>
+
+    </ui:define>
+</ui:composition>
+</html>

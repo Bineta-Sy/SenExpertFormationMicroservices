@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition>
+    <nav style="background:#FFFFFF; border:1px solid #E4E4E7; border-radius:12px; padding:16px; margin-bottom:20px; box-shadow:0 1px 3px rgba(120,53,4,0.05);">
+        <div style="font-size:0.75rem; font-weight:700; color:#A1A1AA; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">
+            Menu de Navigation
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:4px;">
+            <li>
+                <a href="#{request.contextPath}/dashboard-agent.xhtml"
+                   style="display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:8px; color:#52525B; text-decoration:none; font-size:0.88rem; font-weight:500; transition:all 0.2s;"
+                   onmouseover="this.style.background='#FFF7ED'; this.style.color='#EA580C'"
+                   onmouseout="this.style.background='transparent'; this.style.color='#52525B'">
+                     <span>Tableau de bord</span>
+                </a>
+            </li>
+            <li>
+                <a href="#{request.contextPath}/catalogue.xhtml"
+                   style="display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:8px; color:#52525B; text-decoration:none; font-size:0.88rem; font-weight:500; transition:all 0.2s;"
+                   onmouseover="this.style.background='#FFF7ED'; this.style.color='#EA580C'"
+                   onmouseout="this.style.background='transparent'; this.style.color='#52525B'">
+                     <span>Catalogue des offres</span>
+                </a>
+            </li>
+            <li>
+                <a href="#{request.contextPath}/mes-demandes.xhtml"
+                   style="display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:8px; color:#52525B; text-decoration:none; font-size:0.88rem; font-weight:500; transition:all 0.2s;"
+                   onmouseover="this.style.background='#FFF7ED'; this.style.color='#EA580C'"
+                   onmouseout="this.style.background='transparent'; this.style.color='#52525B'">
+                     <span>Mes demandes</span>
+                </a>
+            </li>
+            <li>
+                <a href="#{request.contextPath}/candidature-form.xhtml"
+                   style="display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:8px; color:#52525B; text-decoration:none; font-size:0.88rem; font-weight:500; transition:all 0.2s;"
+                   onmouseover="this.style.background='#FFF7ED'; this.style.color='#EA580C'"
+                   onmouseout="this.style.background='transparent'; this.style.color='#52525B'">
+                     <span>Nouvelle candidature</span>
+                </a>
+            </li>
+            <li>
+                <a href="#{request.contextPath}/institution.xhtml"
+                   style="display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:8px; color:#52525B; text-decoration:none; font-size:0.88rem; font-weight:500; transition:all 0.2s;"
+                   onmouseover="this.style.background='#FFF7ED'; this.style.color='#EA580C'"
+                   onmouseout="this.style.background='transparent'; this.style.color='#52525B'">
+                     <span>Mon institution</span>
+                </a>
+            </li>
+            <li>
+                <a href="#{request.contextPath}/profile.xhtml"
+                   style="display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:8px; color:#52525B; text-decoration:none; font-size:0.88rem; font-weight:500; transition:all 0.2s;"
+                   onmouseover="this.style.background='#FFF7ED'; this.style.color='#EA580C'"
+                   onmouseout="this.style.background='transparent'; this.style.color='#52525B'">
+                     <span>Mon profil</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</ui:composition>
+</html>

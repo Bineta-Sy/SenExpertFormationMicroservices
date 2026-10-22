@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Détail Utilisateur</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div style="text-align:center;padding:60px;"><div style="font-size:4rem;">🚫</div><h2 style="color:var(--text-1);">Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                    <h1 class="page-title">👥 Gestion des Utilisateurs &amp; Admins</h1>
+                    <p class="page-subtitle">Gérez les comptes et créez de nouveaux administrateurs</p>
+                </div>
+                <h:link outcome="/admin/dashboard" style="padding:9px 18px;background:rgba(255,255,255,0.15);color:var(--text-1);border-radius:8px;text-decoration:none;font-size:0.88rem;">← Dashboard</h:link>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start;">
+
+                <!-- Liste utilisateurs -->
+                <div class="glass-card">
+                    <div class="glass-card-header"><h2>👥 Utilisateurs</h2><p>#{fn:length(adminBean.utilisateurs)} compte(s) enregistré(s)</p></div>
+                    <div class="glass-card-body" style="padding:0;">
+                        <h:form id="formUsers">
+                            <p:messages id="msgs" showDetail="true" closable="true" style="margin:12px;border-radius:8px;"/>
+                            <p:dataTable value="#{adminBean.utilisateurs}" var="u" paginator="true" rows="8"
+                                         emptyMessage="Aucun utilisateur.">
+                                <p:column headerText="Utilisateur">
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div style="width:36px;height:36px;background:linear-gradient(135deg,#0072ff,#00c6ff);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-1);font-weight:800;flex-shrink:0;">
+                                            #{u.prenom != null ? u.prenom.substring(0,1).toUpperCase() : 'U'}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight:700;color:#1e3a5f;">#{u.prenom} #{u.nom}</div>
+                                            <div style="font-size:0.78rem;color:#888;">#{u.email}</div>
+                                        </div>
+                                    </div>
+                                </p:column>
+                                <p:column headerText="Rôle" style="width:110px;">
+                                    <span class="badge #{u.role eq 'ADMIN' ? 'badge-ko' : u.role eq 'AGENT' ? 'badge-online' : 'badge-custom'}">#{u.role}</span>
+                                </p:column>
+                                <p:column headerText="Statut" style="width:130px;">
+                                    <h:panelGroup rendered="#{u.statut eq 'EN_ATTENTE'}"><span class="badge badge-wait">⏳ En attente</span></h:panelGroup>
+                                    <h:panelGroup rendered="#{u.statut eq 'ACTIF'}"><span class="badge badge-ok">✅ Actif</span></h:panelGroup>
+                                    <h:panelGroup rendered="#{u.statut eq 'INACTIF'}"><span class="badge badge-ko">🚫 Inactif</span></h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Actions" style="width:200px;">
+                                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                        <p:commandButton value="✔" title="Valider" rendered="#{u.statut eq 'EN_ATTENTE'}"
+                                                         action="#{adminBean.validerUtilisateur(u.id)}" update="formUsers msgs"
+                                                         style="padding:5px 9px;background:linear-gradient(135deg,#198754,#28a745);border:none;border-radius:5px;color:var(--text-1);cursor:pointer;"/>
+                                        <p:commandButton value="🚫" title="Désactiver" rendered="#{u.statut eq 'ACTIF' and u.role ne 'ADMIN'}"
+                                                         action="#{adminBean.desactiverUtilisateur(u.id)}" update="formUsers msgs"
+                                                         style="padding:5px 9px;background:linear-gradient(135deg,#fd7e14,#e55a00);border:none;border-radius:5px;color:var(--text-1);cursor:pointer;"/>
+                                        <p:commandButton value="▶" title="Réactiver" rendered="#{u.statut eq 'INACTIF'}"
+                                                         action="#{adminBean.reactiverUtilisateur(u.id)}" update="formUsers msgs"
+                                                         style="padding:5px 9px;background:linear-gradient(135deg,#0072ff,#00c6ff);border:none;border-radius:5px;color:var(--text-1);cursor:pointer;"/>
+                                        <p:commandButton value="🗑" title="Supprimer" rendered="#{u.role ne 'ADMIN'}"
+                                                         action="#{adminBean.supprimerUtilisateur(u.id)}" update="formUsers msgs"
+                                                         style="padding:5px 9px;background:linear-gradient(135deg,#dc3545,#c82333);border:none;border-radius:5px;color:var(--text-1);cursor:pointer;"
+                                                         onclick="return confirm('Supprimer ce compte ?')"/>
+                                    </div>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </div>
+
+                <!-- Créer Admin -->
+                <div class="glass-card">
+                    <div class="glass-card-header" style="background:linear-gradient(135deg,#b71c1c,#e53935);">
+                        <h2>🛡 Créer un Administrateur</h2>
+                        <p>Compte avec accès complet à la plateforme</p>
+                    </div>
+                    <div class="glass-card-body">
+                        <h:form id="adminForm">
+                            <p:messages id="msgsAdmin" showDetail="true" closable="true" style="margin-bottom:14px;border-radius:8px;"/>
+
+                            <div class="field">
+                                <label>Prénom <span style="color:#dc3545;">*</span></label>
+                                <p:inputText value="#{adminBean.adminPrenom}" required="true"
+                                             placeholder="Prénom de l'admin"
+                                             style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                            </div>
+                            <div class="field">
+                                <label>Nom <span style="color:#dc3545;">*</span></label>
+                                <p:inputText value="#{adminBean.adminNom}" required="true"
+                                             placeholder="Nom de l'admin"
+                                             style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                            </div>
+                            <div class="field">
+                                <label>Email <span style="color:#dc3545;">*</span></label>
+                                <p:inputText value="#{adminBean.adminEmail}" required="true"
+                                             placeholder="admin@senexpert.com"
+                                             style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                            </div>
+                            <div class="field">
+                                <label>Mot de passe <span style="color:#dc3545;">*</span></label>
+                                <p:password value="#{adminBean.adminMotDePasse}" required="true"
+                                            feedback="true" promptLabel="Mot de passe"
+                                            weakLabel="Faible" goodLabel="Bon" strongLabel="Fort"
+                                            style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                            </div>
+
+                            <p:commandButton value="🛡 Créer l'administrateur"
+                                             action="#{adminBean.creerAdmin}"
+                                             update="adminForm msgsAdmin formUsers msgs"
+                                             style="width:100%;padding:12px;background:linear-gradient(135deg,#b71c1c,#e53935);border:none;border-radius:8px;color:var(--text-1);font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(183,28,28,0.4);margin-top:6px;"/>
+
+                            <div class="info-box" style="margin-top:14px;background:linear-gradient(135deg,#fce4ec,#ffd7d7);border-color:#f48fb1;color:#880e4f;">
+                                ⚠️ Un administrateur a accès à toutes les fonctionnalités. Créez ce compte avec précaution.
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+
+            </div>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Détail Institution</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div style="text-align:center;padding:60px;"><div style="font-size:4rem;">🚫</div><h2 style="color:var(--text-1);">Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                    <h1 class="page-title">🏢 Détail des Institutions</h1>
+                    <p class="page-subtitle">Consultez et validez les institutions enregistrées</p>
+                </div>
+                <h:link outcome="/admin/admin-dashboard" style="padding:9px 18px;background:rgba(255,255,255,0.15);color:var(--text-1);border-radius:8px;text-decoration:none;font-size:0.88rem;">← Dashboard</h:link>
+            </div>
+
+            <h:form id="formInst">
+                <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:14px;border-radius:8px;"/>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;">
+                    <ui:repeat value="#{adminBean.institutions}" var="inst">
+                        <div class="glass-card">
+                            <div style="height:6px;background:#{inst.statut eq 'ACTIF' ? 'linear-gradient(135deg,#198754,#28a745)' : inst.statut eq 'EN_ATTENTE' ? 'linear-gradient(135deg,#ffc107,#fd7e14)' : 'linear-gradient(135deg,#dc3545,#c82333)'}"></div>
+                            <div style="padding:20px 22px;">
+                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+                                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#0072ff,#00c6ff);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🏢</div>
+                                    <h:panelGroup rendered="#{inst.statut eq 'EN_ATTENTE'}"><span class="badge badge-wait">⏳ En attente</span></h:panelGroup>
+                                    <h:panelGroup rendered="#{inst.statut eq 'ACTIF'}"><span class="badge badge-ok">✅ Active</span></h:panelGroup>
+                                    <h:panelGroup rendered="#{inst.statut eq 'INACTIF'}"><span class="badge badge-ko">🚫 Inactive</span></h:panelGroup>
+                                </div>
+
+                                <h3 style="font-size:1rem;font-weight:800;color:#1e3a5f;margin-bottom:6px;">#{inst.nom}</h3>
+
+                                <div style="display:grid;gap:8px;margin-bottom:16px;">
+                                    <div style="display:flex;justify-content:space-between;background:#f8faff;padding:8px 12px;border-radius:8px;">
+                                        <span style="font-size:0.8rem;color:#888;">Type</span>
+                                        <span class="badge badge-custom">#{inst.type}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;background:#f8faff;padding:8px 12px;border-radius:8px;">
+                                        <span style="font-size:0.8rem;color:#888;">Adresse</span>
+                                        <span style="font-size:0.82rem;font-weight:600;color:#1e3a5f;">#{inst.adresse}</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;background:#f8faff;padding:8px 12px;border-radius:8px;">
+                                        <span style="font-size:0.8rem;color:#888;">ID</span>
+                                        <span style="font-size:0.82rem;font-weight:600;color:#888;">##{inst.id}</span>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup rendered="#{inst.statut eq 'EN_ATTENTE'}" style="display:block;">
+                                    <p:commandButton value="✔ Valider cette institution"
+                                                     action="#{adminBean.validerInstitution(inst.id)}"
+                                                     update="formInst msgs"
+                                                     style="width:100%;padding:10px;background:linear-gradient(135deg,#198754,#28a745);border:none;border-radius:8px;color:var(--text-1);font-weight:700;cursor:pointer;"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{inst.statut eq 'ACTIF'}" style="display:block;">
+                                    <div style="text-align:center;padding:8px;background:#d1e7dd;border-radius:8px;color:#0a5c36;font-weight:600;font-size:0.88rem;">
+                                        ✅ Institution validée et active
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </ui:repeat>
+                </div>
+
+                <h:panelGroup rendered="#{empty adminBean.institutions}">
+                    <div style="text-align:center;padding:60px;background:rgba(255,255,255,0.97);border-radius:16px;margin-top:12px;">
+                        <div style="font-size:3rem;margin-bottom:12px;">🏢</div>
+                        <p style="color:#888;">Aucune institution enregistrée pour le moment.</p>
+                    </div>
+                </h:panelGroup>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Mon Institution</ui:define>
+    <ui:define name="content">
+
+        <div style="min-height:70vh;display:flex;align-items:flex-start;justify-content:center;padding-top:20px;">
+            <div style="width:100%;max-width:560px;">
+
+                <div style="margin-bottom:24px;">
+                    <h1 class="page-title">🏢 Enregistrer mon Institution</h1>
+                    <p class="page-subtitle">Renseignez les informations de votre organisation</p>
+                </div>
+
+                <h:panelGroup rendered="#{!sessionBean.connecte}">
+                    <div class="glass-card">
+                        <div style="padding:32px;text-align:center;">
+                            <div style="font-size:3rem;margin-bottom:12px;">🔐</div>
+                            <p style="color:#555;margin-bottom:16px;">Vous devez être connecté pour accéder à cette page.</p>
+                            <h:link outcome="/login"
+                                    style="display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#0072ff,#00c6ff);color:white;border-radius:8px;text-decoration:none;font-weight:600;">
+                                Se connecter
+                            </h:link>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{sessionBean.connecte}">
+                    <div class="glass-card">
+                        <div style="background:linear-gradient(135deg,#0072ff,#00c6ff);padding:22px 28px;color:white;">
+                            <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:2px;">Informations de l'institution</h2>
+                            <p style="font-size:0.85rem;opacity:0.85;">Votre demande sera examinée par un administrateur</p>
+                        </div>
+                        <div style="padding:28px 32px;">
+                            <h:form id="formInstitution">
+                                <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:16px;border-radius:8px;"/>
+
+                                <div class="field">
+                                    <label>Nom de l'institution *</label>
+                                    <p:inputText value="#{institutionBean.nom}"
+                                                 placeholder="ex: Société Sénégalaise de Technologie"
+                                                 required="true" requiredMessage="Le nom est obligatoire"
+                                                 style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                                </div>
+
+                                <div class="field">
+                                    <label>Type d'institution *</label>
+                                    <p:selectOneMenu value="#{institutionBean.type}"
+                                                     style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;">
+                                        <f:selectItem itemValue="ENTREPRISE"  itemLabel="🏭 Entreprise"/>
+                                        <f:selectItem itemValue="ONG"         itemLabel="🤝 ONG"/>
+                                        <f:selectItem itemValue="MINISTERE"   itemLabel="🏛 Ministère"/>
+                                        <f:selectItem itemValue="DIRECTION"   itemLabel="📂 Direction"/>
+                                        <f:selectItem itemValue="PARTICULIER" itemLabel="👤 Particulier"/>
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="field">
+                                    <label>Adresse</label>
+                                    <p:inputText value="#{institutionBean.adresse}"
+                                                 placeholder="ex: Dakar, Plateau, Sénégal"
+                                                 style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                                </div>
+
+                                <p:commandButton value="Enregistrer l'institution →"
+                                                 icon="pi pi-building"
+                                                 action="#{institutionBean.creer}"
+                                                 update="formInstitution"
+                                                 style="width:100%;padding:12px;background:linear-gradient(135deg,#0072ff,#00c6ff);border:none;border-radius:8px;color:white;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 4px 15px rgba(0,114,255,0.35);margin-top:4px;"/>
+                            </h:form>
+                        </div>
+                    </div>
+
+                    <!-- Info box -->
+                    <div style="margin-top:16px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:16px 20px;color:rgba(255,255,255,0.85);font-size:0.88rem;">
+                        <div style="font-weight:700;margin-bottom:6px;">📋 Processus de validation</div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <span>1️⃣ Créez votre compte utilisateur</span>
+                            <span>2️⃣ Enregistrez votre institution ici</span>
+                            <span>3️⃣ L'administrateur valide votre compte et institution</span>
+                            <span>4️⃣ Vous pouvez désormais candidater aux offres</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px;">
+                        <h:link outcome="/offres"
+                                style="color:rgba(255,255,255,0.7);font-size:0.88rem;text-decoration:none;">
+                            ← Retour aux offres de formation
+                        </h:link>
+                    </div>
+                </h:panelGroup>
+
+            </div>
+        </div>
+
+    </ui:define>
+</ui:composition>
+</html>

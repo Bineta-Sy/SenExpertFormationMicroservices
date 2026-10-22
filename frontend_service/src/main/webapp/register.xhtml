@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Inscription &#8212; SenExpertFormation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #FFF7ED; min-height: 100vh; font-size: 14px; line-height: 1.5; }
+        .ui-messages { border-radius: 10px !important; font-size: 13px !important; margin-bottom: 20px !important; }
+    </style>
+</h:head>
+<h:body>
+
+<style>
+.page-wrapper { padding: 0 !important; max-width: 100% !important; }
+
+.reg-shell {
+    display: flex;
+    min-height: calc(100vh - 58px);
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* ══ GAUCHE ══ */
+.reg-left {
+    flex: 1.3;
+    background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url("#{resource['images:fond-login.jpg']}");
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px 60px;
+    position: relative;
+    overflow: hidden;
+}
+.reg-left::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: rgba(249, 115, 22, 0.15);
+    top: -150px; right: -150px;
+    pointer-events: none;
+}
+.reg-left::after {
+    content: '';
+    position: absolute;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: rgba(251, 146, 60, 0.12);
+    bottom: -60px; left: 40px;
+    pointer-events: none;
+}
+.rl-logo {
+        display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 2;
+
+}
+.rl-logo-icon {
+   width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #F97316;
+    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+.rl-logo-txt { 
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+.rl-title {
+    font-family: 'Algerian', 'Arial Black', sans-serif;
+    font-size: 36px; font-weight: 800; color: #fff;
+    line-height: 1.2; letter-spacing: 0px;
+    margin-bottom: 16px; max-width: 400px;
+}
+.rl-title span { color: #FB923C; }
+.rl-sub {
+    font-size: 14px; color: rgba(255,255,255,0.7);
+    line-height: 1.7; max-width: 360px; margin-bottom: 40px;
+}
+.rl-steps {
+    display: flex; flex-direction: column; gap: 16px;
+}
+.rl-step {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 13px; color: rgba(255,255,255,0.5);
+    transition: color .2s;
+}
+.rl-step.current { color: #fff; font-weight: 500; }
+.rl-step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0;
+    background: transparent; color: rgba(255,255,255,0.4);
+    transition: all .2s;
+}
+.rl-step.current .rl-step-num {
+    background: #F97316; border-color: #F97316;
+    color: #fff; box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
+}
+.rl-step.done .rl-step-num {
+    background: #10B981; border-color: #10B981; color: #fff;
+}
+.rl-step.done { color: rgba(255,255,255,0.75); }
+
+/* ══ DROITE ══ */
+.reg-right {
+    width: 520px;
+    flex-shrink: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 52px;
+    overflow-y: auto;
+}
+
+/* Header form */
+.rr-title { font-size: 22px; font-weight: 700; color: #431407; letter-spacing: -0.4px; margin-bottom: 6px; }
+.rr-sub   { font-size: 13px; color: #7C2D12; margin-bottom: 28px; }
+
+/* Fields */
+.rr-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rr-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+.rr-field label {
+    font-size: 11px; font-weight: 600; color: #431407;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.rr-field .req { color: #EF4444; }
+.rr-field .hint { font-size: 11px; color: #9A3412; margin-top: 3px; }
+
+.rr-input {
+    width: 100% !important; padding: 11px 14px !important;
+    border: 1.5px solid #FED7AA !important;
+    border-radius: 10px !important; font-size: 13px !important;
+    color: #431407 !important; background: #FFF7ED !important;
+    transition: border-color .15s, box-shadow .15s !important;
+    box-sizing: border-box !important;
+}
+.rr-input:focus {
+    outline: none !important; border-color: #F97316 !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+}
+.ui-password { width: 100% !important; }
+.ui-password .rr-input { width: 100% !important; }
+
+/* Type cards */
+.type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.type-card {
+    border: 1.5px solid #FED7AA; border-radius: 12px;
+    padding: 16px; cursor: pointer; transition: all .15s;
+    background: #FFF7ED;
+}
+.type-card:hover { border-color: #FDBA74; background: #FFEDD5; }
+.type-card.selected { border-color: #F97316; background: #FFEDD5; }
+.type-card .tc-icon { font-size: 1.5rem; margin-bottom: 8px; display: block; }
+.type-card .tc-title { font-size: 13px; font-weight: 600; color: #431407; margin-bottom: 4px; }
+.type-card.selected .tc-title { color: #EA580C; }
+.type-card .tc-desc { font-size: 11px; color: #7C2D12; line-height: 1.4; }
+
+/* Notice */
+.rr-notice {
+    display: flex; gap: 10px; padding: 11px 14px;
+    border-radius: 10px; font-size: 12px; line-height: 1.6;
+    margin-bottom: 14px;
+}
+.rr-notice-info { background: #FFEDD5; border: 1px solid #FDBA74; color: #7C2D12; }
+.rr-notice-warn { background: #FEF3C7; border: 1px solid #FDE68A; color: #92400E; }
+
+/* Password meter */
+.pwd-meter { height: 4px; border-radius: 2px; background: #E2E8F0; margin-top: 6px; overflow: hidden; }
+.pwd-bar   { height: 100%; border-radius: 2px; transition: width .3s, background .3s; width: 0; }
+.pwd-hint  { font-size: 11px; color: #9A3412; margin-top: 4px; }
+
+/* CGU */
+.cgu-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; background: #FFF7ED;
+    border-radius: 8px; margin-bottom: 8px;
+    border: 1px solid #FED7AA;
+}
+.cgu-row input[type=checkbox] { width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; accent-color: #F97316; }
+.cgu-row label { font-size: 12px; color: #7C2D12; line-height: 1.5; }
+.cgu-row a { color: #EA580C; font-weight: 500; }
+
+/* Navigation */
+.rr-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 24px; padding-top: 20px;
+    border-top: 1px solid #FFEDD5;
+}
+.rr-btn-back {
+    padding: 10px 18px; border: 1.5px solid #FED7AA;
+    border-radius: 10px; background: #fff; color: #7C2D12;
+    font-size: 13px; cursor: pointer; transition: all .15s;
+}
+.rr-btn-back:hover { border-color: #FDBA74; color: #EA580C; }
+.rr-step-count { font-size: 12px; color: #9A3412; }
+.rr-btn-next {
+    padding: 10px 22px; border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #EA580C, #F97316);
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+}
+.rr-btn-next:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* Recap */
+.recap-box {
+    background: #FFF7ED; border: 1px solid #FED7AA;
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
+}
+.recap-row {
+    display: flex; justify-content: space-between;
+    padding: 7px 0; font-size: 13px;
+    border-bottom: 1px solid #FFEDD5;
+}
+.recap-row:last-child { border-bottom: none; }
+.recap-row .rl { color: #7C2D12; }
+.recap-row .rv { color: #431407; font-weight: 600; }
+.status-badge {
+    background: #FEF3C7; color: #92400E;
+    border: 1px solid #FDE68A; font-size: 11px;
+    font-weight: 600; padding: 2px 10px; border-radius: 20px;
+}
+
+.step-content { display: none; }
+.step-content.active { display: block; }
+
+/* ══ PrimeFaces selectOneMenu — panel opaque + barre de recherche ══ */
+.ui-selectonemenu-panel {
+    background: #fff !important;
+    border: 1.5px solid #FED7AA !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 24px rgba(234, 88, 12, 0.12) !important;
+    overflow: hidden !important;
+}
+.ui-selectonemenu-filter-container {
+    padding: 8px 10px !important;
+    border-bottom: 1px solid #FFEDD5 !important;
+    background: #FFF7ED !important;
+}
+.ui-selectonemenu-filter-container .ui-inputfield {
+    width: 100% !important;
+    border: 1.5px solid #FED7AA !important;
+    border-radius: 8px !important;
+    padding: 7px 10px !important;
+    font-size: 13px !important;
+    background: #fff !important;
+    color: #431407 !important;
+    outline: none !important;
+}
+.ui-selectonemenu-filter-container .ui-inputfield:focus {
+    border-color: #F97316 !important;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12) !important;
+}
+.ui-selectonemenu-items {
+    background: #fff !important;
+    padding: 4px 0 !important;
+}
+.ui-selectonemenu-item {
+    background: #fff !important;
+    color: #431407 !important;
+    padding: 9px 14px !important;
+    font-size: 13px !important;
+}
+.ui-selectonemenu-item:hover,
+.ui-selectonemenu-item.ui-state-highlight {
+    background: #FFEDD5 !important;
+    color: #EA580C !important;
+}
+</style>
+
+<div class="reg-shell">
+
+    <div class="reg-left">
+        <div class="rl-logo">
+            <div class="rl-logo-icon">🎓</div>
+            <span class="rl-logo-txt">SenExpertFormation</span>
+        </div>
+
+        <h2 class="rl-title">Rejoignez<br/><span>la communauté</span></h2>
+        <p class="rl-sub">
+            Créez votre compte en quelques minutes et accédez
+            à toutes les offres de formation de la plateforme.
+        </p>
+
+        <div class="rl-steps">
+            <div class="rl-step current" id="ls1">
+                <div class="rl-step-num">1</div>
+                Type de compte
+            </div>
+            <div class="rl-step" id="ls2">
+                <div class="rl-step-num">2</div>
+                Informations personnelles
+            </div>
+            <div class="rl-step" id="ls3">
+                <div class="rl-step-num">3</div>
+                Sécurité
+            </div>
+            <div class="rl-step" id="ls4">
+                <div class="rl-step-num">4</div>
+                Confirmation
+            </div>
+        </div>
+    </div>
+
+    <div class="reg-right">
+
+        <h:form id="registerForm">
+        <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:16px;border-radius:10px;font-size:13px;"/>
+
+        <div class="step-content active" id="step1">
+            <div class="rr-title">Quel est votre profil ?</div>
+            <div class="rr-sub">Choisissez le type de compte qui vous correspond.</div>
+
+            <div class="rr-notice rr-notice-info">
+                ℹ️ Ce choix détermine vos accès et fonctionnalités sur la plateforme.
+            </div>
+
+            <div class="type-grid">
+                <div class="type-card selected" id="tc-part" onclick="selectType('PARTICULIER')">
+                    <span class="tc-icon">👤</span>
+                    <div class="tc-title">Particulier</div>
+                    <div class="tc-desc">Je souhaite me former à titre personnel dans un ou plusieurs domaines.</div>
+                </div>
+                <div class="type-card" id="tc-inst" onclick="selectType('AGENT')">
+                    <span class="tc-icon">🏛</span>
+                    <div class="tc-title">Agent d'institution</div>
+                    <div class="tc-desc">Je représente une entreprise, ONG, ministère ou organisation.</div>
+                </div>
+            </div>
+
+            <div id="inst-note" style="display:none">
+                <div class="rr-notice rr-notice-warn">
+                    ⚠️ Après validation de votre compte, vous devrez créer la fiche de votre organisation.
+                </div>
+            </div>
+
+            <p:inputText id="roleField" value="#{authBean.role}" style="display:none;"/>
+        </div>
+
+        <div class="step-content" id="step2">
+            <div class="rr-title">Vos informations</div>
+            <div class="rr-sub">Ces informations apparaîtront sur votre profil.</div>
+
+            <div class="rr-row">
+                <div class="rr-field">
+                    <label>Prénom <span class="req">*</span></label>
+                    <p:inputText value="#{authBean.prenom}" placeholder="Mamadou"
+                                 styleClass="rr-input" id="prenom"/>
+                </div>
+                <div class="rr-field">
+                    <label>Nom <span class="req">*</span></label>
+                    <p:inputText value="#{authBean.nom}" placeholder="Diallo"
+                                 styleClass="rr-input" id="nom"/>
+                </div>
+            </div>
+            <div class="rr-field">
+                <label>Adresse email <span class="req">*</span></label>
+                <p:inputText value="#{authBean.emailRegister}"
+                             placeholder="mamadou.diallo@email.com"
+                             styleClass="rr-input" id="email"/>
+                <span class="hint">Cet email servira d'identifiant de connexion.</span>
+            </div>
+            <div class="rr-field">
+                <label>Téléphone <span class="req">*</span></label>
+                <p:inputText value="#{authBean.telephone}" placeholder="77 000 00 00"
+                             styleClass="rr-input" id="telephone"
+                             maxlength="9"
+                             onkeypress="return /[0-9]/.test(event.key)"
+                             onpaste="setTimeout(function(){var el=document.querySelector('[id$=telephone]');el.value=el.value.replace(/\D/g,'').slice(0,9);},0)"
+                             oninput="this.value=this.value.replace(/\D/g,'').slice(0,9)"/>
+                <span class="hint">9 chiffres sans indicatif — ex : 77 123 45 67</span>
+            </div>
+
+            <div id="fields-particulier">
+                <div class="rr-row">
+                    <div class="rr-field">
+                        <label>Profession <span class="req">*</span></label>
+                        <p:inputText value="#{authBean.profession}" placeholder="Ex : Ingénieur, Enseignant…"
+                                     styleClass="rr-input" id="profession"/>
+                    </div>
+                    <div class="rr-field">
+                        <label>N° CNI <span class="req">*</span></label>
+                        <p:inputText value="#{authBean.numeroCni}" placeholder="Ex : 1 234 567 890 12"
+                                     styleClass="rr-input" id="numeroCni"/>
+                        <span class="hint">Carte Nationale d'Identité</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="fields-agent" style="display:none;">
+                <div style="font-size:11px;font-weight:700;color:#9A3412;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 10px;">
+                    Informations de l'institution
+                </div>
+                <div class="rr-field">
+                    <label>Nom de l'institution <span class="req">*</span></label>
+                    <p:inputText value="#{authBean.nomInstitution}" id="nomInstitution"
+                                 placeholder="Ex : Société Sénégalaise de Technologie"
+                                 styleClass="rr-input"/>
+                </div>
+                <div class="rr-field">
+                    <label>Type d'institution <span class="req">*</span></label>
+                    <p:selectOneMenu value="#{authBean.typeInstitution}" id="typeInstitution"
+                                     styleClass="rr-input" style="background:#fff;"
+                                     filter="true" filterMatchMode="startsWith"
+                                     filterPlaceholder="Rechercher…">
+                        <f:selectItem itemValue="ENTREPRISE"  itemLabel="Entreprise"/>
+                        <f:selectItem itemValue="ONG"         itemLabel="ONG"/>
+                        <f:selectItem itemValue="MINISTERE"   itemLabel="Ministère"/>
+                        <f:selectItem itemValue="DIRECTION"   itemLabel="Direction"/>
+                        <f:selectItem itemValue="PARTICULIER" itemLabel="Particulier"/>
+                    </p:selectOneMenu>
+                </div>
+                <div class="rr-field">
+                    <label>Secteur d'activité <span class="req">*</span></label>
+                    <p:inputText value="#{authBean.secteurInstitution}" id="secteurInstitution"
+                                 placeholder="Ex : Informatique, Agriculture, Santé…"
+                                 styleClass="rr-input"/>
+                </div>
+                <div class="rr-field">
+                    <label>NINEA / N° d'identification <span class="req">*</span></label>
+                    <p:inputText value="#{authBean.numeroInstitution}" id="numeroInstitution"
+                                 placeholder="Ex : NINEA, RCCM, N° Agrément…"
+                                 styleClass="rr-input"/>
+                    <span class="hint">Numéro officiel identifiant votre organisation.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-content" id="step3">
+            <div class="rr-title">Sécurisez votre compte</div>
+            <div class="rr-sub">Choisissez un mot de passe fort.</div>
+
+            <div class="rr-field">
+                <label>Mot de passe <span class="req">*</span></label>
+                <p:password value="#{authBean.mdpRegister}" feedback="false"
+                            placeholder="Minimum 8 caractères"
+                            styleClass="rr-input" id="pwd"
+                            onkeyup="checkPwd(this.value)"/>
+                <div class="pwd-meter"><div class="pwd-bar" id="pmbar"></div></div>
+                <div class="pwd-hint" id="pw-hint">Minimum 8 caractères, une majuscule, un chiffre.</div>
+            </div>
+            <div class="rr-field">
+                <label>Confirmer le mot de passe <span class="req">*</span></label>
+                <input type="password" id="pwd2" placeholder="Répétez votre mot de passe"
+                       class="rr-input" style="width:100%;"/>
+            </div>
+
+            <div class="cgu-row">
+                <input type="checkbox" id="cgu" checked="checked"/>
+                <label for="cgu">J'accepte les <a href="#">conditions générales d'utilisation</a> et la <a href="#">politique de confidentialité</a>.</label>
+            </div>
+            <div class="cgu-row">
+                <input type="checkbox" id="notif" checked="checked"/>
+                <label for="notif">J'accepte de recevoir des notifications par email concernant mes formations.</label>
+            </div>
+        </div>
+
+        <div class="step-content" id="step4">
+            <div style="text-align:center;padding:8px 0 20px;">
+                <div style="width:64px;height:64px;border-radius:50%;background:#D1FAE5;border:1.5px solid #A7F3D0;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;">✅</div>
+                <div style="font-size:1.2rem;font-weight:700;color:#431407;margin-bottom:6px;">Dossier soumis avec succès !</div>
+                <div style="font-size:13px;color:#7C2D12;line-height:1.6;max-width:380px;margin:0 auto;">
+                    Un administrateur examinera votre demande sous 48h ouvrées. Vous serez notifié par email.
+                </div>
+            </div>
+            <div class="recap-box">
+                <div style="font-size:10px;font-weight:700;color:#9A3412;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Récapitulatif</div>
+                <div class="recap-row"><span class="rl">Nom complet</span><span class="rv" id="recap-nom">—</span></div>
+                <div class="recap-row"><span class="rl">Email</span><span class="rv" id="recap-email">—</span></div>
+                <div class="recap-row"><span class="rl">Téléphone</span><span class="rv" id="recap-tel">—</span></div>
+                <div class="recap-row"><span class="rl">Type de compte</span><span class="rv" id="recap-type">—</span></div>
+                <div class="recap-row" id="recap-row-particulier"><span class="rl">Profession / CNI</span><span class="rv" id="recap-particulier">—</span></div>
+                <div class="recap-row" id="recap-row-agent" style="display:none;"><span class="rl">Institution</span><span class="rv" id="recap-agent">—</span></div>
+                <div class="recap-row" id="recap-row-agent2" style="display:none;"><span class="rl">Secteur / NINEA</span><span class="rv" id="recap-agent2">—</span></div>
+                <div class="recap-row"><span class="rl">Statut</span><span><span class="status-badge">⏳ En attente de validation</span></span></div>
+            </div>
+            <div class="rr-notice rr-notice-info">
+                ⏰ Votre compte sera activé après validation. Vous recevrez un email dès que votre dossier sera traité.
+            </div>
+            <div style="text-align:center;margin-top:12px;">
+                <h:link outcome="/login"
+                        style="font-size:13px;color:#EA580C;font-weight:600;text-decoration:none;"
+                        value="Aller à la page de connexion →"/>
+            </div>
+        </div>
+
+        <div class="rr-nav">
+            <button type="button" class="rr-btn-back" id="btn-back"
+                    onclick="prevStep()" style="visibility:hidden;">← Retour</button>
+            <span class="rr-step-count" id="step-count">Étape 1 sur 4</span>
+            <button type="button" class="rr-btn-next" id="btn-next-js" onclick="nextStep()">
+                Suivant →
+            </button>
+            <p:commandButton id="btn-submit" value="Soumettre mon dossier →"
+                             action="#{authBean.register}" ajax="false"
+                             style="display:none;padding:10px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#EA580C,#F97316);color:#fff;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(234,88,12,0.3);"/>
+        </div>
+        </h:form>
+
+        <div style="text-align:center;font-size:12px;color:#9A3412;margin-top:24px;">
+            Déjà un compte ?
+            <h:link outcome="/login"
+                    style="color:#EA580C;font-weight:600;text-decoration:none;"
+                    value="Se connecter"/>
+            &#160;·&#160; © 2026 SenExpertFormation
+        </div>
+    </div>
+</div>
+
+<script>//<![CDATA[
+var currentStep = 1;
+var userType = 'PARTICULIER';
+
+function selectType(t) {
+    userType = t;
+    document.getElementById('tc-part').classList.toggle('selected', t === 'PARTICULIER');
+    document.getElementById('tc-inst').classList.toggle('selected', t === 'AGENT');
+    document.getElementById('inst-note').style.display = t === 'AGENT' ? 'block' : 'none';
+    // Affichage conditionnel des champs étape 2
+    document.getElementById('fields-particulier').style.display = t === 'PARTICULIER' ? 'block' : 'none';
+    document.getElementById('fields-agent').style.display       = t === 'AGENT'       ? 'block' : 'none';
+    var inp = document.querySelector('[id$=roleField]');
+    if (inp) inp.value = t;
+}
+
+function nextStep() {
+    if (currentStep >= 4) return;
+
+    // Validation étape 2
+    if (currentStep === 2) {
+        var p   = document.querySelector('[id$=prenom]');
+        var n   = document.querySelector('[id$=nom]');
+        var e   = document.querySelector('[id$=email]');
+        var tel = document.querySelector('[id$=telephone]');
+        if (!p || p.value.trim() === '')   { alert('Veuillez saisir votre prénom.'); p.focus(); return; }
+        if (!n || n.value.trim() === '')   { alert('Veuillez saisir votre nom.'); n.focus(); return; }
+        if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.value.trim())) {
+            alert('Veuillez saisir une adresse email valide.'); e.focus(); return;
+        }
+        var telVal = tel ? tel.value.replace(/\D/g, '') : '';
+        if (telVal.length !== 9) {
+            alert('Le numéro de téléphone doit contenir exactement 9 chiffres (ex : 77 123 45 67).');
+            if (tel) tel.focus();
+            return;
+        }
+        if (userType === 'PARTICULIER') {
+            var prof = document.querySelector('[id$=profession]');
+            var cni  = document.querySelector('[id$=numeroCni]');
+            if (!prof || prof.value.trim() === '') { alert('Veuillez indiquer votre profession.'); prof.focus(); return; }
+            if (!cni  || cni.value.trim()  === '') { alert('Veuillez saisir votre numéro de CNI.'); cni.focus(); return; }
+        }
+        if (userType === 'AGENT') {
+            var nomInst  = document.querySelector('[id$=nomInstitution]');
+            var sectInst = document.querySelector('[id$=secteurInstitution]');
+            var inst     = document.querySelector('[id$=numeroInstitution]');
+            if (!nomInst  || nomInst.value.trim()  === '') { alert("Veuillez saisir le nom de l'institution.");      nomInst.focus();  return; }
+            if (!sectInst || sectInst.value.trim() === '') { alert("Veuillez saisir le secteur d'activité.");        sectInst.focus(); return; }
+            if (!inst     || inst.value.trim()     === '') { alert("Veuillez saisir le numéro d'identification."); inst.focus();     return; }
+        }
+    }
+
+    setStep(currentStep, 'done');
+    currentStep++;
+    setStep(currentStep, 'current');
+    updateNav();
+}
+
+function prevStep() {
+    if (currentStep <= 1) return;
+    setStep(currentStep, 'idle');
+    currentStep--;
+    setStep(currentStep, 'current');
+    updateNav();
+}
+
+function setStep(n, state) {
+    var sc = document.getElementById('step' + n);
+    var ls = document.getElementById('ls' + n);
+    if (sc) {
+        sc.classList.toggle('active', state === 'current');
+    }
+    if (ls) {
+        ls.classList.toggle('current', state === 'current');
+        ls.classList.toggle('done', state === 'done');
+        var dot = ls.querySelector('.rl-step-num');
+        if (dot) dot.textContent = state === 'done' ? '✓' : n;
+    }
+}
+
+function updateNav() {
+    var btnBack   = document.getElementById('btn-back');
+    var btnNextJs = document.getElementById('btn-next-js');
+    var btnSubmit = document.querySelector('[id$=btn-submit]');
+    btnBack.style.visibility = (currentStep > 1 && currentStep < 4) ? 'visible' : 'hidden';
+    document.getElementById('step-count').textContent = 'Étape ' + currentStep + ' sur 4';
+    if (currentStep === 3) {
+        btnNextJs.style.display = 'none';
+        if (btnSubmit) btnSubmit.style.display = 'flex';
+    } else if (currentStep === 4) {
+        btnNextJs.style.display = 'none';
+        if (btnSubmit) btnSubmit.style.display = 'none';
+        var p    = document.querySelector('[id$=prenom]');
+        var n    = document.querySelector('[id$=nom]');
+        var e    = document.querySelector('[id$=email]');
+        var tel  = document.querySelector('[id$=telephone]');
+        var prof = document.querySelector('[id$=profession]');
+        var cni  = document.querySelector('[id$=numeroCni]');
+        var inst = document.querySelector('[id$=numeroInstitution]');
+        document.getElementById('recap-nom').textContent   = (p ? p.value : '') + ' ' + (n ? n.value : '');
+        document.getElementById('recap-email').textContent = e ? e.value : '—';
+        document.getElementById('recap-tel').textContent   = tel ? tel.value : '—';
+        document.getElementById('recap-type').textContent  = userType === 'PARTICULIER' ? 'Particulier' : "Agent d'institution";
+        if (userType === 'PARTICULIER') {
+            document.getElementById('recap-row-particulier').style.display = '';
+            document.getElementById('recap-row-agent').style.display = 'none';
+            var profVal = prof ? prof.value : '';
+            var cniVal  = cni  ? cni.value  : '';
+            document.getElementById('recap-particulier').textContent = profVal + (cniVal ? ' · CNI ' + cniVal : '');
+        } else {
+            var nomInst  = document.querySelector('[id$=nomInstitution]');
+            var sectInst = document.querySelector('[id$=secteurInstitution]');
+            document.getElementById('recap-row-particulier').style.display = 'none';
+            document.getElementById('recap-row-agent').style.display  = '';
+            document.getElementById('recap-row-agent2').style.display = '';
+            var typeVal = document.querySelector('[id$=typeInstitution]');
+            var typeLabel = typeVal ? typeVal.options[typeVal.selectedIndex].text : '';
+            document.getElementById('recap-agent').textContent  = (nomInst ? nomInst.value : '—') + (typeLabel ? ' · ' + typeLabel : '');
+            document.getElementById('recap-agent2').textContent = (sectInst ? sectInst.value : '—') + (inst ? ' · NINEA : ' + inst.value : '');
+        }
+    } else {
+        btnNextJs.style.display = 'flex';
+        if (btnSubmit) btnSubmit.style.display = 'none';
+    }
+}
+
+function checkPwd(v) {
+    var score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^a-zA-Z0-9]/.test(v)) score++;
+    var bar    = document.getElementById('pmbar');
+    var colors = ['#EF4444', '#F59E0B', '#F97316', '#10B981'];
+    var labels = ['Trop faible', 'Faible', 'Acceptable', 'Fort ✓'];
+    bar.style.width      = (score * 25) + '%';
+    bar.style.background = score > 0 ? colors[score - 1] : 'transparent';
+    document.getElementById('pw-hint').textContent = score === 4 ? 'Mot de passe fort ✓' : (labels[score - 1] || 'Minimum 8 caractères.');
+}
+
+window.onload = function () {
+    var inp = document.querySelector('[id$=roleField]');
+    if (inp) inp.value = 'PARTICULIER';
+    selectType('PARTICULIER');
+};
+//]]></script>
+
+</h:body>
+</html>

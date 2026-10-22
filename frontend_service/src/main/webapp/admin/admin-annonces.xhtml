@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Annonces</ui:define>
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">🚫</div><h2>Accès refusé</h2></div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{sessionBean.admin}">
+            <div class="a-header">
+                <div class="a-header-left">
+                    <h1>Gestion des annonces</h1>
+                    <p>Publiez des messages visibles par tous les utilisateurs</p>
+                </div>
+                
+            </div>
+
+            <div class="a-grid2">
+                <!-- Formulaire -->
+                <div class="a-card">
+                    <div class="a-card-header"><h2>Nouvelle annonce</h2></div>
+                    <div class="a-card-body">
+                        <h:form id="fAnnonceForm">
+                            <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+                            <div class="a-field">
+                                <label>Titre <span class="req">*</span></label>
+                                <p:inputText value="#{annonceBean.titre}" required="true"
+                                             placeholder="Ex: Nouvelles offres disponibles" styleClass="a-input"/>
+                            </div>
+                            <div class="a-field">
+                                <label>Contenu <span class="req">*</span></label>
+                                <p:inputTextarea value="#{annonceBean.contenu}" required="true" rows="4"
+                                                 placeholder="Message à afficher aux utilisateurs..."
+                                                 styleClass="a-input a-textarea"/>
+                            </div>
+                            <div class="a-field">
+                                <label>Type</label>
+                                <p:selectOneMenu value="#{annonceBean.type}" styleClass="a-input a-select">
+                                    <f:selectItem itemValue="INFO"    itemLabel="Information"/>
+                                    <f:selectItem itemValue="SUCCESS" itemLabel="Succes / Bonne nouvelle"/>
+                                    <f:selectItem itemValue="WARNING" itemLabel="Avertissement"/>
+                                    <f:selectItem itemValue="DANGER"  itemLabel="Urgent / Important"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <!-- Ciblage -->
+                            <div class="a-field">
+                                <label>&#x1F3AF; Cibler un role</label>
+                                <p:selectOneMenu value="#{annonceBean.cibleRole}" styleClass="a-input a-select">
+                                    <f:selectItem itemValue="TOUS"        itemLabel="Tous les utilisateurs"/>
+                                    <f:selectItem itemValue="AGENT"       itemLabel="Agents uniquement"/>
+                                    <f:selectItem itemValue="PARTICULIER" itemLabel="Particuliers uniquement"/>
+                                    <f:selectItem itemValue="ADMIN"       itemLabel="Admins uniquement"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="a-field">
+                                <label>&#x1F3E2; Cibler une institution (optionnel)</label>
+                                <p:selectOneMenu value="#{annonceBean.cibleInstitutionId}" styleClass="a-input a-select">
+                                    <f:selectItem itemValue="#{null}" itemLabel="— Toutes les institutions —"/>
+                                    <f:selectItems value="#{annonceBean.institutions}" var="inst"
+                                                   itemValue="#{inst.id}" itemLabel="#{inst.nom}"/>
+                                </p:selectOneMenu>
+                                <small style="color:rgba(255,255,255,0.45);font-size:11px;">
+                                    Seuls les membres de cette institution verront l'annonce.
+                                </small>
+                            </div>
+
+                            <p:commandButton value="Publier l'annonce" styleClass="abtn abtn-primary abtn-full"
+                                             action="#{annonceBean.creer}"
+                                             update="fAnnonceForm fListeAnnonces"/>
+                        </h:form>
+                    </div>
+                </div>
+
+                <!-- Liste -->
+                <div class="a-card">
+                    <div class="a-card-header">
+                        <h2>Annonces publiées</h2>
+                        <span class="a-count">#{annonceBean.count} annonce(s)</span>
+                    </div>
+                    <h:form id="fListeAnnonces">
+                        <p:messages id="msgsL" showDetail="true" closable="true" style="margin:12px;"/>
+                        <h:panelGroup rendered="#{empty annonceBean.annonces}">
+                            <div class="a-empty">Aucune annonce publiée.</div>
+                        </h:panelGroup>
+                        <ui:repeat value="#{annonceBean.annonces}" var="a">
+                            <div style="padding:14px 16px;border-bottom:1px solid #F1F5F9;">
+                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="ab #{a.type eq 'INFO' ? 'ab-info' : a.type eq 'SUCCESS' ? 'ab-ok' : a.type eq 'WARNING' ? 'ab-wait' : 'ab-ko'}">
+                                            #{a.type}
+                                        </span>
+                                        <span style="font-weight:600;color:#0F172A;font-size:13px;">#{a.titre}</span>
+                                    </div>
+                                    <div style="display:flex;gap:4px;align-items:center;">
+                                        <span class="ab #{a.active ? 'ab-ok' : 'ab-gray'}">#{a.active ? 'Active' : 'Inactive'}</span>
+                                        <p:commandButton value="#{a.active ? 'Désactiver' : 'Activer'}"
+                                                         styleClass="abtn-sm"
+                                                         action="#{annonceBean.toggleActive(a.id)}"
+                                                         update="@form"/>
+                                        <p:commandButton value="Suppr." styleClass="abtn-sm abtn-sm-ko"
+                                                         action="#{annonceBean.supprimer(a.id)}"
+                                                         update="@form"
+                                                         onclick="return confirm('Supprimer cette annonce ?')"/>
+                                    </div>
+                                </div>
+                                <p style="font-size:12px;color:#475569;margin-bottom:4px;">#{a.contenu}</p>
+                                <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+                                    <span style="font-size:11px;color:#94A3B8;">#{a.dateCreation} · #{a.auteur}</span>
+                                    <span class="ab ab-gray" style="font-size:10px;">
+                                        &#x1F3AF; #{a.cibleRole}
+                                    </span>
+                                    <h:panelGroup rendered="#{a.cibleInstitutionNom != null}">
+                                        <span class="ab ab-info" style="font-size:10px;">
+                                            &#x1F3E2; #{a.cibleInstitutionNom}
+                                        </span>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </h:form>
+                </div>
+            </div>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

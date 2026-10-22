@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+<ui:composition template="/WEB-INF/templates/particulier-layout.xhtml">
+<f:metadata>
+    <f:viewAction action="#{particularDashboardBean.charger}"/>
+</f:metadata>
+<ui:define name="title">Mes formations — SenExpertFormation</ui:define>
+<ui:define name="topbar-title">📚 Mes formations</ui:define>
+
+<ui:define name="head">
+<style>
+/* ── Variables couleurs ── */
+:root {
+    --mf-bg:      #F9FAFB;
+    --mf-border:  #E5E7EB;
+    --mf-txt:     #111827;
+    --mf-txt2:    #6B7280;
+    --mf-accent:  #BA7517;
+    --mf-acc-bg:  #FAEEDA;
+    --mf-acc-txt: #633806;
+}
+
+.mf-shell   { max-width: 1040px; margin: 0 auto; }
+
+/* Stats */
+.mf-stats   { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 28px; }
+.mf-stat    { background: #fff; border: 1px solid var(--mf-border); border-radius: 12px;
+               padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.mf-stat-v  { font-size: 26px; font-weight: 700; color: var(--mf-txt); }
+.mf-stat-l  { font-size: 11px; color: var(--mf-txt2); margin-top: 3px; text-transform: uppercase; letter-spacing: .4px; }
+.mf-stat-bar{ height: 3px; border-radius: 2px; margin-top: 10px; }
+
+/* Grid de cartes */
+.mf-grid    { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+
+/* Carte formation */
+.mf-card    {
+    background: #fff;
+    border: 1px solid var(--mf-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    transition: box-shadow .15s, border-color .15s;
+    display: flex;
+    flex-direction: column;
+}
+.mf-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.09); border-color: #D1D5DB; }
+
+.mf-card-accent { height: 4px; }
+
+.mf-card-top    { padding: 18px 18px 14px; display: flex; gap: 14px; align-items: flex-start; }
+.mf-avatar      {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--mf-acc-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: var(--mf-acc-txt);
+    flex-shrink: 0;
+}
+.mf-card-info   { flex: 1; min-width: 0; }
+.mf-card-title  { font-size: 14px; font-weight: 700; color: var(--mf-txt); margin-bottom: 5px; line-height: 1.4; }
+.mf-badges      { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+.mf-badge       { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; white-space: nowrap; border: 1px solid transparent; }
+.mf-badge-domain{ background: #EFF6FF; color: #2563EB; border-color: #BFDBFE; }
+.mf-badge-type  { background: #F0FDF4; color: #15803D; border-color: #86EFAC; }
+.mf-badge-type-p{ background: #FEF3C7; color: #92400E; border-color: #FDE68A; }
+.mf-badge-cert  { background: #F0FDF4; color: #065F46; border-color: #6EE7B7; }
+
+/* Progression */
+.mf-progress-wrap{ padding: 0 18px 14px; }
+.mf-progress-hd  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.mf-progress-lbl { font-size: 11px; color: var(--mf-txt2); }
+.mf-progress-pct { font-size: 13px; font-weight: 700; color: var(--mf-txt); }
+.mf-progress-bar { height: 7px; background: #F3F4F6; border-radius: 4px; overflow: hidden; }
+.mf-progress-fill{ height: 100%; border-radius: 4px; transition: width .4s; }
+.mf-modules-row  { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.mf-module-info  { font-size: 11px; color: var(--mf-txt2); display: flex; align-items: center; gap: 4px; }
+
+/* Section TP/Devoir/Examen */
+.mf-tplist  { padding: 0 18px 12px; }
+.mf-tp-item { display: flex; align-items: center; gap: 7px; padding: 5px 0;
+               border-top: 1px solid #F3F4F6; font-size: 11px; color: var(--mf-txt2); }
+.mf-tp-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* Footer carte */
+.mf-card-footer { padding: 12px 18px; border-top: 1px solid #F3F4F6; margin-top: auto;
+                   display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mf-btn         { display: inline-flex; align-items: center; gap: 6px;
+                   padding: 8px 16px; border-radius: 8px; font-size: 12px;
+                   font-weight: 600; cursor: pointer; text-decoration: none;
+                   border: none; transition: filter .15s; }
+.mf-btn-primary { background: var(--mf-accent); color: #fff; }
+.mf-btn-primary:hover { filter: brightness(.9); text-decoration: none; color: #fff; }
+.mf-btn-cert    { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.mf-btn-cert:hover { background: #A7F3D0; text-decoration: none; color: #065F46; }
+
+/* Empty state */
+.mf-empty   { text-align: center; padding: 64px 20px; }
+.mf-empty-ico{ font-size: 3rem; margin-bottom: 16px; }
+.mf-empty-t { font-size: 17px; font-weight: 700; color: var(--mf-txt); margin-bottom: 6px; }
+.mf-empty-s { font-size: 13px; color: var(--mf-txt2); margin-bottom: 20px; }
+</style>
+</ui:define>
+
+<ui:define name="content">
+<div class="mf-shell">
+
+    <!-- ── Sous-titre ── -->
+    <p style="font-size:13px;color:#6B7280;margin:0 0 20px;">
+        Toutes les formations auxquelles vous participez
+    </p>
+
+    <!-- ── Stats ── -->
+    <div class="mf-stats">
+        <div class="mf-stat">
+            <div class="mf-stat-v"><h:outputText value="#{particularDashboardBean.nbFormations}"/></div>
+            <div class="mf-stat-l">Formations inscrites</div>
+            <div class="mf-stat-bar" style="background:linear-gradient(90deg,#3B82F6,#6366F1);"></div>
+        </div>
+        <div class="mf-stat">
+            <div class="mf-stat-v"><h:outputText value="#{particularDashboardBean.nbEnCours}"/></div>
+            <div class="mf-stat-l">En cours</div>
+            <div class="mf-stat-bar" style="background:linear-gradient(90deg,#F59E0B,#D97706);"></div>
+        </div>
+        <div class="mf-stat">
+            <div class="mf-stat-v"><h:outputText value="#{particularDashboardBean.nbCoursTermines}"/></div>
+            <div class="mf-stat-l">Modules terminés</div>
+            <div class="mf-stat-bar" style="background:linear-gradient(90deg,#10B981,#059669);"></div>
+        </div>
+        <div class="mf-stat">
+            <div class="mf-stat-v"><h:outputText value="#{particularDashboardBean.nbResultatsRecus}"/></div>
+            <div class="mf-stat-l">Résultats reçus</div>
+            <div class="mf-stat-bar" style="background:linear-gradient(90deg,#8B5CF6,#7C3AED);"></div>
+        </div>
+    </div>
+
+    <!-- ── Aucune formation ── -->
+    <h:panelGroup rendered="#{empty particularDashboardBean.formations}" layout="block">
+        <div class="mf-empty">
+            <div class="mf-empty-ico">🎓</div>
+            <div class="mf-empty-t">Aucune formation active</div>
+            <div class="mf-empty-s">Vous n'avez pas encore de formation validée.<br/>Candidatez à une offre pour commencer votre apprentissage.</div>
+            <a href="#{request.contextPath}/catalogue.xhtml" class="mf-btn mf-btn-primary">
+                🔍 Explorer les offres
+            </a>
+        </div>
+    </h:panelGroup>
+
+    <!-- ── Grille de formations ── -->
+    <h:panelGroup rendered="#{not empty particularDashboardBean.formations}" layout="block">
+        <div class="mf-grid">
+            <ui:repeat value="#{particularDashboardBean.formations}" var="f">
+                <div class="mf-card">
+
+                    <!-- Bande de couleur en haut -->
+                    <div class="mf-card-accent" style="background:#{f.pourcentage >= 100 ? 'linear-gradient(90deg,#10B981,#059669)' : f.pourcentage > 0 ? 'linear-gradient(90deg,#F59E0B,#D97706)' : 'linear-gradient(90deg,#3B82F6,#6366F1)'};"></div>
+
+                    <!-- Top : avatar + infos -->
+                    <div class="mf-card-top">
+                        <div class="mf-avatar"><h:outputText value="#{f.initiale}"/></div>
+                        <div class="mf-card-info">
+                            <div class="mf-card-title"><h:outputText value="#{f.demande.offre.titre}"/></div>
+                            <div class="mf-badges">
+                                <h:panelGroup rendered="#{f.demande.offre.domaine != null}">
+                                    <span class="mf-badge mf-badge-domain">
+                                        <h:outputText value="#{f.demande.offre.domaine.libelle}"/>
+                                    </span>
+                                </h:panelGroup>
+                                <span class="mf-badge #{f.demande.offre.type eq 'EN_LIGNE' ? 'mf-badge-type' : 'mf-badge-type-p'}">
+                                    <h:outputText value="#{f.demande.offre.type eq 'EN_LIGNE' ? '🌐 En ligne' : '🏫 Présentiel'}"/>
+                                </span>
+                                <h:panelGroup rendered="#{f.pourcentage >= 100}">
+                                    <span class="mf-badge mf-badge-cert">🏆 Terminée</span>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progression -->
+                    <div class="mf-progress-wrap">
+                        <div class="mf-progress-hd">
+                            <span class="mf-progress-lbl">Progression</span>
+                            <span class="mf-progress-pct"><h:outputText value="#{f.pourcentage}"/>%</span>
+                        </div>
+                        <div class="mf-progress-bar">
+                            <div class="mf-progress-fill"
+                                 style="width:#{f.pourcentage}%;background:#{f.pourcentage >= 100 ? 'linear-gradient(90deg,#10B981,#059669)' : f.pourcentage > 0 ? 'linear-gradient(90deg,#F59E0B,#D97706)' : 'linear-gradient(90deg,#3B82F6,#6366F1)'};">
+                            </div>
+                        </div>
+                        <div class="mf-modules-row">
+                            <span class="mf-module-info">
+                                📖 <strong><h:outputText value="#{f.nbCours}"/></strong> module(s)
+                            </span>
+                            <span class="mf-module-info">
+                                ✅ <strong><h:outputText value="#{f.nbTermines}"/></strong> terminé(s)
+                            </span>
+                            <h:panelGroup rendered="#{not empty f.travauxPratiques}">
+                                <span class="mf-module-info">
+                                    📝 <strong><h:outputText value="#{fn:length(f.travauxPratiques)}"/></strong> travaux
+                                </span>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
+                    <!-- Liste TP/Devoir/Examen -->
+                    <h:panelGroup rendered="#{not empty f.travauxPratiques}" layout="block">
+                        <div class="mf-tplist">
+                            <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">
+                                Travaux à rendre
+                            </div>
+                            <ui:repeat value="#{f.travauxPratiques}" var="tp">
+                                <div class="mf-tp-item">
+                                    <div class="mf-tp-dot"
+                                         style="background:#{tp.type eq 'TP' ? '#0891B2' : tp.type eq 'DEVOIR' ? '#7C3AED' : '#DC2626'};"></div>
+                                    <span style="color:#374151;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                        <h:outputText value="#{tp.titre}"/>
+                                    </span>
+                                    <span style="font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;
+                                                  background:#{tp.type eq 'TP' ? '#CFFAFE' : tp.type eq 'DEVOIR' ? '#EDE9FE' : '#FEE2E2'};
+                                                  color:#{tp.type eq 'TP' ? '#0891B2' : tp.type eq 'DEVOIR' ? '#7C3AED' : '#DC2626'};">
+                                        <h:outputText value="#{tp.typeLabel}"/>
+                                    </span>
+                                    <h:panelGroup rendered="#{not empty tp.dateLimite}">
+                                        <span style="font-size:10px;color:#D97706;">
+                                            ⏳ <h:outputText value="#{tp.dateLimiteCourte}"/>
+                                        </span>
+                                    </h:panelGroup>
+                                </div>
+                            </ui:repeat>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Footer : boutons d'action -->
+                    <div class="mf-card-footer">
+                        <h:outputLink value="#{request.contextPath}/mes-cours.xhtml" styleClass="mf-btn mf-btn-primary">
+                            <f:param name="offreId" value="#{f.demande.offre.id}"/>
+                            📖 Accéder aux cours
+                        </h:outputLink>
+                        <h:panelGroup rendered="#{f.pourcentage >= 100}">
+                            <h:outputLink value="#{request.contextPath}/mes-cours.xhtml" styleClass="mf-btn mf-btn-cert"
+                                          title="Voir le certificat de complétion">
+                                <f:param name="offreId" value="#{f.demande.offre.id}"/>
+                                🏆 Certificat
+                            </h:outputLink>
+                        </h:panelGroup>
+                        <span style="margin-left:auto;font-size:11px;color:#9CA3AF;">
+                            Soumise le <h:outputText value="#{f.demande.dateDemande}"/>
+                        </span>
+                    </div>
+
+                </div>
+            </ui:repeat>
+        </div>
+    </h:panelGroup>
+
+</div>
+</ui:define>
+</ui:composition>
+</html>

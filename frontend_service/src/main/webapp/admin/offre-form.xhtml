@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Gestion des Offres</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div style="text-align:center;padding:60px;"><div style="font-size:4rem;">🚫</div><h2 style="color:var(--text-1);">Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                    <h1 class="page-title">📚 Gestion des Offres de Formation</h1>
+                    <p class="page-subtitle">Créez, modifiez et supprimez les offres disponibles</p>
+                </div>
+                <h:link outcome="/admin/dashboard" style="padding:9px 18px;background:rgba(255,255,255,0.15);color:var(--text-1);border-radius:8px;text-decoration:none;font-size:0.88rem;">← Dashboard</h:link>
+            </div>
+
+            <div style="display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:start;">
+
+                <!-- Formulaire création / modification -->
+                <div class="glass-card">
+                    <div class="glass-card-header" style="background:#{offreAdminBean.modeEdition ? 'linear-gradient(135deg,#f57f17,#ffa000)' : 'linear-gradient(135deg,#0072ff,#00c6ff)'}">
+                        <h2>#{offreAdminBean.modeEdition ? '✏️ Modifier l\'offre' : '➕ Nouvelle Offre'}</h2>
+                        <p>#{offreAdminBean.modeEdition ? 'Modifiez les informations de l\'offre' : 'Remplissez le formulaire'}</p>
+                    </div>
+                    <div class="glass-card-body">
+                        <h:form id="offreForm">
+                            <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:14px;border-radius:8px;"/>
+
+                            <div class="field">
+                                <label>Titre <span style="color:#dc3545;">*</span></label>
+                                <p:inputText value="#{offreAdminBean.titre}" required="true"
+                                             placeholder="Ex: Formation Spring Boot avancé"
+                                             style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                            </div>
+                            <div class="field">
+                                <label>Description</label>
+                                <p:inputTextarea value="#{offreAdminBean.description}" rows="3"
+                                                 placeholder="Description..."
+                                                 style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;resize:vertical;"/>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                                <div class="field">
+                                    <label>Date début <span style="color:#dc3545;">*</span></label>
+                                    <p:inputText value="#{offreAdminBean.dateDebut}" required="true"
+                                                 placeholder="2026-01-15"
+                                                 style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                                </div>
+                                <div class="field">
+                                    <label>Date fin <span style="color:#dc3545;">*</span></label>
+                                    <p:inputText value="#{offreAdminBean.dateFin}" required="true"
+                                                 placeholder="2026-03-15"
+                                                 style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                                </div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                                <div class="field">
+                                    <label>Places <span style="color:#dc3545;">*</span></label>
+                                    <p:inputText value="#{offreAdminBean.places}" required="true"
+                                                 placeholder="20"
+                                                 style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                                </div>
+                                <div class="field">
+                                    <label>Type <span style="color:#dc3545;">*</span></label>
+                                    <p:selectOneMenu value="#{offreAdminBean.type}"
+                                                     style="width:100%;border-radius:8px;border:1.5px solid #dee2e6;padding:9px 10px;font-size:0.9rem;">
+                                        <f:selectItem itemValue="EN_LIGNE" itemLabel="🌐 En ligne"/>
+                                        <f:selectItem itemValue="PRESENTIEL" itemLabel="🏫 Présentiel"/>
+                                        <f:selectItem itemValue="A_LA_CARTE" itemLabel="📋 À la carte"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Domaine <span style="color:#dc3545;">*</span></label>
+                                <p:selectOneMenu value="#{offreAdminBean.domaineId}" required="true"
+                                                 style="width:100%;border-radius:8px;border:1.5px solid #dee2e6;padding:9px 10px;font-size:0.9rem;">
+                                    <f:selectItem itemValue="#{null}" itemLabel="— Sélectionnez —"/>
+                                    <f:selectItems value="#{offreAdminBean.domaines}" var="d"
+                                                   itemValue="#{d.id}" itemLabel="#{d.libelle}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <!-- Documents requis pour postuler -->
+                            <div class="field">
+                                <label style="font-weight:600;">📋 Documents requis pour postuler</label>
+                                <div style="font-size:11px;color:#6B7280;margin-bottom:8px;">
+                                    Listez les documents que le candidat doit fournir (ex: CV, Diplôme, Lettre de motivation…)
+                                </div>
+
+                                <!-- Ajouter un document -->
+                                <div style="display:flex;gap:6px;margin-bottom:8px;">
+                                    <p:inputText value="#{offreAdminBean.nouveauDocumentRequis}"
+                                                 placeholder="Ex: CV à jour (PDF)"
+                                                 style="flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.88rem;"/>
+                                    <p:commandButton value="+ Ajouter"
+                                                     action="#{offreAdminBean.ajouterDocumentRequis}"
+                                                     update="offreForm"
+                                                     style="padding:8px 12px;background:#4F46E5;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;"/>
+                                </div>
+
+                                <!-- Liste des documents -->
+                                <h:panelGroup rendered="#{offreAdminBean.nbDocumentsRequis gt 0}" layout="block">
+                                    <ui:repeat value="#{offreAdminBean.documentsRequis}" var="doc" varStatus="vs">
+                                        <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;margin-bottom:4px;font-size:12px;color:#065F46;">
+                                            <i class="ti ti-file-check"></i>
+                                            <span style="flex:1;"><h:outputText value="#{doc}"/></span>
+                                            <p:commandLink actionListener="#{offreAdminBean.supprimerDocumentRequis(vs.index)}"
+                                                           update="offreForm" process="@none"
+                                                           style="color:#DC2626;text-decoration:none;font-size:13px;" title="Retirer">
+                                                <i class="ti ti-x"></i>
+                                            </p:commandLink>
+                                        </div>
+                                    </ui:repeat>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{offreAdminBean.nbDocumentsRequis eq 0}" layout="block">
+                                    <div style="font-size:11px;color:#94A3B8;font-style:italic;padding:6px 0;">
+                                        Aucun document requis défini (le candidat ne saura pas quoi fournir).
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+
+                            <!-- Bouton Créer ou Modifier -->
+                            <h:panelGroup rendered="#{!offreAdminBean.modeEdition}">
+                                <p:commandButton value="➕ Créer l'offre"
+                                                 action="#{offreAdminBean.creerOffre}"
+                                                 update="offreForm listeForm"
+                                                 style="width:100%;padding:12px;background:linear-gradient(135deg,#0072ff,#00c6ff);border:none;border-radius:8px;color:var(--text-1);font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(0,114,255,0.4);"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{offreAdminBean.modeEdition}" style="display:flex;gap:10px;">
+                                <p:commandButton value="💾 Enregistrer"
+                                                 action="#{offreAdminBean.modifierOffre}"
+                                                 update="offreForm listeForm"
+                                                 style="flex:1;padding:12px;background:linear-gradient(135deg,#f57f17,#ffa000);border:none;border-radius:8px;color:var(--text-1);font-weight:700;cursor:pointer;"/>
+                                <p:commandButton value="✘ Annuler"
+                                                 action="#{offreAdminBean.annulerEdition}"
+                                                 update="offreForm"
+                                                 style="padding:12px 16px;background:#f0f0f0;border:none;border-radius:8px;color:#555;font-weight:600;cursor:pointer;"/>
+                            </h:panelGroup>
+                        </h:form>
+                    </div>
+                </div>
+
+                <!-- Liste offres existantes -->
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <h2>📋 Offres publiées</h2>
+                        <p>#{fn:length(offreAdminBean.offres)} offre(s)</p>
+                    </div>
+                    <div class="glass-card-body" style="padding:0;">
+                        <h:form id="listeForm">
+                            <p:messages id="msgsL" showDetail="true" closable="true" style="margin:12px;border-radius:8px;"/>
+                            <p:dataTable value="#{offreAdminBean.offres}" var="o"
+                                         emptyMessage="Aucune offre publiée."
+                                         paginator="true" rows="6">
+                                <p:column headerText="Offre">
+                                    <div style="font-weight:700;color:#1e3a5f;font-size:0.9rem;">#{o.titre}</div>
+                                    <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+                                        <span class="badge badge-online" style="font-size:0.72rem;">#{o.domaine.libelle}</span>
+                                        <span class="badge badge-custom" style="font-size:0.72rem;">#{o.type}</span>
+                                        <span class="badge #{o.places gt 0 ? 'badge-ok' : 'badge-ko'}" style="font-size:0.72rem;">#{o.places} pl.</span>
+                                    </div>
+                                </p:column>
+                                <p:column headerText="Période" style="width:160px;">
+                                    <div style="font-size:0.78rem;color:#666;">
+                                        <div>📅 #{o.dateDebut}</div>
+                                        <div>🏁 #{o.dateFin}</div>
+                                    </div>
+                                </p:column>
+                                <p:column headerText="Actions" style="width:100px;text-align:center;">
+                                    <div style="display:flex;gap:5px;justify-content:center;">
+                                        <p:commandButton value="✏️"
+                                                         title="Modifier"
+                                                         action="#{offreAdminBean.chargerPourEdition(o)}"
+                                                         update="offreForm"
+                                                         style="padding:6px 10px;background:linear-gradient(135deg,#f57f17,#ffa000);border:none;border-radius:6px;color:var(--text-1);cursor:pointer;"/>
+                                        <p:commandButton value="🗑"
+                                                         title="Supprimer"
+                                                         action="#{offreAdminBean.supprimerOffre(o.id)}"
+                                                         update="listeForm msgsL"
+                                                         style="padding:6px 10px;background:linear-gradient(135deg,#dc3545,#c82333);border:none;border-radius:6px;color:var(--text-1);cursor:pointer;"
+                                                         onclick="return confirm('Supprimer cette offre ?')"/>
+                                    </div>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </div>
+
+            </div>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

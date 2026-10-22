@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Candidatures</ui:define>
+
+    <ui:define name="pageStyle">
+/* ── Boutons ─────────────────────────────────── */
+.abtn-sm{display:inline-flex!important;align-items:center!important;padding:4px 10px!important;
+    font-size:11px!important;font-weight:600!important;border-radius:6px!important;
+    border:1px solid #CBD5E1!important;cursor:pointer!important;background:#F8FAFC!important;
+    color:#475569!important;white-space:nowrap!important;font-family:inherit!important;}
+.abtn-sm-ok{background:#059669!important;color:#fff!important;border-color:#059669!important;}
+.abtn-sm-ok:hover{background:#047857!important;}
+.abtn-sm-ko{background:#DC2626!important;color:#fff!important;border-color:#DC2626!important;}
+.abtn-sm-ko:hover{background:#B91C1C!important;}
+.ui-button-text{display:inline!important;font-family:inherit!important;}
+/* hide per-column filter inputs */
+.ui-column-filter { display:none !important; }
+/* ── Boutons export ──────────────────────────── */
+.exp-btn{display:inline-flex!important;align-items:center!important;padding:10px 16px!important;
+    font-size:13px!important;font-weight:500!important;border-radius:8px!important;
+    border:1px solid #CBD5E1!important;cursor:pointer!important;background:#F8FAFC!important;
+    color:#374151!important;white-space:nowrap!important;font-family:inherit!important;
+    text-align:left!important;min-width:170px!important;}
+.exp-btn:hover{background:#F1F5F9!important;}
+.exp-btn-ok{background:#ECFDF5!important;color:#065F46!important;border-color:#A7F3D0!important;}
+.exp-btn-ok:hover{background:#D1FAE5!important;}
+.exp-btn-primary{background:#EFF6FF!important;color:#1E40AF!important;border-color:#BFDBFE!important;}
+.exp-btn-primary:hover{background:#DBEAFE!important;}
+.exp-btn .ui-button-text{display:inline!important;font-family:inherit!important;}
+    </ui:define>
+
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">🚫</div><h2>Accès refusé</h2></div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{sessionBean.admin}">
+            <div class="a-header">
+                <div class="a-header-left"><h1>Candidatures</h1><p>Acceptez ou refusez les candidatures aux offres</p></div>
+            </div>
+            <div class="a-stats">
+                <div class="a-stat"><div class="sv">#{fn:length(adminDashboardBean.candidatures)}</div><div class="sl">Total</div></div>
+                <div class="a-stat"><div class="sv" style="color:#633806;">#{adminDashboardBean.countCandidaturesParStatut('EN_ATTENTE')}</div><div class="sl">En attente</div></div>
+                <div class="a-stat"><div class="sv" style="color:#27500A;">#{adminDashboardBean.countCandidaturesParStatut('ACCEPTEE')}</div><div class="sl">Acceptées</div></div>
+            </div>
+            <div class="a-card">
+                <div class="a-card-header"><h2>Liste des candidatures</h2>
+                    <span class="a-count">#{fn:length(adminDashboardBean.candidatures)} candidature(s)</span>
+                </div>
+                <h:form id="fCand">
+                    <p:messages id="msgs" showDetail="true" closable="true" style="margin:12px;"/>
+                    <p:dataTable id="tblCand" widgetVar="dtCand"
+                                 value="#{adminDashboardBean.candidatures}"
+                                 filteredValue="#{adminDashboardBean.filteredCandidatures}"
+                                 var="c" paginator="true" rows="10"
+                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                 emptyMessage="Aucune candidature trouvée.">
+
+                        <f:facet name="header">
+                            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px 14px;">
+                                <i class="ti ti-search" style="color:#94A3B8;"></i>
+                                <p:inputText id="globalFilter"
+                                             onkeyup="PF('dtCand').filter()"
+                                             placeholder="Rechercher par offre, candidat…"
+                                             style="width:280px;padding:7px 12px;font-size:13px;border:1px solid #CBD5E1;border-radius:8px;font-family:inherit;"/>
+                                <span style="font-size:12px;color:#94A3B8;">Les EN ATTENTE apparaissent en premier</span>
+                            </div>
+                        </f:facet>
+
+                        <p:column headerText="#" style="width:50px;text-align:center;">
+                            <span style="font-size:12px;color:#999;">##{c.id}</span>
+                        </p:column>
+                        <p:column headerText="Offre" filterBy="#{c.offre.titre}" filterMatchMode="contains">
+                            <div style="font-weight:600;color:#1a1a1a;font-size:13px;">#{c.offre.titre}</div>
+                            <span class="ab ab-info" style="margin-top:3px;display:inline-block;">
+                                #{c.offre.domaine != null ? c.offre.domaine.libelle : '—'}
+                            </span>
+                        </p:column>
+                        <p:column headerText="Candidat" style="width:160px;"
+                                  filterBy="#{c.nomCandidat}" filterMatchMode="contains">
+                            <span style="font-size:13px;color:#444;font-weight:500;">#{c.nomCandidat}</span>
+                        </p:column>
+                        <p:column headerText="Date" style="width:110px;">
+                            <span style="font-size:12px;color:#666;">#{c.dateCreation}</span>
+                        </p:column>
+                        <p:column headerText="Statut" style="width:120px;"
+                                  filterBy="#{c.statut}" filterMatchMode="contains">
+                            <h:panelGroup rendered="#{c.statut eq 'EN_ATTENTE'}"><span class="ab ab-wait">En attente</span></h:panelGroup>
+                            <h:panelGroup rendered="#{c.statut eq 'ACCEPTEE'}"><span class="ab ab-ok">Acceptée</span></h:panelGroup>
+                            <h:panelGroup rendered="#{c.statut eq 'REFUSEE'}"><span class="ab ab-ko">Refusée</span></h:panelGroup>
+                        </p:column>
+                        <p:column headerText="Actions" style="width:170px;">
+                            <h:panelGroup rendered="#{c.statut eq 'EN_ATTENTE'}" styleClass="a-actions">
+                                <p:commandButton value="Accepter" styleClass="abtn-sm abtn-sm-ok"
+                                                 action="#{adminDashboardBean.accepterCandidature(c.id)}" update="@form"/>
+                                <p:commandButton value="Refuser" styleClass="abtn-sm abtn-sm-ko"
+                                                 action="#{adminDashboardBean.refuserCandidature(c.id)}" update="@form"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{c.statut ne 'EN_ATTENTE'}">
+                                <span style="color:#ccc;font-size:12px;">—</span>
+                            </h:panelGroup>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </div>
+
+            <!-- Exports CSV -->
+            <div class="a-card" style="margin-top:16px;">
+                <div class="a-card-header"><h2>Export des données</h2></div>
+                <div style="padding:16px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                    <h:form>
+                        <p:commandButton value="↓ Toutes les candidatures (CSV)"
+                                         styleClass="exp-btn"
+                                         action="#{adminDashboardBean.exporterCandidaturesCSV}"/>
+                    </h:form>
+                    <h:form>
+                        <p:commandButton value="↓ Candidatures Acceptées (CSV)"
+                                         styleClass="exp-btn exp-btn-ok"
+                                         action="#{adminDashboardBean.exporterCandidaturesAccepteesCSV}"/>
+                    </h:form>
+                    <h:form>
+                        <p:commandButton value="↓ Rapport par offre (CSV)"
+                                         styleClass="exp-btn exp-btn-primary"
+                                         action="#{adminDashboardBean.exporterRapportCSV}"/>
+                    </h:form>
+                </div>
+            </div>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

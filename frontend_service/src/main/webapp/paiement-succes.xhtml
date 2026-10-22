@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/particulier-layout.xhtml">
+<ui:define name="title">Paiement confirmé — SenExpertFormation</ui:define>
+<ui:define name="topbar-title">Confirmation de paiement</ui:define>
+<ui:define name="content">
+
+<style>
+.succes-wrap {
+    max-width: 560px; margin: 40px auto;
+    text-align: center;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+.succes-icon {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: #D1FAE5;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 36px;
+    animation: popIn .4s cubic-bezier(.175,.885,.32,1.275) both;
+}
+@keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+.succes-title {
+    font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 8px;
+}
+.succes-sub {
+    font-size: 14px; color: #6B7280; line-height: 1.6; margin-bottom: 28px;
+}
+.succes-card {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px; padding: 20px 24px;
+    text-align: left; margin-bottom: 24px;
+}
+.succes-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+}
+.succes-row:last-child { border-bottom: none; }
+.succes-row-k { color: #6B7280; }
+.succes-row-v { font-weight: 500; color: #111827; }
+.succes-ref {
+    background: #F0FDF4;
+    border: 1px solid #A7F3D0;
+    border-radius: 8px; padding: 12px 16px;
+    margin-bottom: 24px; text-align: center;
+}
+.succes-ref-lbl { font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: .5px; }
+.succes-ref-val { font-size: 18px; font-weight: 700; color: #059669; letter-spacing: 1px; margin-top: 4px; }
+.succes-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+    padding: 10px 24px; background: #BA7517; color: #fff;
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+    text-decoration: none; cursor: pointer; transition: background .15s;
+    display: inline-block;
+}
+.btn-primary:hover { background: #854F0B; }
+.btn-secondary {
+    padding: 10px 24px; background: #fff; color: #374151;
+    border: 1px solid #D1D5DB; border-radius: 8px; font-size: 13px; font-weight: 500;
+    text-decoration: none; cursor: pointer; transition: background .15s;
+    display: inline-block;
+}
+.btn-secondary:hover { background: #F9FAFB; }
+</style>
+
+<div class="succes-wrap">
+
+    <!-- Icône succès -->
+    <div class="succes-icon">✅</div>
+
+    <div class="succes-title">Paiement confirmé !</div>
+    <div class="succes-sub">
+        Votre candidature a été enregistrée avec succès.<br/>
+        L'administrateur examinera votre dossier et vous contactera prochainement.
+    </div>
+
+    <!-- Référence transaction -->
+    <div class="succes-ref">
+        <div class="succes-ref-lbl">Référence de transaction</div>
+        <div class="succes-ref-val">
+            <h:outputText value="#{paiementBean.referenceTransaction}"/>
+        </div>
+    </div>
+
+    <!-- Détails -->
+    <div class="succes-card">
+        <div class="succes-row">
+            <span class="succes-row-k">Formation</span>
+            <span class="succes-row-v"><h:outputText value="#{paiementBean.offreTitre}"/></span>
+        </div>
+        <div class="succes-row">
+            <span class="succes-row-k">Montant payé</span>
+            <span class="succes-row-v" style="color:#059669;">
+                <h:outputText value="#{paiementBean.montantFormate}"/>
+            </span>
+        </div>
+        <div class="succes-row">
+            <span class="succes-row-k">Candidat</span>
+            <span class="succes-row-v"><h:outputText value="#{sessionBean.nomComplet}"/></span>
+        </div>
+        <div class="succes-row">
+            <span class="succes-row-k">Email</span>
+            <span class="succes-row-v"><h:outputText value="#{sessionBean.email}"/></span>
+        </div>
+        <div class="succes-row">
+            <span class="succes-row-k">Statut candidature</span>
+            <span style="background:#EEF2FF;color:#3730A3;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;">
+                ✓ Confirmée
+            </span>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="succes-actions">
+        <h:link outcome="/dashboard-particulier" styleClass="btn-primary">
+            🏠 Mon espace
+        </h:link>
+        <h:link outcome="/dashboard-particulier" styleClass="btn-secondary">
+            📋 Voir mes demandes
+        </h:link>
+    </div>
+
+    <p style="font-size:11px;color:#9CA3AF;margin-top:20px;line-height:1.6;">
+        Un email de confirmation vous sera envoyé à <strong><h:outputText value="#{sessionBean.email}"/></strong>.<br/>
+        Conservez la référence <strong><h:outputText value="#{paiementBean.referenceTransaction}"/></strong> pour tout suivi.
+    </p>
+
+</div>
+
+</ui:define>
+</ui:composition>
+</html>

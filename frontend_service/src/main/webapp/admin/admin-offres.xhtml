@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+<ui:define name="title">Offres de formation</ui:define>
+
+<ui:define name="pageStyle">
+.ao-hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+.ao-stats{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.ao-stat{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;flex:1;min-width:140px;cursor:pointer;transition:box-shadow .15s,border-color .15s;}
+.ao-stat:hover{box-shadow:0 4px 16px rgba(0,0,0,.10);border-color:#2563EB;}
+.ao-stat.active{border-color:#2563EB;box-shadow:0 0 0 2px rgba(37,99,235,.15);}
+.ao-stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ao-stat-num{font-size:22px;font-weight:700;color:#0F172A;line-height:1;}
+.ao-stat-lbl{font-size:11px;color:#94A3B8;margin-top:2px;}
+.ao-pill{font-size:10px;padding:2px 7px;border-radius:12px;font-weight:600;white-space:nowrap;}
+.ao-act{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
+/* ── Force button styles over PrimeFaces ──────────────── */
+.abtn-sm{display:inline-flex!important;align-items:center!important;padding:4px 10px!important;font-size:11px!important;font-weight:600!important;border-radius:6px!important;border:1px solid #CBD5E1!important;cursor:pointer!important;background:#F8FAFC!important;color:#475569!important;white-space:nowrap!important;text-decoration:none!important;font-family:inherit!important;}
+.abtn-sm:hover{background:#E2E8F0!important;}
+.abtn-sm-ok{background:#059669!important;color:#fff!important;border-color:#059669!important;}
+.abtn-sm-ok:hover{background:#047857!important;}
+.abtn-sm-ko{background:#DC2626!important;color:#fff!important;border-color:#DC2626!important;}
+.abtn-sm-ko:hover{background:#B91C1C!important;}
+.abtn-sm-warn{background:#D97706!important;color:#fff!important;border-color:#D97706!important;}
+.ui-button-text{display:inline!important;font-family:inherit!important;}
+/* ── SelectOneMenu panel ────────────────────────────────── */
+.ui-selectonemenu-panel { background:#fff !important; border:1px solid #CBD5E1 !important; border-radius:8px !important; box-shadow:0 8px 24px rgba(0,0,0,.12) !important; overflow:hidden !important; }
+.ui-selectonemenu-filter-container { padding:8px !important; border-bottom:1px solid #E2E8F0 !important; background:#F8FAFC !important; }
+.ui-selectonemenu-filter-container input { width:100% !important; border:1px solid #CBD5E1 !important; border-radius:6px !important; padding:6px 10px !important; font-size:13px !important; outline:none !important; background:#fff !important; }
+.ui-selectonemenu-filter-container input:focus { border-color:#2563EB !important; box-shadow:0 0 0 2px rgba(37,99,235,.15) !important; }
+.ui-selectonemenu-items { padding:4px 0 !important; max-height:200px !important; overflow-y:auto !important; }
+.ui-selectonemenu-item { padding:8px 12px !important; font-size:13px !important; color:#374151 !important; cursor:pointer !important; }
+.ui-selectonemenu-item:hover, .ui-selectonemenu-item.ui-state-highlight { background:#EFF6FF !important; color:#1D4ED8 !important; }
+/* ── Dialogs : fond blanc opaque + overlay flou ────────── */
+.ui-dialog { background:#fff !important; border-radius:12px !important; box-shadow:0 20px 60px rgba(0,0,0,.18) !important; }
+.ui-dialog .ui-dialog-content { background:#fff !important; }
+.ui-dialog .ui-dialog-titlebar { background:#fff !important; border-bottom:1px solid #E2E8F0 !important; border-radius:12px 12px 0 0 !important; }
+.ui-widget-overlay { background:rgba(15,23,42,.45) !important; backdrop-filter:blur(4px) !important; -webkit-backdrop-filter:blur(4px) !important; }
+</ui:define>
+
+<ui:define name="content">
+<h:panelGroup rendered="#{!sessionBean.admin}">
+    <div class="a-denied"><div class="icon">🚫</div><h2>Accès refusé</h2></div>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{sessionBean.admin}">
+
+<h:form id="fOffres">
+<p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+
+<div class="ao-hd">
+    <div>
+        <h1 style="font-size:20px;font-weight:700;color:#0F172A;margin:0 0 4px;">
+            <i class="ti ti-school" style="margin-right:6px;"></i>Offres de formation
+        </h1>
+        <p style="font-size:12px;color:#94A3B8;margin:0;">Créez, publiez et gérez les offres de formation</p>
+    </div>
+    <button type="button" class="abtn abtn-success" style="padding:0 18px;height:38px;"
+            onclick="PF('dlgOffre').show();">+ Nouvelle offre</button>
+</div>
+
+<p:remoteCommand name="rcOffresTous"      action="#{adminDashboardBean.filtrerOffresTous}"       update=":fOffres:aoStats :fOffres:tblOffres" process="@none"/>
+<p:remoteCommand name="rcOffresDispo"     action="#{adminDashboardBean.filtrerOffresDisponibles}" update=":fOffres:aoStats :fOffres:tblOffres" process="@none"/>
+<p:remoteCommand name="rcOffresBrouillon" action="#{adminDashboardBean.filtrerOffresBrouillons}" update=":fOffres:aoStats :fOffres:tblOffres" process="@none"/>
+<p:remoteCommand name="rcOffresFerme"     action="#{adminDashboardBean.filtrerOffresFermees}"    update=":fOffres:aoStats :fOffres:tblOffres" process="@none"/>
+
+<h:panelGroup id="aoStats" layout="block">
+<div class="ao-stats">
+    <div class="ao-stat #{adminDashboardBean.filtreStatutOffre == null ? 'active' : ''}"
+         onclick="rcOffresTous()" title="Tout afficher">
+        <div class="ao-stat-icon" style="background:#EDE9FE;"><i class="ti ti-books" style="color:#7C3AED;"></i></div>
+        <div><div class="ao-stat-num"><h:outputText value="#{adminDashboardBean.nbOffres}"/></div><div class="ao-stat-lbl">Total</div></div>
+    </div>
+    <div class="ao-stat #{adminDashboardBean.filtreStatutOffre eq 'DISPONIBLE' ? 'active' : ''}"
+         onclick="rcOffresDispo()" title="Filtrer Disponibles">
+        <div class="ao-stat-icon" style="background:#D1FAE5;"><i class="ti ti-circle-check" style="color:#059669;"></i></div>
+        <div><div class="ao-stat-num"><h:outputText value="#{adminDashboardBean.nbOffresDisponibles}"/></div><div class="ao-stat-lbl">Disponibles</div></div>
+    </div>
+    <div class="ao-stat #{adminDashboardBean.filtreStatutOffre eq 'BROUILLON' ? 'active' : ''}"
+         onclick="rcOffresBrouillon()" title="Filtrer Brouillons">
+        <div class="ao-stat-icon" style="background:#FEF3C7;"><i class="ti ti-pencil" style="color:#D97706;"></i></div>
+        <div><div class="ao-stat-num"><h:outputText value="#{adminDashboardBean.nbOffresBrouillon}"/></div><div class="ao-stat-lbl">Brouillons</div></div>
+    </div>
+    <div class="ao-stat #{adminDashboardBean.filtreStatutOffre eq 'FERME' ? 'active' : ''}"
+         onclick="rcOffresFerme()" title="Filtrer Fermées">
+        <div class="ao-stat-icon" style="background:#FEE2E2;"><i class="ti ti-lock" style="color:#DC2626;"></i></div>
+        <div><div class="ao-stat-num"><h:outputText value="#{adminDashboardBean.nbOffresFermees}"/></div><div class="ao-stat-lbl">Fermées</div></div>
+    </div>
+</div>
+</h:panelGroup>
+
+<p:dataTable id="tblOffres" value="#{adminDashboardBean.offresFiltrees}" var="o"
+             paginator="true" rows="10"
+             paginatorPosition="bottom"
+             paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+             rowsPerPageTemplate="5,10,20"
+             emptyMessage="Aucune offre. Cliquez sur '+ Nouvelle offre' pour commencer."
+             style="font-size:13px;" tableStyle="width:100%;">
+
+    <p:column headerText="Formation" style="min-width:200px;">
+        <div style="font-weight:600;color:#0F172A;display:flex;align-items:center;gap:6px;">
+            <h:outputText value="#{not empty o.titre ? o.titre : '—'}"/>
+            <h:panelGroup rendered="#{o.demandeLibreId != null}">
+                <span style="font-size:10px;font-weight:600;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:4px;padding:1px 6px;">📋 Sur mesure</span>
+            </h:panelGroup>
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+            <h:panelGroup rendered="#{o.domaine != null}">
+                <span class="ao-pill" style="background:#EFF6FF;color:#1D4ED8;"><h:outputText value="#{o.domaine.libelle}"/></span>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{not empty o.type}">
+                <span class="ao-pill" style="background:#F5F3FF;color:#7C3AED;"><h:outputText value="#{o.type}"/></span>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{not empty o.niveau}">
+                <span class="ao-pill" style="background:#FDF4FF;color:#A21CAF;"><h:outputText value="#{o.niveau}"/></span>
+            </h:panelGroup>
+        </div>
+    </p:column>
+
+    <p:column headerText="Statut" style="width:100px;">
+        <h:panelGroup rendered="#{o.statut eq 'BROUILLON'}">
+            <span class="ao-pill" style="background:#FEF3C7;color:#92400E;">Brouillon</span>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{o.statut eq 'DISPONIBLE'}">
+            <span class="ao-pill" style="background:#D1FAE5;color:#065F46;">Disponible</span>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{o.statut eq 'FERME'}">
+            <span class="ao-pill" style="background:#FEE2E2;color:#991B1B;">Fermé</span>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{empty o.statut}">
+            <span style="color:#CBD5E1;font-size:11px;">—</span>
+        </h:panelGroup>
+    </p:column>
+
+    <p:column headerText="Dates" style="width:140px;">
+        <div style="font-size:11px;color:#475569;">
+            <i class="ti ti-calendar-event"></i>&#160;<h:outputText value="#{not empty o.dateDebut ? o.dateDebut : '—'}"/>
+        </div>
+        <div style="font-size:11px;color:#94A3B8;">
+            <i class="ti ti-calendar-x"></i>&#160;<h:outputText value="#{not empty o.dateFin ? o.dateFin : '—'}"/>
+        </div>
+    </p:column>
+
+    <p:column headerText="Places" style="width:60px;text-align:center;">
+        <span style="font-size:14px;font-weight:700;color:#0F172A;">
+            <h:outputText value="#{o.places != null ? o.places : '—'}"/>
+        </span>
+    </p:column>
+
+    <p:column headerText="Clôture candidatures" style="width:130px;text-align:center;">
+        <h:panelGroup rendered="#{not empty o.dateLimiteCandidature}">
+            <h:panelGroup rendered="#{o.candidatureExpiree}">
+                <span style="display:inline-block;background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;">
+                    🔒 <h:outputText value="#{o.dateLimiteCandidature}"/>
+                </span>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{!o.candidatureExpiree}">
+                <span style="display:inline-block;background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;">
+                    ✅ <h:outputText value="#{o.dateLimiteCandidature}"/>
+                </span>
+            </h:panelGroup>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{empty o.dateLimiteCandidature}">
+            <span style="color:#CBD5E1;font-size:11px;">Pas de limite</span>
+        </h:panelGroup>
+    </p:column>
+
+    <p:column headerText="Modules" style="width:90px;text-align:center;">
+        <h:panelGroup rendered="#{o.nbModules != null and o.nbModules > 0}">
+            <span style="display:inline-flex;align-items:center;gap:4px;background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;">
+                📦&#160;<h:outputText value="#{o.nbModules}"/>
+            </span>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{o.nbModules == null or o.nbModules == 0}">
+            <span style="color:#CBD5E1;font-size:11px;">—</span>
+        </h:panelGroup>
+    </p:column>
+
+    <p:column headerText="Actions" style="width:290px;">
+        <h:panelGroup styleClass="ao-act">
+            <a class="abtn-sm abtn-sm-ok" href="#{request.contextPath}/admin/offre-detail.xhtml?offreId=#{o.id}"><i class="ti ti-eye"></i>&#160;Détail</a>
+            <a class="abtn-sm" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;" href="#{request.contextPath}/admin/gestion-formation.xhtml?offreId=#{o.id}" rendered="#{o.statut eq 'DISPONIBLE'}">📦&#160;Modules</a>
+            <p:commandButton value="✎ Modifier" styleClass="abtn-sm" action="#{adminDashboardBean.chargerOffrePourEdition(o)}" update=":fDlgOffre" oncomplete="PF('dlgOffre').show();"/>
+            <p:commandButton value="Publier" styleClass="abtn-sm abtn-sm-warn" rendered="#{o.statut ne 'DISPONIBLE'}" action="#{adminDashboardBean.publierOffre(o.id)}" update=":fOffres"/>
+            <p:commandButton value="Fermer" styleClass="abtn-sm" rendered="#{o.statut eq 'DISPONIBLE'}" action="#{adminDashboardBean.fermerOffre(o.id)}" update=":fOffres"/>
+            <p:commandButton value="📅" styleClass="abtn-sm" title="Date limite de candidature" action="#{adminDashboardBean.ouvrirDialogDateLimite(o)}" update=":fDlgDateLimite" oncomplete="PF('dlgDateLimite').show();"/>
+            <p:commandButton value="👥" styleClass="abtn-sm" title="Candidats" action="#{adminDashboardBean.voirCandidatsOffre(o.id, o.titre)}" update=":fDlgCand" oncomplete="PF('dlgCandidats').show();"/>
+            <a class="abtn-sm" style="background:#EDE9FE!important;color:#7C3AED!important;border-color:#DDD6FE!important;" href="#{request.contextPath}/admin/gerer-cours.xhtml?offreId=#{o.id}"><i class="ti ti-books"></i>&#160;Cours</a>
+            <p:commandButton value="✕ Suppr" styleClass="abtn-sm abtn-sm-ko" action="#{adminDashboardBean.supprimerOffre(o.id)}" update=":fOffres"/>
+        </h:panelGroup>
+    </p:column>
+</p:dataTable>
+</h:form>
+
+<h:form id="fDlgOffre">
+<p:dialog id="dlgOffreId"
+          header="#{adminDashboardBean.offreModeEdition ? 'Modifier l\'offre' : 'Nouvelle offre de formation'}"
+          widgetVar="dlgOffre" modal="true" responsive="true" draggable="false" resizable="false"
+          style="width:min(600px, 95vw); max-height:90vh; display:flex; flex-direction:column;">
+    
+    <p:messages id="msgsDlg" showDetail="true" closable="true" style="margin-bottom:8px; font-size:12px;"/>
+    
+    <div style="max-height: 52vh; overflow-y: auto; padding: 4px 8px; border-bottom: 1px solid #E2E8F0;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-bottom:12px;">
+            <div style="grid-column:1/-1;">
+                <label class="a-label">Titre *</label>
+                <p:inputText id="offreTitre" value="#{adminDashboardBean.offreTitre}" required="true" requiredMessage="Le titre est requis."
+                             placeholder="Ex : Formation bureautique avancée" styleClass="a-input" style="width:100%;"/>
+            </div>
+            <div style="grid-column:1/-1;">
+                <label class="a-label">Description</label>
+                <p:inputTextarea id="offreDescription" value="#{adminDashboardBean.offreDescription}" rows="3"
+                                 styleClass="a-input" style="width:100%;" autoResize="true"/>
+            </div>
+            <div>
+                <label class="a-label">Niveau</label>
+                <p:inputText id="offreNiveau" value="#{adminDashboardBean.offreNiveau}" placeholder="Débutant…" styleClass="a-input" style="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Durée</label>
+                <p:inputText id="offreDuree" value="#{adminDashboardBean.offreDuree}" placeholder="3 semaines…" styleClass="a-input" style="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Date début *</label>
+                <p:inputText id="offreDateDebut" value="#{adminDashboardBean.offreDateDebut}" required="true" requiredMessage="La date de début est requise." placeholder="2026-06-01" styleClass="a-input" style="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Date fin *</label>
+                <p:inputText id="offreDateFin" value="#{adminDashboardBean.offreDateFin}" required="true" requiredMessage="La date de fin est requise." placeholder="2026-09-01" styleClass="a-input" style="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Places *</label>
+                <p:inputNumber id="offrePlaces" value="#{adminDashboardBean.offrePlaces}" required="true" requiredMessage="Le nombre de places est requis."
+                               decimalPlaces="0" thousandSeparator="" placeholder="20" style="width:100%;" inputStyleClass="a-input" inputStyle="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Coût (FCFA)</label>
+                <p:inputNumber id="offreCout" value="#{adminDashboardBean.offreCout}" 
+                               decimalPlaces="0" thousandSeparator=" " placeholder="150000" style="width:100%;" inputStyleClass="a-input" inputStyle="width:100%;"/>
+            </div>
+            <div>
+                <label class="a-label">Type</label>
+                <p:selectOneMenu id="offreType" value="#{adminDashboardBean.offreType}" styleClass="a-input" style="width:100%;">
+                    <f:selectItem itemValue="EN_LIGNE"   itemLabel="En ligne"/>
+                    <f:selectItem itemValue="PRESENTIEL" itemLabel="Présentiel"/>
+                    <f:selectItem itemValue="A_LA_CARTE" itemLabel="À la carte"/>
+                </p:selectOneMenu>
+            </div>
+            <div>
+                <label class="a-label">Domaine *</label>
+                <p:selectOneMenu id="offreDomaineId" value="#{adminDashboardBean.offreDomaineId}" required="true" requiredMessage="Le domaine est requis."
+                                 styleClass="a-input" style="width:100%;" converter="jakarta.faces.Long"
+                                 filter="true" filterMatchMode="contains" filterPlaceholder="Rechercher un domaine…"
+                                 panelStyle="background:#fff;border:1px solid #CBD5E1;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);">
+                    <f:selectItem itemValue="#{null}" itemLabel="— Sélectionnez —"/>
+                    <f:selectItems value="#{adminDashboardBean.domaines}" var="d" itemValue="#{d.id}" itemLabel="#{d.libelle}"/>
+                </p:selectOneMenu>
+            </div>
+        </div>
+
+        <h:panelGroup id="blocDocuments" layout="block" style="margin-top:4px; padding-top:12px; border-top:1px dashed #E2E8F0;">
+            <label class="a-label" style="font-weight:700;"><i class="pi pi-file" style="margin-right:5px;color:#4F46E5;"/>Documents requis pour postuler</label>
+            <div style="font-size:11px;color:#94A3B8;margin-bottom:8px;">Saisissez un document et appuyez sur <strong>Entrée</strong> pour l'ajouter (Ex: CV, Copie diplôme...)</div>
+            
+            <div style="margin-bottom:8px;">
+                <p:inputText id="nouveauDocInput" value="#{adminDashboardBean.offreNouveauDocument}" placeholder="Ajouter un document puis appuyez sur Entrée..." styleClass="a-input" style="width:100%;">
+                    <p:ajax event="keydown" 
+                            onstart="if(event.keyCode !== 13) { return false; }"
+                            listener="#{adminDashboardBean.ajouterDocumentRequis}"
+                            process="@this" 
+                            update="blocDocuments" />
+                </p:inputText>
+            </div>
+            
+            <h:panelGroup rendered="#{not empty adminDashboardBean.offreDocumentsRequis}" layout="block">
+                <ui:repeat value="#{adminDashboardBean.offreDocumentsRequis}" var="doc" varStatus="vs">
+                    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;margin-bottom:4px;font-size:12px;color:#065F46;">
+                        <i class="pi pi-check-circle" style="flex-shrink:0;color:#16A34A;"/>
+                        <span style="flex:1;"><h:outputText value="#{doc}"/></span>
+                        <p:commandLink actionListener="#{adminDashboardBean.supprimerDocumentRequis(vs.index)}" update="fDlgOffre:blocDocuments" process="@this" style="color:#DC2626;text-decoration:none;font-size:13px;line-height:1;" title="Retirer">
+                            <i class="pi pi-times"/>
+                        </p:commandLink>
+                    </div>
+                </ui:repeat>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{empty adminDashboardBean.offreDocumentsRequis}" layout="block">
+                <div style="font-size:11px;color:#94A3B8;font-style:italic;padding:4px 0;">Aucun document requis.</div>
+            </h:panelGroup>
+        </h:panelGroup>
+    </div> 
+    
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:12px;">
+        <button type="button" class="abtn abtn-secondary" onclick="PF('dlgOffre').hide();">Annuler</button>
+        <h:panelGroup rendered="#{!adminDashboardBean.offreModeEdition}">
+            <p:commandButton value="Créer l'offre" styleClass="abtn abtn-success" 
+                             action="#{adminDashboardBean.creerOffre}" 
+                             process="@form"
+                             update=":fOffres:tblOffres :fOffres:msgs :fDlgOffre:msgsDlg" 
+                             oncomplete="if(!args.validationFailed) PF('dlgOffre').hide();"/>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{adminDashboardBean.offreModeEdition}">
+            <p:commandButton value="Enregistrer" styleClass="abtn abtn-warning" 
+                             action="#{adminDashboardBean.modifierOffre}" 
+                             process="@form"
+                             update=":fOffres:tblOffres :fOffres:msgs :fDlgOffre:msgsDlg" 
+                             oncomplete="if(!args.validationFailed) PF('dlgOffre').hide();"/>
+        </h:panelGroup>
+    </div>
+</p:dialog>
+</h:form>
+
+<h:form id="fDlgCand">
+<p:dialog id="dlgCandidatsId" header="Candidats" widgetVar="dlgCandidats" modal="true" responsive="true" style="width:min(820px,95vw);" contentStyle="background:#fff;">
+    <p:messages id="msgsCand" showDetail="true" closable="true; margin-bottom:10px;"/>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+        <div style="flex:1;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#1D4ED8;"><h:outputText value="#{fn:length(adminDashboardBean.demandesOffre)}"/></div>
+            <div style="font-size:11px;color:#64748B;">Total</div>
+        </div>
+        <div style="flex:1;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#D97706;"><h:outputText value="#{adminDashboardBean.nbDemandesOffreEnAttente}"/></div>
+            <div style="font-size:11px;color:#64748B;">En attente</div>
+        </div>
+        <div style="flex:1;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#059669;"><h:outputText value="#{adminDashboardBean.nbDemandesOffreValidees}"/></div>
+            <div style="font-size:11px;color:#64748B;">Validées</div>
+        </div>
+    </div>
+    <p:dataTable value="#{adminDashboardBean.demandesOffre}" var="d" paginator="true" rows="8" style="font-size:12px;" emptyMessage="Aucun candidat pour le moment.">
+        <p:column headerText="#" style="width:45px;text-align:center;">
+            <span style="color:#94A3B8;font-size:11px;">#<h:outputText value="#{d.id}"/></span>
+        </p:column>
+        <p:column headerText="Candidat">
+            <div style="font-weight:500;"><h:outputText value="#{not empty d.nomCandidat ? d.nomCandidat : 'Utilisateur #' += d.utilisateurId}"/></div>
+        </p:column>
+        <p:column headerText="Date" style="width:100px;">
+            <span style="color:#64748B;font-size:11px;"><h:outputText value="#{d.dateDemande}"/></span>
+        </p:column>
+        <p:column headerText="Statut" style="width:110px;">
+            <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}"><span class="ab ab-wait">En attente</span></h:panelGroup>
+            <h:panelGroup rendered="#{d.statut eq 'VALIDEE' or d.statut eq 'ACCEPTEE'}"><span class="ab ab-ok">Validée</span></h:panelGroup>
+            <h:panelGroup rendered="#{d.statut eq 'REJETEE'}"><span class="ab ab-ko">Rejetée</span></h:panelGroup>
+        </p:column>
+        <p:column headerText="Actions" style="width:170px;">
+            <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}" styleClass="a-actions">
+                <p:commandButton value="✓ Valider" styleClass="abtn-sm abtn-sm-ok" action="#{adminDashboardBean.validerDemande(d.id)}" update=":fDlgCand :fOffres:msgs"/>
+                <p:commandButton value="✗ Rejeter" styleClass="abtn-sm abtn-sm-ko" action="#{adminDashboardBean.rejeterDemande(d.id)}" update=":fDlgCand :fOffres:msgs"/>
+            </h:panelGroup>
+        </p:column>
+    </p:dataTable>
+</p:dialog>
+</h:form>
+
+<h:form id="fDlgDateLimite">
+<p:dialog header="Date limite de candidature" widgetVar="dlgDateLimite" modal="true" responsive="true" style="width:min(400px,95vw);" contentStyle="background:#fff;">
+    <p:messages id="msgsDlgDL" showDetail="true" closable="true" style="margin-bottom:10px;"/>
+    <div style="padding:8px 0 16px;">
+        <label class="a-label">Date limite</label>
+        <p:inputText value="#{adminDashboardBean.offreDateLimiteValeur}" placeholder="AAAA-MM-JJ" styleClass="a-input" style="width:100%;"/>
+        <div style="font-size:11px;color:#94A3B8;margin-top:6px;">Format : AAAA-MM-JJ · Laissez vide pour supprimer la limite</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #E2E8F0;padding-top:12px;">
+        <button type="button" class="abtn abtn-secondary" onclick="PF('dlgDateLimite').hide();">Annuler</button>
+        <p:commandButton value="Enregistrer" styleClass="abtn abtn-primary" action="#{adminDashboardBean.sauvegarderDateLimite}" update=":fOffres :fDlgDateLimite:msgsDlgDL" oncomplete="if(!args.validationFailed) PF('dlgDateLimite').hide();"/>
+    </div>
+</p:dialog>
+</h:form>
+
+</h:panelGroup>
+</ui:define>
+</ui:composition>
+</html>

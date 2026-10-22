@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Permissions</ui:define>
+    <ui:define name="content">
+
+        <style>
+            /* ── TABS ─────────────────────────────────────────────────────────── */
+            .pm-tabs { display:flex; gap:4px; margin-bottom:24px; border-bottom:2px solid #e2e8f0; padding-bottom:0; }
+            .pm-tab  { background:none; border:none; padding:10px 22px; font-size:13px; font-weight:600;
+                       color:#64748b; cursor:pointer; border-bottom:3px solid transparent;
+                       margin-bottom:-2px; border-radius:6px 6px 0 0; transition:all .18s; }
+            .pm-tab:hover  { color:#0B2545; background:#f1f5f9; }
+            .pm-tab.active { color:#0B2545; border-bottom-color:#D9A441; background:#fff; }
+
+            /* ── LAYOUT ───────────────────────────────────────────────────────── */
+            .pm-panel   { display:none; }
+            .pm-panel.active { display:block; }
+            .pm-2col    { display:grid; grid-template-columns:340px 1fr; gap:22px; align-items:start; }
+            .pm-sidebar { display:flex; flex-direction:column; gap:16px; }
+
+            /* ── CARDS ────────────────────────────────────────────────────────── */
+            .pm-card        { background:#fff; border-radius:12px; border:1px solid #e2e8f0;
+                              box-shadow:0 1px 4px rgba(0,0,0,.06); overflow:hidden; }
+            .pm-card-header { background:#0B2545; color:#fff; padding:12px 18px;
+                              display:flex; align-items:center; justify-content:space-between; }
+            .pm-card-header h3 { margin:0; font-size:14px; font-weight:700; letter-spacing:.3px; }
+            .pm-card-count  { background:rgba(217,164,65,.25); color:#D9A441; font-size:11px;
+                              font-weight:700; padding:2px 8px; border-radius:20px; }
+            .pm-card-body   { padding:16px 18px; }
+
+            /* ── FORMS ────────────────────────────────────────────────────────── */
+            .pm-field       { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
+            .pm-field label { font-size:12px; font-weight:600; color:#374151; }
+            .pm-field .a-input,
+            .pm-field select { width:100%; padding:7px 10px; border:1px solid #c5d0e8;
+                               border-radius:7px; font-size:13px; color:#1a1a1a;
+                               box-sizing:border-box; }
+            .pm-field-row   { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+            .req            { color:#e53935; }
+            .pm-btn-full    { width:100%; padding:9px; background:#0B2545; color:#fff;
+                              border:none; border-radius:8px; font-size:13px; font-weight:700;
+                              cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+            .pm-btn-full:hover { background:#1a3a6b; }
+            .pm-btn-sm      { padding:4px 10px; border:none; border-radius:6px; font-size:12px;
+                              font-weight:600; cursor:pointer; }
+            .pm-btn-add     { background:#D9A441; color:#fff; }
+            .pm-btn-add:hover { background:#c08a2a; }
+            .pm-btn-del     { background:#fee2e2; color:#dc2626; }
+            .pm-btn-del:hover { background:#fecaca; }
+            .pm-btn-icon    { width:26px; height:26px; border:none; border-radius:6px;
+                              cursor:pointer; display:inline-flex; align-items:center;
+                              justify-content:center; font-size:13px; }
+            .pm-btn-icon.del { background:#fee2e2; color:#dc2626; }
+            .pm-btn-icon.del:hover { background:#fecaca; }
+
+            /* ── BRANCH ACCORDION ─────────────────────────────────────────────── */
+            .pm-branch      { border:1px solid #e2e8f0; border-radius:10px; margin-bottom:10px;
+                              overflow:hidden; }
+            .pm-branch-hd   { display:flex; align-items:center; justify-content:space-between;
+                              padding:10px 14px; cursor:pointer; background:#f8fafc;
+                              border-bottom:1px solid transparent; transition:background .15s; }
+            .pm-branch-hd:hover { background:#f1f5f9; }
+            .pm-branch-hd.open  { background:#eef2ff; border-bottom-color:#c7d2fe; }
+            .pm-branch-name { font-size:13px; font-weight:700; color:#0B2545; }
+            .pm-branch-code { font-size:11px; color:#64748b; background:#e2e8f0;
+                              padding:2px 8px; border-radius:20px; margin-left:8px; }
+            .pm-branch-chevron { font-size:12px; color:#64748b; transition:transform .2s; }
+            .pm-branch-hd.open .pm-branch-chevron { transform:rotate(180deg); }
+            .pm-branch-body { display:none; padding:12px 14px; background:#fff; }
+            .pm-branch-body.open { display:block; }
+            .pm-branch-actions { display:flex; gap:6px; }
+
+            /* ── PERMISSION CHIPS ─────────────────────────────────────────────── */
+            .pm-chips        { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;
+                               min-height:28px; }
+            .pm-chip         { display:inline-flex; align-items:center; gap:5px; padding:3px 8px 3px 10px;
+                               border-radius:20px; font-size:11px; font-weight:600; }
+            .pm-chip.lect    { background:#dcfce7; color:#166534; }
+            .pm-chip.ecrit   { background:#fef9c3; color:#854d0e; }
+            .pm-chip.adm     { background:#fee2e2; color:#991b1b; }
+            .pm-chip button  { background:none; border:none; cursor:pointer; font-size:10px;
+                               padding:0 2px; line-height:1; opacity:.7; }
+            .pm-chip button:hover { opacity:1; }
+            .pm-empty-chips  { font-size:12px; color:#94a3b8; font-style:italic; }
+
+            /* ── PERMISSIONS TABLE ────────────────────────────────────────────── */
+            .pm-perm-table   { width:100%; border-collapse:collapse; font-size:12px; }
+            .pm-perm-table th { background:#f8fafc; color:#374151; font-weight:700;
+                                padding:8px 10px; text-align:left; border-bottom:2px solid #e2e8f0; }
+            .pm-perm-table td { padding:7px 10px; border-bottom:1px solid #f1f5f9;
+                                vertical-align:middle; }
+            .pm-perm-table tr:last-child td { border-bottom:none; }
+            .pm-perm-table tr:hover td { background:#f8fafc; }
+            .pm-badge        { display:inline-block; padding:2px 8px; border-radius:20px;
+                               font-size:10px; font-weight:700; }
+            .pm-badge.lect   { background:#dcfce7; color:#166534; }
+            .pm-badge.ecrit  { background:#fef9c3; color:#854d0e; }
+            .pm-badge.adm    { background:#fee2e2; color:#991b1b; }
+            .pm-badge.gray   { background:#e2e8f0; color:#374151; }
+
+            /* ── PROFIL ACCORDION ─────────────────────────────────────────────── */
+            .pm-profil-list  { display:flex; flex-direction:column; gap:6px; }
+            .pm-profil-item  { border:1px solid #e2e8f0; border-radius:10px; background:#fff;
+                               overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+            .pm-profil-hd    { display:flex; align-items:center; justify-content:space-between;
+                               padding:11px 16px; background:linear-gradient(135deg,#0B2545,#1a3a6b);
+                               color:#fff; cursor:pointer; user-select:none; }
+            .pm-profil-hd:hover { filter:brightness(1.1); }
+            .pm-profil-hd-left { display:flex; align-items:center; gap:10px; }
+            .pm-profil-hd h4 { margin:0; font-size:13px; font-weight:700; letter-spacing:.3px; }
+            .pm-profil-hd .cnt { background:rgba(217,164,65,.3); color:#D9A441;
+                                 font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
+            .pm-profil-chevron { font-size:11px; color:rgba(255,255,255,.7); transition:transform .2s; }
+            .pm-profil-item.open .pm-profil-chevron { transform:rotate(180deg); }
+            .pm-profil-bd    { display:none; padding:14px 16px; border-top:1px solid #e2e8f0; }
+            .pm-profil-item.open .pm-profil-bd { display:block; }
+            .pm-add-toggle-btn { background:none; border:1px dashed #c5d0e8; border-radius:7px;
+                                  width:100%; padding:6px; font-size:12px; color:#5a6a8a;
+                                  cursor:pointer; text-align:center; font-weight:600;
+                                  transition:all .15s; margin-top:8px; }
+            .pm-add-toggle-btn:hover { background:#f0f4ff; border-color:#93a8d4; color:#0B2545; }
+            .pm-add-cb-panel { display:none; background:#f8fafc; border:1px solid #e2e8f0;
+                               border-radius:8px; padding:10px 12px; margin-top:6px; }
+            .pm-add-cb-panel.open { display:block; }
+            .pm-add-br-group2 { margin-bottom:8px; padding-bottom:7px; border-bottom:1px solid #eef0f5; }
+            .pm-add-br-group2:last-child { border-bottom:none; margin-bottom:0; }
+            .pm-add-br-hd2 { display:flex; align-items:center; justify-content:space-between;
+                             font-size:10px; font-weight:700; color:#5a6a8a; text-transform:uppercase;
+                             letter-spacing:.4px; margin-bottom:4px; }
+
+            /* ── DROPDOWN PROFIL DANS LE TABLEAU ─────────────────────────────── */
+            .ui-selectonemenu-panel {
+                z-index: 9999 !important;
+                background: #fff !important;
+                border: 1px solid #c5d0e8 !important;
+                border-radius: 8px !important;
+                box-shadow: 0 6px 20px rgba(0,0,0,.15) !important;
+                overflow: hidden;
+            }
+            .ui-selectonemenu-panel .ui-selectonemenu-items-wrapper { background: #fff !important; }
+            .ui-selectonemenu-panel .ui-selectonemenu-item {
+                background: #fff !important;
+                color: #1a1a1a !important;
+                padding: 8px 14px !important;
+                font-size: 12px !important;
+                font-weight: 500;
+            }
+            .ui-selectonemenu-panel .ui-selectonemenu-item:hover { background: #f0f4ff !important; color: #0B2545 !important; }
+            .ui-selectonemenu-panel .ui-selectonemenu-item.ui-state-highlight { background: #e8edf7 !important; color: #0B2545 !important; font-weight:700; }
+
+            /* ── DIALOG PERMISSIONS UTILISATEUR ──────────────────────────────── */
+            .ui-widget-overlay {
+                backdrop-filter: blur(5px) !important;
+                -webkit-backdrop-filter: blur(5px) !important;
+                background: rgba(11,37,69,.45) !important;
+                opacity: 1 !important;
+            }
+            .perm-user-dlg .ui-dialog-titlebar {
+                background: linear-gradient(135deg,#0B2545,#1a3a6b) !important;
+                color: #fff !important;
+                border-radius: 12px 12px 0 0 !important;
+                padding: 14px 18px !important;
+                font-weight: 700;
+                font-size: 14px;
+            }
+            .perm-user-dlg .ui-dialog-titlebar .ui-dialog-titlebar-close { color:#fff !important; opacity:.8; }
+            .perm-user-dlg .ui-dialog-titlebar .ui-dialog-titlebar-close:hover { opacity:1; }
+            .perm-user-dlg .ui-dialog-content {
+                background: #fff !important;
+                border-radius: 0 0 12px 12px !important;
+            }
+
+            /* ── USERS TABLE (p:dataTable overrides) ─────────────────────────── */
+            .pm-user-table { width:100%; font-size:13px; border:none !important; }
+            .pm-user-table .ui-datatable-tablewrapper table { width:100%; border-collapse:collapse; }
+            .pm-user-table .ui-datatable-tablewrapper { overflow:visible !important; }
+            .pm-user-table .ui-column-header .ui-column-title { color:#fff; font-weight:700; font-size:12px; }
+            .pm-user-table .ui-datatable thead th,
+            .pm-user-table .ui-datatable thead .ui-state-default {
+                background:#0B2545 !important; color:#fff !important;
+                padding:10px 14px; text-align:left; font-weight:700; font-size:12px;
+                border:none !important; }
+            .pm-user-table .ui-datatable tbody td {
+                padding:9px 14px; border-bottom:1px solid #f1f5f9 !important;
+                border-top:none !important; border-left:none !important; border-right:none !important;
+                vertical-align:middle; }
+            .pm-user-table .ui-datatable tbody tr:last-child td { border-bottom:none !important; }
+            .pm-user-table .ui-datatable tbody tr:hover td { background:#f8fafc !important; }
+            .pm-user-table .ui-datatable tbody .ui-state-highlight td { background:#f8fafc !important; color:inherit !important; }
+            .pm-user-avatar  { width:30px; height:30px; border-radius:50%;
+                               background:#0B2545; color:#D9A441; font-size:12px; font-weight:700;
+                               display:inline-flex; align-items:center; justify-content:center;
+                               text-transform:uppercase; margin-right:8px; vertical-align:middle; }
+            .pm-no-profil    { color:#94a3b8; font-style:italic; font-size:12px; }
+            .pm-role-badge   { padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; }
+            .pm-role-badge.admin { background:#fee2e2; color:#991b1b; }
+            .pm-role-badge.agent { background:#e0e7ff; color:#3730a3; }
+            .pm-role-badge.other { background:#f0fdf4; color:#166534; }
+            .pm-search-input { outline:none; }
+            .pm-search-input:focus { border-color:#0B2545 !important; box-shadow:0 0 0 3px rgba(11,37,69,0.1); }
+        </style>
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied">
+                <div class="icon">🚫</div>
+                <h2>Accès refusé</h2>
+            </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+            <!-- ── En-tête ───────────────────────────────────────────────────── -->
+            <div class="a-header">
+                <div class="a-header-left">
+                    <h1>Permissions &amp; Branches</h1>
+                    <p>Gérez les branches, permissions et profils d'accès</p>
+                </div>
+            </div>
+
+            <!-- ── Barre d'onglets ───────────────────────────────────────────── -->
+            <div class="pm-tabs">
+                <button class="pm-tab active" id="tab-branches"    onclick="pmSwitch('branches')">
+                    <i class="pi pi-sitemap" style="margin-right:6px;"/>Branches &amp; Permissions
+                </button>
+                <button class="pm-tab"         id="tab-profil"      onclick="pmSwitch('profil')">
+                    <i class="pi pi-id-card" style="margin-right:6px;"/>Par profil
+                </button>
+                <button class="pm-tab"         id="tab-utilisateur" onclick="pmSwitch('utilisateur')">
+                    <i class="pi pi-users" style="margin-right:6px;"/>Par utilisateur
+                </button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════════════
+                 ONGLET 1 — Branches &amp; Permissions
+            ════════════════════════════════════════════════════════════════════ -->
+            <div id="panel-branches" class="pm-panel active">
+                <div class="pm-2col">
+
+                    <!-- ── Colonne gauche : formulaires ───────────────────────── -->
+                    <div class="pm-sidebar">
+
+                        <!-- Créer branche -->
+                        <div class="pm-card">
+                            <div class="pm-card-header">
+                                <h3><i class="pi pi-plus-circle" style="margin-right:6px;"/>Nouvelle branche</h3>
+                            </div>
+                            <div class="pm-card-body">
+                                <h:form id="fBrancheForm">
+                                    <p:messages id="msgsBranche" showDetail="true" closable="true"
+                                                style="margin-bottom:10px;font-size:12px;"/>
+                                    <div class="pm-field">
+                                        <label>Nom <span class="req">*</span></label>
+                                        <p:inputText value="#{adminDashboardBean.brancheNom}" required="true"
+                                                     placeholder="Ex: Ressources Humaines" styleClass="a-input"/>
+                                    </div>
+                                    <div class="pm-field">
+                                        <label>Code numérique <span class="req">*</span></label>
+                                        <p:inputText value="#{adminDashboardBean.brancheCode}" required="true"
+                                                     placeholder="Ex: 1000, 2000, 3000…" styleClass="a-input"
+                                                     type="number" min="100" step="100"/>
+                                        <span style="font-size:11px;color:#64748b;">Incréments de 1000 recommandés (1000, 2000, 3000…)</span>
+                                    </div>
+                                    <p:commandButton value="Créer la branche" icon="pi pi-check"
+                                                     styleClass="abtn abtn-primary abtn-full"
+                                                     action="#{adminDashboardBean.creerBranche}"
+                                                     update="fBrancheForm panelBranches"/>
+                                </h:form>
+                            </div>
+                        </div>
+
+                        <!-- Créer permission -->
+                        <div class="pm-card">
+                            <div class="pm-card-header">
+                                <h3><i class="pi pi-key" style="margin-right:6px;"/>Nouvelle permission</h3>
+                            </div>
+                            <div class="pm-card-body">
+                                <h:form id="fPermForm">
+                                    <p:messages id="msgsPerm" showDetail="true" closable="true"
+                                                style="margin-bottom:10px;font-size:12px;"/>
+                                    <div class="pm-field">
+                                        <label>Libellé <span class="req">*</span></label>
+                                        <p:inputText value="#{adminDashboardBean.permissionLibelle}" required="true"
+                                                     placeholder="Ex: Voir les utilisateurs" styleClass="a-input"/>
+                                    </div>
+                                    <div class="pm-field">
+                                        <label>Niveau <span class="req">*</span></label>
+                                        <p:selectOneMenu value="#{adminDashboardBean.permissionNiveau}"
+                                                         styleClass="a-input a-select">
+                                            <f:selectItem itemValue="LECTURE"  itemLabel="LECTURE"/>
+                                            <f:selectItem itemValue="ECRITURE" itemLabel="ECRITURE"/>
+                                            <f:selectItem itemValue="ADMIN"    itemLabel="ADMIN"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="pm-field">
+                                        <label>Branche <span class="req">*</span></label>
+                                        <p:selectOneMenu value="#{adminDashboardBean.permissionBrancheId}"
+                                                         required="true" styleClass="a-input a-select">
+                                            <f:selectItem itemValue="#{null}" itemLabel="— Sélectionnez —"/>
+                                            <f:selectItems value="#{adminDashboardBean.branches}" var="b"
+                                                           itemValue="#{b.id}"
+                                                           itemLabel="#{b.nom} (#{b.code})"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <p:commandButton value="Créer la permission" icon="pi pi-check"
+                                                     styleClass="abtn abtn-primary abtn-full"
+                                                     action="#{adminDashboardBean.creerPermission}"
+                                                     update="fPermForm panelBranches panelPermissions"/>
+                                </h:form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Colonne droite : listes ────────────────────────────── -->
+                    <div style="display:flex;flex-direction:column;gap:18px;">
+
+                        <!-- Branches accordion -->
+                        <div class="pm-card">
+                            <div class="pm-card-header">
+                                <h3><i class="pi pi-sitemap" style="margin-right:6px;"/>Branches</h3>
+                                <span class="pm-card-count">#{fn:length(adminDashboardBean.branches)}</span>
+                            </div>
+                            <div class="pm-card-body" style="padding:12px;">
+                                <h:form id="panelBranches">
+                                    <p:messages id="msgsBrancheList" showDetail="true" closable="true"
+                                                style="margin-bottom:10px;font-size:12px;"/>
+                                    <h:panelGroup rendered="#{empty adminDashboardBean.branches}">
+                                        <div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">
+                                            <i class="pi pi-inbox" style="font-size:24px;display:block;margin-bottom:8px;"/>
+                                            Aucune branche définie
+                                        </div>
+                                    </h:panelGroup>
+                                    <ui:repeat value="#{adminDashboardBean.branches}" var="b" varStatus="vs">
+                                        <div class="pm-branch">
+                                            <div class="pm-branch-hd" onclick="pmToggleBranch(#{vs.index})">
+                                                <div style="display:flex;align-items:center;gap:4px;">
+                                                    <span class="pm-branch-name">#{b.nom}</span>
+                                                    <span class="pm-branch-code">#{b.code}</span>
+                                                    <span style="font-size:11px;color:#64748b;margin-left:6px;">
+                                                        (#{fn:length(adminDashboardBean.permsCatalogueParBranche[b.id])} perms)
+                                                    </span>
+                                                </div>
+                                                <span class="pm-branch-chevron" id="chev-#{vs.index}">▼</span>
+                                            </div>
+                                            <div class="pm-branch-body" id="branch-body-#{vs.index}">
+                                                <!-- Permissions de cette branche -->
+                                                <div class="pm-chips">
+                                                    <h:panelGroup rendered="#{empty adminDashboardBean.permsCatalogueParBranche[b.id]}">
+                                                        <span class="pm-empty-chips">Aucune permission dans cette branche</span>
+                                                    </h:panelGroup>
+                                                    <ui:repeat value="#{adminDashboardBean.permsCatalogueParBranche[b.id]}" var="pp">
+                                                        <span class="pm-chip #{pp.niveau eq 'ADMIN' ? 'adm' : pp.niveau eq 'ECRITURE' ? 'ecrit' : 'lect'}">
+                                                            <span style="font-weight:800;margin-right:4px;">#{pp.code}</span>#{pp.libelle}
+                                                            <p:commandButton icon="pi pi-times" styleClass="pm-btn-icon del"
+                                                                             title="Supprimer #{pp.libelle}"
+                                                                             onclick="return confirm('Supprimer la permission #{pp.code} ?')"
+                                                                             action="#{adminDashboardBean.supprimerPermission(pp.id)}"
+                                                                             update="panelBranches panelPermissions"/>
+                                                        </span>
+                                                    </ui:repeat>
+                                                </div>
+                                                <!-- Actions branche -->
+                                                <div class="pm-branch-actions" style="justify-content:flex-end;">
+                                                    <h:panelGroup rendered="#{adminDashboardBean.brancheEditId != b.id}">
+                                                        <p:commandButton value="Modifier" icon="pi pi-pencil"
+                                                                         styleClass="abtn-sm abtn-sm-ok"
+                                                                         action="#{adminDashboardBean.ouvrirEditionBranche(b)}"
+                                                                         update="panelBranches"/>
+                                                        <p:commandButton value="Supprimer" icon="pi pi-trash"
+                                                                         styleClass="abtn-sm abtn-sm-ko" style="margin-left:4px;"
+                                                                         action="#{adminDashboardBean.supprimerBranche(b.id)}"
+                                                                         onclick="return confirm('Supprimer la branche #{b.nom} et toutes ses permissions ?')"
+                                                                         update="panelBranches panelPermissions"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{adminDashboardBean.brancheEditId == b.id}"
+                                                                  style="display:flex;gap:4px;align-items:center;">
+                                                        <label style="font-size:12px;font-weight:600;color:#374151;">Nom:</label>
+                                                        <p:inputText value="#{adminDashboardBean.brancheEditNom}"
+                                                                     style="font-size:12px;padding:4px 8px;border:1px solid #c5d0e8;border-radius:6px;width:130px;"/>
+                                                        <label style="font-size:12px;font-weight:600;color:#374151;">Code:</label>
+                                                        <p:inputText value="#{adminDashboardBean.brancheEditCode}"
+                                                                     style="font-size:12px;padding:4px 6px;border:1px solid #c5d0e8;border-radius:6px;width:70px;"/>
+                                                        <p:commandButton value="✓" title="Enregistrer"
+                                                                         styleClass="abtn-sm abtn-sm-ok"
+                                                                         action="#{adminDashboardBean.sauvegarderBranche}"
+                                                                         update="panelBranches panelPermissions"/>
+                                                        <p:commandButton value="✗" title="Annuler"
+                                                                         styleClass="abtn-sm abtn-sm-ko"
+                                                                         action="#{adminDashboardBean.annulerEditionBranche}"
+                                                                         update="panelBranches"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </h:form>
+                            </div>
+                        </div>
+
+                        <!-- Toutes les permissions groupées par branche -->
+                        <div class="pm-card">
+                            <div class="pm-card-header">
+                                <h3><i class="pi pi-key" style="margin-right:6px;"/>Toutes les permissions</h3>
+                                <span class="pm-card-count">#{fn:length(adminDashboardBean.permissions)}</span>
+                            </div>
+                            <div class="pm-card-body" style="padding:12px;">
+                                <h:form id="panelPermissions">
+                                    <p:messages id="msgsPermList" showDetail="true" closable="true"
+                                                style="margin-bottom:10px;font-size:12px;"/>
+                                    <h:panelGroup rendered="#{empty adminDashboardBean.permissions}">
+                                        <div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">
+                                            <i class="pi pi-inbox" style="font-size:24px;display:block;margin-bottom:8px;"/>
+                                            Aucune permission définie
+                                        </div>
+                                    </h:panelGroup>
+                                    <!-- Accordéon par branche -->
+                                    <ui:repeat value="#{adminDashboardBean.branches}" var="br" varStatus="brs">
+                                        <h:panelGroup rendered="#{not empty adminDashboardBean.permsCatalogueParBranche[br.id]}" layout="block">
+                                            <div class="pm-branch" style="margin-bottom:6px;">
+                                                <div class="pm-branch-hd" onclick="pmTogglePermBranch(#{brs.index})">
+                                                    <div style="display:flex;align-items:center;gap:6px;">
+                                                        <span class="pm-branch-name">#{br.nom}</span>
+                                                        <span class="pm-branch-code">#{br.code}</span>
+                                                        <span style="font-size:11px;color:#64748b;">
+                                                            (#{fn:length(adminDashboardBean.permsCatalogueParBranche[br.id])})
+                                                        </span>
+                                                    </div>
+                                                    <span class="pm-branch-chevron" id="pchev-#{brs.index}">▼</span>
+                                                </div>
+                                                <div class="pm-branch-body" id="pbranch-#{brs.index}">
+                                                    <table class="pm-perm-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Libellé</th>
+                                                                <th style="width:80px;">Code</th>
+                                                                <th style="width:90px;">Niveau</th>
+                                                                <th style="width:40px;"/>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <ui:repeat value="#{adminDashboardBean.permsCatalogueParBranche[br.id]}" var="perm">
+                                                                <tr>
+                                                                    <td style="font-weight:600;color:#1a1a1a;">#{perm.libelle}</td>
+                                                                    <td><span class="pm-badge gray">#{perm.code}</span></td>
+                                                                    <td>
+                                                                        <span class="pm-badge #{perm.niveau eq 'ADMIN' ? 'adm' : perm.niveau eq 'ECRITURE' ? 'ecrit' : 'lect'}">
+                                                                            #{perm.niveau}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td style="text-align:center;">
+                                                                        <p:commandButton icon="pi pi-trash" title="Supprimer"
+                                                                                         styleClass="pm-btn-icon del"
+                                                                                         action="#{adminDashboardBean.supprimerPermission(perm.id)}"
+                                                                                         onclick="return confirm('Supprimer #{perm.code} ?')"
+                                                                                         update="panelPermissions panelBranches"/>
+                                                                    </td>
+                                                                </tr>
+                                                            </ui:repeat>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+                                    </ui:repeat>
+                                </h:form>
+                            </div>
+                        </div>
+
+                    </div><!-- /col droite -->
+                </div><!-- /pm-2col -->
+            </div><!-- /panel-branches -->
+
+
+            <!-- ═══════════════════════════════════════════════════════════════════
+                 ONGLET 2 — Par profil
+            ════════════════════════════════════════════════════════════════════ -->
+            <div id="panel-profil" class="pm-panel">
+
+                <!-- Créer profil -->
+                <div class="pm-card" style="margin-bottom:18px;">
+                    <div class="pm-card-header">
+                        <h3><i class="pi pi-plus-circle" style="margin-right:6px;"/>Nouveau profil</h3>
+                    </div>
+                    <div class="pm-card-body">
+                        <h:form id="fProfilForm" style="display:flex;gap:10px;align-items:flex-end;">
+                            <p:messages id="msgsProfilForm" showDetail="true" closable="true"
+                                        style="margin-bottom:0;font-size:12px;"/>
+                            <div class="pm-field" style="flex:1;margin-bottom:0;">
+                                <label>Nom du profil <span class="req">*</span></label>
+                                <p:inputText value="#{adminDashboardBean.profilNom}" required="true"
+                                             placeholder="Ex: FORMATEUR_SENIOR" styleClass="a-input"/>
+                            </div>
+                            <p:commandButton value="Créer" icon="pi pi-check"
+                                             styleClass="abtn abtn-primary"
+                                             action="#{adminDashboardBean.creerProfil}"
+                                             update="fProfilForm panelProfils"/>
+                        </h:form>
+                    </div>
+                </div>
+
+                <!-- Grille des profils -->
+                <h:form id="panelProfils">
+                    <p:messages id="msgsProfilList" showDetail="true" closable="true"
+                                style="margin-bottom:14px;font-size:12px;"/>
+                    <!-- Champ caché unique pour les permissions à ajouter -->
+                    <h:inputHidden id="pmPermBuf" value="#{adminDashboardBean.permissionsSelectionneesIds}"/>
+
+                    <h:panelGroup rendered="#{empty adminDashboardBean.profils}">
+                        <div style="text-align:center;padding:40px;color:#94a3b8;font-size:13px;">
+                            <i class="pi pi-id-card" style="font-size:32px;display:block;margin-bottom:10px;"/>
+                            Aucun profil défini
+                        </div>
+                    </h:panelGroup>
+                    <div class="pm-profil-list">
+                        <ui:repeat value="#{adminDashboardBean.profilsGerables}" var="prof" varStatus="pvs">
+                            <div class="pm-profil-item" id="prof-item-#{pvs.index}">
+                                <div class="pm-profil-hd" onclick="pmToggleProfil(#{pvs.index})">
+                                    <div class="pm-profil-hd-left">
+                                        <i class="pi pi-id-card" style="font-size:14px;opacity:.8;"/>
+                                        <h4>#{prof.nom}</h4>
+                                        <span class="cnt">
+                                            #{prof.permissions != null ? prof.permissions.size() : 0} permission(s)
+                                        </span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:10px;"
+                                         onclick="event.stopPropagation()">
+                                        <p:commandButton icon="pi pi-trash" title="Supprimer ce profil"
+                                                         styleClass="pm-btn-icon del"
+                                                         style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);"
+                                                         action="#{adminDashboardBean.supprimerProfil(prof.id)}"
+                                                         onclick="return confirm('Supprimer le profil #{prof.nom} ?')"
+                                                         update="panelProfils"/>
+                                        <span class="pm-profil-chevron" id="prof-chev-#{pvs.index}">▼</span>
+                                    </div>
+                                </div>
+                                <div class="pm-profil-bd" id="prof-bd-#{pvs.index}">
+                                    <!-- Permissions actuelles -->
+                                    <div class="pm-chips">
+                                        <h:panelGroup rendered="#{prof.permissions == null or empty prof.permissions}">
+                                            <span class="pm-empty-chips">Aucune permission assignée</span>
+                                        </h:panelGroup>
+                                        <ui:repeat value="#{prof.permissions}" var="pp">
+                                            <span class="pm-chip #{pp.niveau eq 'ADMIN' ? 'adm' : pp.niveau eq 'ECRITURE' ? 'ecrit' : 'lect'}">
+                                                <i class="pi pi-key" style="font-size:9px;"/>
+                                                <span style="font-weight:800;margin-right:3px;">#{pp.code}</span>#{pp.libelle}
+                                                <p:commandButton icon="pi pi-times" title="Retirer #{pp.libelle}"
+                                                                 styleClass="pm-btn-icon del"
+                                                                 style="width:16px;height:16px;font-size:9px;background:none;border:none;cursor:pointer;opacity:.7;"
+                                                                 action="#{adminDashboardBean.retirerPermissionDuProfil(prof.id, pp.id)}"
+                                                                 update="panelProfils"/>
+                                            </span>
+                                        </ui:repeat>
+                                    </div>
+                                    <!-- Ajouter permission — bouton toggle -->
+                                    <button type="button" class="pm-add-toggle-btn"
+                                            onclick="pmToggleAddPanel('pm-add-#{pvs.index}', this)">
+                                        <i class="pi pi-plus" style="margin-right:4px;"/>Ajouter une permission...
+                                    </button>
+                                    <!-- Panneau checkboxes -->
+                                    <div class="pm-add-cb-panel" id="pm-add-#{pvs.index}">
+                                        <ui:repeat value="#{adminDashboardBean.branches}" var="branche">
+                                            <h:panelGroup rendered="#{not empty adminDashboardBean.permsCatalogueParBranche[branche.id]}" layout="block">
+                                                <div class="pm-add-br-group2">
+                                                    <div class="pm-add-br-hd2">
+                                                        <span>
+                                                            <span style="background:#0B2545;color:#D9A441;padding:1px 5px;border-radius:3px;font-size:10px;margin-right:4px;">#{branche.code}</span>
+                                                            #{branche.nom}
+                                                        </span>
+                                                        <button type="button" style="font-size:10px;color:#0B2545;text-decoration:underline;background:none;border:none;cursor:pointer;font-weight:600;"
+                                                                onclick="pmCbSelAll(this, #{pvs.index})">Tout</button>
+                                                    </div>
+                                                    <div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:4px;">
+                                                        <ui:repeat value="#{adminDashboardBean.permsCatalogueParBranche[branche.id]}" var="cp">
+                                                            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#374151;cursor:pointer;padding:2px 0;">
+                                                                <input type="checkbox" class="pm-cb-#{pvs.index}" value="#{cp.id}"
+                                                                       onchange="pmCbCount(#{pvs.index})"
+                                                                       style="accent-color:#0B2545;width:13px;height:13px;cursor:pointer;"/>
+                                                                <span style="font-weight:800;font-size:10px;background:#e8edf7;color:#0B2545;border-radius:3px;padding:1px 4px;">#{cp.code}</span>
+                                                                #{cp.libelle}
+                                                            </label>
+                                                        </ui:repeat>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </ui:repeat>
+                                        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:7px;border-top:1px solid #e2e8f0;">
+                                            <span style="font-size:11px;color:#64748b;" id="pm-cnt-#{pvs.index}">0 sélectionnée(s)</span>
+                                            <div style="display:flex;gap:6px;">
+                                                <button type="button" style="font-size:11px;padding:4px 10px;background:#f1f5f9;border:1px solid #c5d0e8;border-radius:6px;cursor:pointer;"
+                                                        onclick="pmCbDeselAll(#{pvs.index})">Tout désélectionner</button>
+                                                <p:commandButton value="Valider" icon="pi pi-check"
+                                                                 styleClass="abtn abtn-primary"
+                                                                 style="font-size:11px;padding:4px 12px;"
+                                                                 onclick="pmCbCollect(#{pvs.index})"
+                                                                 action="#{adminDashboardBean.ajouterPermissionsIdsAuProfil(prof.id)}"
+                                                                 update="panelProfils"
+                                                                 oncomplete="pmCloseAddPanel('pm-add-#{pvs.index}')"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </h:form>
+            </div><!-- /panel-profil -->
+
+
+            <!-- ═══════════════════════════════════════════════════════════════════
+                 ONGLET 3 — Par utilisateur
+            ════════════════════════════════════════════════════════════════════ -->
+            <div id="panel-utilisateur" class="pm-panel">
+                <div class="pm-card">
+                    <div class="pm-card-header">
+                        <h3><i class="pi pi-users" style="margin-right:6px;"/>Utilisateurs &amp; profils assignés</h3>
+                        <span class="pm-card-count">#{fn:length(adminDashboardBean.personnes)} utilisateurs</span>
+                    </div>
+                    <div class="pm-card-body" style="padding:0;">
+                        <h:form id="panelUsers">
+                            <p:messages id="msgsUsers" showDetail="true" closable="true"
+                                        style="margin:10px;font-size:12px;"/>
+                            <!-- Barre de recherche (filtrage JS côté client) -->
+                            <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px;">
+                                <span style="position:relative;flex:1;max-width:360px;">
+                                    <i class="pi pi-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:13px;pointer-events:none;"/>
+                                    <input type="text"
+                                           id="userSearchBox"
+                                           oninput="filterUsersTable(this.value)"
+                                           placeholder="Rechercher par nom, email, rôle…"
+                                           class="pm-search-input"
+                                           style="padding-left:32px;width:100%;font-size:13px;border:1px solid #c5d0e8;border-radius:8px;height:36px;outline:none;box-sizing:border-box;"/>
+                                </span>
+                            </div>
+                            <p:dataTable id="usersTable"
+                                         value="#{adminDashboardBean.personnes}" var="u"
+                                         rowIndexVar="rowIndex"
+                                         styleClass="pm-user-table"
+                                         style="width:100%;"
+                                         rowStyleClass="pm-user-row">
+                                <p:column headerText="Utilisateur">
+                                    <span class="pm-user-avatar">
+                                        #{u.prenom != null and u.prenom.length() > 0 ? u.prenom.substring(0,1) : '?'}
+                                    </span>
+                                    <span style="font-weight:600;color:#1a1a1a;">#{u.prenom} #{u.nom}</span>
+                                    <br/>
+                                    <span style="font-size:11px;color:#64748b;margin-left:38px;">#{u.email}</span>
+                                </p:column>
+                                <p:column headerText="Rôle" style="width:110px;">
+                                    <span class="pm-role-badge #{u.role eq 'ADMIN' ? 'admin' : u.role eq 'AGENT' ? 'agent' : 'other'}">
+                                        #{u.role}
+                                    </span>
+                                </p:column>
+                                <p:column headerText="Profil assigné" style="width:130px;">
+                                    <h:panelGroup rendered="#{u.profil != null}">
+                                        <span class="pm-badge gray">#{u.profil.nom}</span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{u.profil == null}">
+                                        <span class="pm-no-profil">Aucun profil</span>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Permissions profil" style="width:150px;">
+                                    <h:panelGroup rendered="#{u.profil != null and u.profil.permissions != null and not empty u.profil.permissions}">
+                                        <span class="pm-badge gray" style="font-size:12px;padding:4px 12px;">
+                                            <i class="pi pi-key" style="font-size:11px;margin-right:4px;"/>
+                                            #{fn:length(u.profil.permissions)} permission(s)
+                                        </span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{u.profil == null or u.profil.permissions == null or empty u.profil.permissions}">
+                                        <span class="pm-no-profil">—</span>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Assigner un profil" style="width:200px;">
+                                    <div style="display:flex;gap:5px;align-items:center;">
+                                        <p:selectOneMenu id="selProfil"
+                                                         value="#{adminDashboardBean.profilParUtilisateur[u.id]}"
+                                                         styleClass="a-select pm-user-profil-sel"
+                                                         style="font-size:11px;border:1px solid #c5d0e8;border-radius:6px;flex:1;">
+                                            <f:converter converterId="jakarta.faces.Long"/>
+                                            <f:selectItem itemValue="#{null}" itemLabel="— Profil —"/>
+                                            <f:selectItems value="#{adminDashboardBean.profils}" var="pr"
+                                                           itemValue="#{pr.id}" itemLabel="#{pr.nom}"/>
+                                        </p:selectOneMenu>
+                                        <p:commandButton value="Valider" icon="pi pi-check" title="Valider le profil"
+                                                         styleClass="pact pact-ok"
+                                                         style="height:30px;flex-shrink:0;font-size:11px;padding:0 8px;"
+                                                         action="#{adminDashboardBean.assignerProfil(u.id)}"
+                                                         process="@this :panelUsers:usersTable:#{rowIndex}:selProfil"
+                                                         update="panelUsers"/>
+                                    </div>
+                                </p:column>
+                                <p:column headerText="Permissions directes" style="width:140px;text-align:center;">
+                                    <p:commandButton value="Permissions" icon="pi pi-shield" title="Gérer les permissions directes"
+                                                     styleClass="abtn-sm abtn-sm-ok"
+                                                     style="font-size:11px;padding:4px 8px;"
+                                                     action="#{adminDashboardBean.ouvrirGestionPermissionsUser(u)}"
+                                                     update="dialogPermUser"
+                                                     process="@this"
+                                                     oncomplete="puOpenDialog()"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </div>
+            </div><!-- /panel-utilisateur -->
+
+        </h:panelGroup><!-- /admin -->
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             DIALOG — Permissions directes par utilisateur
+        ════════════════════════════════════════════════════════════════════ -->
+        <p:dialog id="dialogPermUser" widgetVar="dlgPermUser"
+                  header="Permissions directes — #{adminDashboardBean.permUserTargetNom}"
+                  modal="true" width="680" resizable="false"
+                  style="border-radius:12px;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.35);"
+                  contentStyle="background:#fff;padding:20px;"
+                  styleClass="perm-user-dlg"
+                  visible="false"
+                  appendTo="@(body)">
+            <h:form id="fPermUser">
+                <p:messages id="msgsPermUser" showDetail="true" closable="true"
+                            style="margin-bottom:10px;font-size:12px;"/>
+                <!-- Buffer : IDs séparés par virgule -->
+                <h:inputHidden id="puPermBuf"
+                               value="#{adminDashboardBean.permissionsDirectesUtilisateurIds}"/>
+
+                <p style="font-size:12px;color:#64748b;margin:0 0 14px;">
+                    Cochez les permissions à attribuer <strong>directement</strong> à cet utilisateur
+                    (en plus de celles héritées de son profil).
+                </p>
+
+                <!-- Accordéon par branche -->
+                <div style="max-height:420px;overflow-y:auto;padding-right:4px;">
+                    <ui:repeat value="#{adminDashboardBean.branches}" var="puBr" varStatus="puBrs">
+                        <h:panelGroup rendered="#{not empty adminDashboardBean.permsCatalogueParBranche[puBr.id]}" layout="block">
+                            <div style="margin-bottom:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+                                <div style="background:#f8fafc;padding:8px 12px;font-size:11px;font-weight:700;
+                                            color:#0B2545;display:flex;align-items:center;gap:6px;
+                                            border-bottom:1px solid #e2e8f0;">
+                                    <span style="background:#0B2545;color:#D9A441;padding:1px 6px;
+                                                 border-radius:3px;font-size:10px;">#{puBr.code}</span>
+                                    #{puBr.nom}
+                                </div>
+                                <div style="padding:10px 12px;display:flex;flex-wrap:wrap;gap:4px 16px;">
+                                    <ui:repeat value="#{adminDashboardBean.permsCatalogueParBranche[puBr.id]}" var="puPerm">
+                                        <label style="display:flex;align-items:center;gap:5px;font-size:11px;
+                                                      color:#374151;cursor:pointer;padding:2px 0;">
+                                            <input type="checkbox" class="pu-cb" value="#{puPerm.id}"
+                                                   onchange="puCbCount()"
+                                                   style="accent-color:#0B2545;width:13px;height:13px;cursor:pointer;"/>
+                                            <span style="font-weight:800;font-size:10px;background:#e8edf7;
+                                                         color:#0B2545;border-radius:3px;padding:1px 4px;">#{puPerm.code}</span>
+                                            #{puPerm.libelle}
+                                        </label>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </ui:repeat>
+                </div>
+
+                <!-- Pied -->
+                <div style="display:flex;align-items:center;justify-content:space-between;
+                             margin-top:14px;padding-top:10px;border-top:1px solid #e2e8f0;">
+                    <span style="font-size:11px;color:#64748b;" id="pu-cnt">0 sélectionnée(s)</span>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button"
+                                onclick="PF('dlgPermUser').hide()"
+                                style="padding:7px 16px;background:#f1f5f9;border:1px solid #c5d0e8;
+                                       border-radius:7px;font-size:12px;cursor:pointer;font-weight:600;">
+                            Annuler
+                        </button>
+                        <p:commandButton value="Enregistrer" icon="pi pi-check"
+                                         styleClass="abtn abtn-primary"
+                                         style="font-size:12px;padding:7px 16px;"
+                                         onclick="puCbCollect()"
+                                         action="#{adminDashboardBean.sauvegarderPermissionsUser}"
+                                         update="panelUsers msgsPermUser"
+                                         process="fPermUser"
+                                         oncomplete="PF('dlgPermUser').hide()"/>
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <!-- ── JavaScript ─────────────────────────────────────────────────── -->
+        <script type="text/javascript">
+        //<![CDATA[
+            function pmSwitch(name) {
+                document.querySelectorAll('.pm-tab').forEach(function(t){t.classList.remove('active');});
+                document.querySelectorAll('.pm-panel').forEach(function(p){p.classList.remove('active');});
+                var tab = document.getElementById('tab-' + name);
+                var panel = document.getElementById('panel-' + name);
+                if (tab)   tab.classList.add('active');
+                if (panel) panel.classList.add('active');
+            }
+            function pmToggleBranch(idx) {
+                var hd   = document.querySelector('.pm-branch-hd[onclick="pmToggleBranch(' + idx + ')"]');
+                var body = document.getElementById('branch-body-' + idx);
+                if (!hd || !body) return;
+                var open = body.classList.contains('open');
+                body.classList.toggle('open', !open);
+                hd.classList.toggle('open', !open);
+            }
+            function pmToggleProfil(idx) {
+                var item = document.getElementById('prof-item-' + idx);
+                if (!item) return;
+                item.classList.toggle('open');
+            }
+            function pmToggleAddPanel(id, btn) {
+                var panel = document.getElementById(id);
+                if (!panel) return;
+                var open = panel.classList.contains('open');
+                panel.classList.toggle('open', !open);
+                btn.innerHTML = open
+                    ? '<i class="pi pi-plus" style="margin-right:4px;"></i>Ajouter une permission...'
+                    : '<i class="pi pi-minus" style="margin-right:4px;"></i>Fermer';
+            }
+            function pmCloseAddPanel(id) {
+                var panel = document.getElementById(id);
+                if (panel) panel.classList.remove('open');
+            }
+            function pmCbCount(idx) {
+                var n = document.querySelectorAll('.pm-cb-' + idx + ':checked').length;
+                var el = document.getElementById('pm-cnt-' + idx);
+                if (el) el.textContent = n + ' sélectionnée(s)';
+            }
+            function pmCbSelAll(btn, idx) {
+                var grp = btn.closest('.pm-add-br-group2');
+                grp.querySelectorAll('.pm-cb-' + idx).forEach(function(cb){ cb.checked = true; });
+                pmCbCount(idx);
+            }
+            function pmCbDeselAll(idx) {
+                document.querySelectorAll('.pm-cb-' + idx).forEach(function(cb){ cb.checked = false; });
+                pmCbCount(idx);
+            }
+            function pmCbCollect(idx) {
+                var ids = Array.from(document.querySelectorAll('.pm-cb-' + idx + ':checked'))
+                               .map(function(cb){ return cb.value; }).join(',');
+                var hid = document.getElementById('panelProfils:pmPermBuf');
+                if (hid) hid.value = ids;
+            }
+            /* ── Recherche utilisateurs (filtrage JS) ─────────────────── */
+            function filterUsersTable(val) {
+                val = val.toLowerCase().trim();
+                var rows = document.querySelectorAll('#panelUsers\\:usersTable tbody tr');
+                rows.forEach(function(tr) {
+                    tr.style.display = (val === '' || tr.textContent.toLowerCase().indexOf(val) >= 0) ? '' : 'none';
+                });
+            }
+            /* ── Permissions directes utilisateur ─────────────────────── */
+            function puOpenDialog() {
+                // Montrer le dialog d'abord, puis pré-cocher après rendu DOM
+                PF('dlgPermUser').show();
+                setTimeout(function() {
+                    var hid = document.getElementById('fPermUser:puPermBuf');
+                    var raw = hid ? hid.value : '';
+                    var ids = raw ? raw.split(',').map(function(s){ return s.trim(); }).filter(Boolean) : [];
+                    document.querySelectorAll('.pu-cb').forEach(function(cb) {
+                        cb.checked = ids.indexOf(cb.value) >= 0;
+                    });
+                    puCbCount();
+                }, 80);
+            }
+            function puCbCount() {
+                var n = document.querySelectorAll('.pu-cb:checked').length;
+                var el = document.getElementById('pu-cnt');
+                if (el) el.textContent = n + ' sélectionnée(s)';
+            }
+            function puCbCollect() {
+                var ids = Array.from(document.querySelectorAll('.pu-cb:checked'))
+                               .map(function(cb){ return cb.value; }).join(',');
+                var hid = document.getElementById('fPermUser:puPermBuf');
+                if (hid) hid.value = ids;
+            }
+
+            function pmTogglePermBranch(idx) {
+                var hd   = document.querySelector('.pm-branch-hd[onclick="pmTogglePermBranch(' + idx + ')"]');
+                var body = document.getElementById('pbranch-' + idx);
+                if (!body) return;
+                var open = body.classList.contains('open');
+                body.classList.toggle('open', !open);
+                if (hd) hd.classList.toggle('open', !open);
+            }
+        //]]>
+        </script>
+
+    </ui:define>
+</ui:composition>
+</html>

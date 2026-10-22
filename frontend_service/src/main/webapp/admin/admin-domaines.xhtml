@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+<ui:define name="title">Domaines de formation</ui:define>
+
+<ui:define name="pageStyle">
+.dom-hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+/* ── Force button styles over PrimeFaces ──────────────── */
+.abtn-sm{display:inline-flex!important;align-items:center!important;padding:4px 10px!important;font-size:11px!important;font-weight:600!important;border-radius:6px!important;border:1px solid #CBD5E1!important;cursor:pointer!important;background:#F8FAFC!important;color:#475569!important;white-space:nowrap!important;font-family:inherit!important;}
+.abtn-sm:hover{background:#E2E8F0!important;}
+.abtn-sm-ko{background:#DC2626!important;color:#fff!important;border-color:#DC2626!important;}
+.abtn-sm-ko:hover{background:#B91C1C!important;}
+.ui-button-text{display:inline!important;font-family:inherit!important;}
+</ui:define>
+
+<ui:define name="content">
+<h:panelGroup rendered="#{!sessionBean.admin}">
+    <div class="a-denied"><div class="icon">🚫</div><h2>Accès refusé</h2></div>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{sessionBean.admin}">
+
+<!-- ══ FORM PRINCIPAL : tableau ══ -->
+<h:form id="fDomaines">
+<p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+
+<div class="dom-hd">
+    <div>
+        <h1 style="font-size:20px;font-weight:700;color:#0F172A;margin:0 0 4px;">
+            <i class="ti ti-category" style="margin-right:6px;"></i>Domaines de formation
+        </h1>
+        <p style="font-size:12px;color:#94A3B8;margin:0;">Créez et gérez les domaines de formation</p>
+    </div>
+    <!-- Bouton plain HTML : ouvre le dialog sans soumission -->
+    <button type="button" class="abtn abtn-primary" style="padding:0 18px;height:38px;"
+            onclick="PF('dlgDomaine').show();">+ Nouveau domaine</button>
+</div>
+
+<p:dataTable id="tblDomaines" value="#{adminDashboardBean.domaines}" var="d"
+             paginator="true" rows="15"
+             paginatorPosition="bottom"
+             paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+             emptyMessage="Aucun domaine créé. Cliquez sur '+ Nouveau domaine' pour commencer."
+             style="font-size:13px;" tableStyle="width:100%;">
+
+    <p:column headerText="Libellé">
+        <div style="font-weight:600;color:#0F172A;">
+            <h:outputText value="#{not empty d.libelle ? d.libelle : '—'}"/>
+        </div>
+        <h:panelGroup rendered="#{not empty d.description}">
+            <div style="font-size:11px;color:#94A3B8;margin-top:3px;">
+                <h:outputText value="#{d.description}"/>
+            </div>
+        </h:panelGroup>
+    </p:column>
+
+    <p:column headerText="Code" style="width:100px;">
+        <h:panelGroup rendered="#{not empty d.code}">
+            <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#EFF6FF;color:#1D4ED8;">
+                <h:outputText value="#{d.code}"/>
+            </span>
+        </h:panelGroup>
+    </p:column>
+
+    <p:column headerText="Action" style="width:130px;">
+        <h:panelGroup styleClass="a-actions">
+            <p:commandButton value="✕ Supprimer" styleClass="abtn-sm abtn-sm-ko"
+                             action="#{adminDashboardBean.supprimerDomaine(d.id)}"
+                             update=":fDomaines"/>
+        </h:panelGroup>
+    </p:column>
+</p:dataTable>
+
+<div style="margin-top:12px;padding:10px 14px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;font-size:12px;color:#92400E;">
+    <i class="ti ti-alert-triangle"></i>
+    Supprimer un domaine peut affecter les offres de formation qui y sont liées.
+</div>
+</h:form>
+
+<!-- ══ FORM DIALOG : CRÉER DOMAINE ══ -->
+<h:form id="fDlgDomaine">
+<p:dialog id="dlgDomaineId" header="Nouveau domaine de formation"
+          widgetVar="dlgDomaine" modal="true" responsive="true"
+          style="width:min(460px,95vw);">
+    <p:messages id="msgsDlg" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+    <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0 12px;">
+        <div>
+            <label class="a-label">Libellé *</label>
+            <p:inputText value="#{adminDashboardBean.domaineLibelle}" required="true"
+                         placeholder="Ex : Génie Logiciel"
+                         styleClass="a-input" style="width:100%;"/>
+        </div>
+        <div>
+            <label class="a-label">Code</label>
+            <p:inputText value="#{adminDashboardBean.domaineCode}"
+                         placeholder="Ex : GL" styleClass="a-input" style="width:100%;"/>
+        </div>
+        <div>
+            <label class="a-label">Description</label>
+            <p:inputTextarea value="#{adminDashboardBean.domaineDescription}" rows="3"
+                             placeholder="Description du domaine…"
+                             styleClass="a-input" style="width:100%;" autoResize="true"/>
+        </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid #E2E8F0;">
+        <button type="button" class="abtn abtn-secondary" onclick="PF('dlgDomaine').hide();">Annuler</button>
+        <p:commandButton value="Créer le domaine" styleClass="abtn abtn-primary"
+                         action="#{adminDashboardBean.creerDomaine}"
+                         update=":fDomaines:tblDomaines :fDomaines:msgs :fDlgDomaine:dlgDomaineId"
+                         oncomplete="if(!args.validationFailed) PF('dlgDomaine').hide();"/>
+    </div>
+</p:dialog>
+</h:form>
+
+</h:panelGroup>
+</ui:define>
+</ui:composition>
+</html>

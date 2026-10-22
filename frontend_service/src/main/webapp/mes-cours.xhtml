@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/particulier-layout.xhtml">
+<f:metadata>
+    <f:viewParam name="offreId" value="#{elearningBean.offreId}"/>
+    <f:viewParam name="titre"   value="#{elearningBean.offreTitre}"/>
+    <f:viewAction action="#{elearningBean.charger}"/>
+</f:metadata>
+<ui:define name="title">Mes cours en ligne — SenExpertFormation</ui:define>
+<ui:define name="topbar-title">
+    <h:outputText value="#{elearningBean.offreTitre}" rendered="#{not empty elearningBean.offreTitre}"/>
+    <h:outputText value="Mes cours" rendered="#{empty elearningBean.offreTitre}"/>
+</ui:define>
+
+<ui:define name="content">
+
+<style>
+.el-shell{max-width:100%;}
+.el-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.el-title{font-size:20px;font-weight:700;color:var(--text-primary);}
+.el-sub{font-size:13px;color:var(--text-secondary);margin-top:3px;}
+.el-progress-bar{height:8px;border-radius:4px;background:var(--bg-muted);overflow:hidden;margin-bottom:4px;}
+.el-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--primary),var(--magic));transition:width .4s;}
+.el-progress-lbl{font-size:11px;color:var(--text-secondary);}
+.el-grid{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start;}
+.el-list{display:flex;flex-direction:column;gap:8px;}
+.el-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;gap:12px;align-items:flex-start;position:relative;}
+.el-card:hover{border-color:var(--primary);box-shadow:var(--shadow-glow);}
+.el-card.active{border-color:var(--primary);background:var(--primary-light);}
+.el-card.done{border-left:3px solid var(--success);}
+.el-card-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.el-card-body{flex:1;min-width:0;}
+.el-card-title{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.el-card-meta{font-size:11px;color:var(--text-secondary);display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.el-card-check{width:20px;height:20px;border-radius:50%;background:var(--success-light);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:11px;flex-shrink:0;}
+.el-card-check.pending{background:var(--bg-muted);color:var(--text-muted);}
+.el-viewer{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:400px;}
+.el-viewer-hd{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg-muted);display:flex;align-items:center;gap:10px;justify-content:space-between;}
+.el-viewer-title{font-size:15px;font-weight:700;color:var(--text-primary);}
+.el-viewer-body{padding:20px;}
+.el-video-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;}
+.el-video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
+.el-doc-frame{width:100%;height:500px;border:1px solid var(--border);border-radius:8px;}
+.el-lien-card{display:flex;align-items:center;gap:14px;padding:20px;border:2px dashed var(--border);border-radius:10px;text-decoration:none;color:inherit;transition:border-color .15s;}
+.el-lien-card:hover{border-color:var(--primary);}
+.el-live-card{background:var(--warning-light);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:20px;}
+.el-live-meta{font-size:12px;color:var(--warning);margin-bottom:12px;}
+.el-live-btn{display:inline-flex;align-items:center;gap:6px;background:var(--warning);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:filter .15s;}
+.el-live-btn:hover{filter:brightness(.85);}
+.el-quiz-q{background:var(--bg-muted);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;}
+.el-quiz-q p{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:10px;}
+.el-quiz-opt{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:6px;border:1px solid var(--border);background:var(--bg-card);transition:background .1s;position:relative;}
+.el-quiz-opt:hover{background:var(--primary-light);border-color:var(--primary);}
+.el-quiz-opt.selected{background:var(--primary-light);border-color:var(--primary);}
+.el-quiz-opt.correct{background:var(--success-light);border-color:rgba(16,185,129,.4);}
+.el-quiz-opt.wrong{background:var(--danger-light);border-color:rgba(239,68,68,.4);}
+.el-score-box{text-align:center;padding:32px 20px;}
+.el-score-num{font-size:52px;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--magic));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.el-score-lbl{font-size:14px;color:var(--text-secondary);margin-top:4px;}
+.el-empty{text-align:center;padding:48px 20px;color:var(--text-secondary);}
+.el-empty i{font-size:2.5rem;margin-bottom:12px;display:block;}
+.el-pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap;}
+.el-pill-video{background:var(--danger-light);color:#F87171;}
+.el-pill-doc{background:var(--primary-light);color:#60A5FA;}
+.el-pill-quiz{background:var(--magic-light);color:#A78BFA;}
+.el-pill-lien{background:var(--success-light);color:#34D399;}
+.el-pill-live{background:var(--warning-light);color:#FCD34D;}
+.el-pill-done{background:var(--success-light);color:var(--success);}
+.el-pill-tp{background:#CFFAFE;color:#0891B2;}
+.el-pill-devoir{background:#EDE9FE;color:#7C3AED;}
+.el-pill-examen{background:#FEE2E2;color:#DC2626;}
+/* Boutons d'action */
+.abtn{display:inline-flex!important;align-items:center!important;gap:6px!important;
+    padding:8px 18px!important;border-radius:8px!important;font-size:12px!important;
+    font-weight:600!important;cursor:pointer!important;border:none!important;
+    font-family:inherit!important;}
+.abtn-primary{background:#3B82F6!important;color:#fff!important;}
+.abtn-primary:hover{background:#2563EB!important;}
+.abtn-success{background:#059669!important;color:#fff!important;}
+.abtn-success:hover{background:#047857!important;}
+.abtn-danger{background:#DC2626!important;color:#fff!important;}
+.abtn-danger:hover{background:#B91C1C!important;}
+@media(max-width:700px){.el-grid{grid-template-columns:1fr;}}
+/* ── Recherche cours ─────────────────────────── */
+.el-search-wrap{position:relative;margin-bottom:10px;}
+.el-search{width:100%;box-sizing:border-box;padding:8px 12px 8px 34px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-card);color:var(--text-primary);outline:none;transition:border-color .15s;}
+.el-search:focus{border-color:var(--primary);}
+.el-search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;pointer-events:none;}
+.el-no-result{text-align:center;padding:20px 8px;font-size:12px;color:var(--text-muted);display:none;}
+/* ── Certificat ──────────────────────────────── */
+.el-cert-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:filter .15s;margin-top:8px;}
+.el-cert-btn:hover{filter:brightness(.88);}
+.el-cert-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.el-cert-box{background:#fff;color:#111;border-radius:16px;padding:48px 56px;max-width:680px;width:95%;text-align:center;position:relative;border:6px double #059669;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.el-cert-title{font-size:22px;font-weight:800;color:#059669;letter-spacing:.5px;text-transform:uppercase;}
+.el-cert-sub{font-size:13px;color:#6B7280;margin-top:4px;}
+.el-cert-name{font-size:28px;font-weight:700;color:#111827;margin:20px 0 6px;font-style:italic;}
+.el-cert-formation{font-size:16px;font-weight:600;color:#374151;margin-bottom:20px;}
+.el-cert-date{font-size:12px;color:#9CA3AF;margin-top:16px;}
+.el-cert-logo{font-size:36px;margin-bottom:8px;}
+.el-cert-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#9CA3AF;}
+@media print{body *{visibility:hidden;}.el-cert-box,.el-cert-box *{visibility:visible;}.el-cert-box{position:fixed;top:5%;left:5%;width:90%;border-radius:0;box-shadow:none;}}
+</style>
+
+<div class="el-shell">
+
+    <!-- En-tête -->
+    <div class="el-header">
+        <div>
+            <div class="el-title">
+                <i class="ti ti-school" style="margin-right:6px;color:var(--primary);"></i>
+                <h:outputText value="#{elearningBean.offreTitre != null ? elearningBean.offreTitre : 'Mes cours en ligne'}"/>
+            </div>
+            <div class="el-sub"><h:outputText value="#{elearningBean.nbCours}"/> cours disponibles</div>
+        </div>
+        <div style="min-width:180px;">
+            <div class="el-progress-bar">
+                <div class="el-progress-fill" style="width:#{elearningBean.pourcentageCompletion}%;"></div>
+            </div>
+            <div class="el-progress-lbl">
+                <h:outputText value="#{elearningBean.pourcentageCompletion}%"/> de complétion
+            </div>
+            <h:panelGroup rendered="#{elearningBean.pourcentageCompletion >= 100}" layout="block">
+                <button type="button" class="el-cert-btn" onclick="elOuvrirCertificat()">
+                    <i class="ti ti-award"></i> Mon certificat
+                </button>
+            </h:panelGroup>
+        </div>
+    </div>
+
+    <h:panelGroup rendered="#{empty elearningBean.cours}">
+        <div class="el-empty">
+            <i class="ti ti-books"></i>
+            <div style="font-size:15px;font-weight:600;color:var(--text-secondary);">Aucun cours disponible pour cette formation.</div>
+            <div style="font-size:12px;margin-top:6px;">Le contenu sera publié prochainement par le formateur.</div>
+        </div>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{not empty elearningBean.cours}" layout="block">
+        <h:form id="fCours">
+            <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+
+            <div class="el-grid">
+
+                <!-- ── Sidebar : liste des cours ── -->
+                <div>
+                    <div class="el-search-wrap">
+                        <i class="ti ti-search el-search-ico"></i>
+                        <input type="text" class="el-search" placeholder="Rechercher un cours…"
+                               oninput="elFiltrerCours(this.value)" autocomplete="off"/>
+                    </div>
+                    <div id="elNoResult" class="el-no-result">Aucun cours ne correspond à votre recherche.</div>
+                    <div class="el-list">
+                        <ui:repeat value="#{elearningBean.cours}" var="c">
+                            <div class="el-card #{elearningBean.coursSelectionne != null and elearningBean.coursSelectionne.id == c.id ? 'active' : ''}
+                                         #{elearningBean.progressionMap[c.id] != null and elearningBean.progressionMap[c.id].complete ? ' done' : ''}">
+                                <div class="el-card-icon" style="background:#{c.typeCouleur}22;">
+                                    <i class="ti #{c.typeIcon}" style="color:#{c.typeCouleur};"></i>
+                                </div>
+                                <div class="el-card-body">
+                                    <div class="el-card-title">#{c.titre}</div>
+                                    <div class="el-card-meta">
+                                        <span class="el-pill el-pill-#{c.type.toLowerCase()}"><h:outputText value="#{c.typeLabel}"/></span>
+                                        <h:panelGroup rendered="#{c.dureeMinutes != null}">
+                                            <span>#{c.dureeMinutes} min</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{c.type eq 'QUIZ' or (c.type eq 'EXAMEN' and c.typeExamen eq 'QCM')}">
+                                            <span>#{c.nbQuestions} question(s)</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{c.travauxPratiques and not empty c.dateLimite}">
+                                            <span style="color:#D97706;"><i class="ti ti-clock" style="font-size:9px;"></i> #{c.dateLimite.substring(0,10)}</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{c.travauxPratiques}">
+                                            <span style="color:#7C3AED;"><i class="ti ti-star" style="font-size:9px;"></i> /#{c.baremeOu20}</span>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h:panelGroup rendered="#{elearningBean.progressionMap[c.id] != null and elearningBean.progressionMap[c.id].complete}">
+                                        <div class="el-card-check"><i class="ti ti-check"></i></div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{elearningBean.progressionMap[c.id] == null or !elearningBean.progressionMap[c.id].complete}">
+                                        <div class="el-card-check pending"><i class="ti ti-circle"></i></div>
+                                    </h:panelGroup>
+                                </div>
+                                <p:commandButton styleClass="ui-button-text" style="position:absolute;opacity:0;width:100%;height:100%;"
+                                                 action="#{elearningBean.ouvrirCours(c)}"
+                                                 update="fCours" process="@none"/>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </div>
+
+                <!-- ── Viewer principal ── -->
+                <div>
+                    <h:panelGroup rendered="#{elearningBean.coursSelectionne == null}" layout="block">
+                        <div class="el-viewer">
+                            <div class="el-empty" style="padding:64px 20px;">
+                                <i class="ti ti-player-play"></i>
+                                <div style="font-size:15px;font-weight:600;color:var(--text-secondary);">Sélectionnez un cours pour commencer</div>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{elearningBean.coursSelectionne != null}" layout="block">
+                        <div class="el-viewer">
+
+                            <!-- Header du viewer -->
+                            <div class="el-viewer-hd">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <i class="ti #{elearningBean.coursSelectionne.typeIcon}"
+                                       style="color:#{elearningBean.coursSelectionne.typeCouleur};font-size:18px;"></i>
+                                    <span class="el-viewer-title"><h:outputText value="#{elearningBean.coursSelectionne.titre}"/></span>
+                                </div>
+                                <h:panelGroup rendered="#{elearningBean.progressionMap[elearningBean.coursSelectionne.id] == null or !elearningBean.progressionMap[elearningBean.coursSelectionne.id].complete}">
+                                    <p:commandButton value="✓ Marquer terminé" styleClass="abtn-sm abtn-sm-ok"
+                                                     rendered="#{elearningBean.coursSelectionne.type ne 'QUIZ'}"
+                                                     action="#{elearningBean.marquerTermine}"
+                                                     update="fCours" process="@none"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{elearningBean.progressionMap[elearningBean.coursSelectionne.id] != null and elearningBean.progressionMap[elearningBean.coursSelectionne.id].complete}">
+                                    <span class="el-pill el-pill-done"><i class="ti ti-check"></i> Terminé</span>
+                                </h:panelGroup>
+                            </div>
+
+                            <div class="el-viewer-body">
+
+                                <!-- Description -->
+                                <h:panelGroup rendered="#{not empty elearningBean.coursSelectionne.description}" layout="block">
+                                    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">
+                                        <h:outputText value="#{elearningBean.coursSelectionne.description}"/>
+                                    </p>
+                                </h:panelGroup>
+
+                                <!-- ── VIDÉO ── -->
+                                <h:panelGroup rendered="#{elearningBean.coursSelectionne.type eq 'VIDEO'}" layout="block">
+                                    <div class="el-video-wrap">
+                                        <iframe src="#{elearningBean.coursSelectionne.urlContenu}"
+                                                allowfullscreen="true"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                title="#{elearningBean.coursSelectionne.titre}"/>
+                                    </div>
+                                    <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);">
+                                        <i class="ti ti-info-circle"></i> Si la vidéo ne s'affiche pas, utilisez le lien direct :
+                                        <a href="#{elearningBean.coursSelectionne.urlContenu}" target="_blank"
+                                           style="color:var(--primary);">Ouvrir ↗</a>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- ── DOCUMENT ── -->
+                                <h:panelGroup rendered="#{elearningBean.coursSelectionne.type eq 'DOCUMENT'}" layout="block">
+                                    <iframe src="#{elearningBean.coursSelectionne.urlContenu}"
+                                            class="el-doc-frame" title="#{elearningBean.coursSelectionne.titre}"/>
+                                    <div style="margin-top:10px;text-align:right;">
+                                        <a href="#{elearningBean.coursSelectionne.urlContenu}" target="_blank"
+                                           class="abtn-sm"><i class="ti ti-external-link"></i> Ouvrir en plein écran</a>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- ── LIEN EXTERNE ── -->
+                                <h:panelGroup rendered="#{elearningBean.coursSelectionne.type eq 'LIEN'}" layout="block">
+                                    <a href="#{elearningBean.coursSelectionne.urlContenu}" target="_blank"
+                                       class="el-lien-card">
+                                        <div style="width:48px;height:48px;border-radius:10px;background:var(--success-light);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--success);flex-shrink:0;">
+                                            <i class="ti ti-external-link"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:3px;">
+                                                <h:outputText value="#{elearningBean.coursSelectionne.titre}"/>
+                                            </div>
+                                            <div style="font-size:12px;color:var(--text-secondary);word-break:break-all;">
+                                                <h:outputText value="#{elearningBean.coursSelectionne.urlContenu}"/>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </h:panelGroup>
+
+                                <!-- ── SESSION LIVE ── -->
+                                <h:panelGroup rendered="#{elearningBean.coursSelectionne.type eq 'LIVE'}" layout="block">
+                                    <div class="el-live-card">
+                                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                                            <div style="width:42px;height:42px;border-radius:10px;background:var(--warning-light);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--warning);">
+                                                <i class="ti ti-video"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-size:14px;font-weight:700;color:var(--text-primary);">Session en direct</div>
+                                                <div style="font-size:11px;color:var(--warning);">
+                                                    <h:outputText value="#{elearningBean.coursSelectionne.plateforme}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <h:panelGroup rendered="#{not empty elearningBean.coursSelectionne.dateHeureLive}" layout="block">
+                                            <div class="el-live-meta">
+                                                <i class="ti ti-calendar-event"></i>
+                                                Date/Heure : <strong><h:outputText value="#{elearningBean.coursSelectionne.dateHeureLive}"/></strong>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{elearningBean.coursSelectionne.dureeMinutes != null}" layout="block">
+                                            <div class="el-live-meta">
+                                                <i class="ti ti-clock"></i> Durée prévue :
+                                                <strong><h:outputText value="#{elearningBean.coursSelectionne.dureeMinutes}"/> min</strong>
+                                            </div>
+                                        </h:panelGroup>
+                                        <a href="#{elearningBean.coursSelectionne.lienVisio}" target="_blank" class="el-live-btn">
+                                            <i class="ti ti-video"></i> Rejoindre la session
+                                        </a>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- ── QUIZ ── -->
+                                <h:panelGroup rendered="#{elearningBean.coursSelectionne.type eq 'QUIZ'}" layout="block">
+
+                                    <!-- Résultat si déjà passé -->
+                                    <h:panelGroup rendered="#{elearningBean.progressionMap[elearningBean.coursSelectionne.id] != null and elearningBean.progressionMap[elearningBean.coursSelectionne.id].complete and !elearningBean.quizEnCours}" layout="block">
+                                        <div class="el-score-box">
+                                            <div class="el-score-num">
+                                                <h:outputText value="#{elearningBean.progressionMap[elearningBean.coursSelectionne.id].scoreLabel}"/>
+                                            </div>
+                                            <div class="el-score-lbl">Score obtenu</div>
+                                            <p:commandButton value="Repasser le quiz" styleClass="abtn abtn-primary"
+                                                             style="margin-top:16px;"
+                                                             action="#{elearningBean.ouvrirCours(elearningBean.coursSelectionne)}"
+                                                             update="fCours"/>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Résultat immédiat après soumission -->
+                                    <h:panelGroup rendered="#{elearningBean.resultatQuiz != null and !elearningBean.quizEnCours}" layout="block">
+                                        <div class="el-score-box">
+                                            <div class="el-score-num"><h:outputText value="#{elearningBean.resultatQuiz.scoreLabel}"/></div>
+                                            <div class="el-score-lbl">Score obtenu</div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Bouton démarrer -->
+                                    <h:panelGroup rendered="#{!elearningBean.quizEnCours and elearningBean.resultatQuiz == null and (elearningBean.progressionMap[elearningBean.coursSelectionne.id] == null or !elearningBean.progressionMap[elearningBean.coursSelectionne.id].complete)}" layout="block">
+                                        <div style="text-align:center;padding:32px;">
+                                            <i class="ti ti-checklist" style="font-size:2.5rem;color:var(--magic);display:block;margin-bottom:12px;"></i>
+                                            <div style="font-size:15px;font-weight:600;margin-bottom:6px;">
+                                                Quiz — <h:outputText value="#{elearningBean.nbQuestions}"/> questions
+                                            </div>
+                                            <p:commandButton value="Démarrer le quiz" styleClass="abtn abtn-primary"
+                                                             action="#{elearningBean.ouvrirCours(elearningBean.coursSelectionne)}"
+                                                             update="fCours"/>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Questions -->
+                                    <h:panelGroup rendered="#{elearningBean.quizEnCours}" layout="block">
+                                        <ui:repeat value="#{elearningBean.questions}" var="q" varStatus="qs">
+                                            <div class="el-quiz-q">
+                                                <p>#{qs.index + 1}. #{q.question}</p>
+                                                <div>
+                                                    <div class="el-quiz-opt #{q.reponseApprenant eq 'A' ? 'selected' : ''}">
+                                                        <p:commandButton styleClass="ui-button-text" style="position:absolute;opacity:0;width:100%;height:100%;"
+                                                                         action="#{q.setReponseApprenant('A')}" update="fCours" process="@none"/>
+                                                        <span style="font-weight:700;color:var(--primary);width:22px;flex-shrink:0;">A.</span>
+                                                        <span><h:outputText value="#{q.optionA}"/></span>
+                                                    </div>
+                                                    <div class="el-quiz-opt #{q.reponseApprenant eq 'B' ? 'selected' : ''}">
+                                                        <p:commandButton styleClass="ui-button-text" style="position:absolute;opacity:0;width:100%;height:100%;"
+                                                                         action="#{q.setReponseApprenant('B')}" update="fCours" process="@none"/>
+                                                        <span style="font-weight:700;color:var(--primary);width:22px;flex-shrink:0;">B.</span>
+                                                        <span><h:outputText value="#{q.optionB}"/></span>
+                                                    </div>
+                                                    <h:panelGroup rendered="#{not empty q.optionC}" layout="block">
+                                                        <div class="el-quiz-opt #{q.reponseApprenant eq 'C' ? 'selected' : ''}">
+                                                            <p:commandButton styleClass="ui-button-text" style="position:absolute;opacity:0;width:100%;height:100%;"
+                                                                             action="#{q.setReponseApprenant('C')}" update="fCours" process="@none"/>
+                                                            <span style="font-weight:700;color:var(--primary);width:22px;flex-shrink:0;">C.</span>
+                                                            <span><h:outputText value="#{q.optionC}"/></span>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{not empty q.optionD}" layout="block">
+                                                        <div class="el-quiz-opt #{q.reponseApprenant eq 'D' ? 'selected' : ''}">
+                                                            <p:commandButton styleClass="ui-button-text" style="position:absolute;opacity:0;width:100%;height:100%;"
+                                                                             action="#{q.setReponseApprenant('D')}" update="fCours" process="@none"/>
+                                                            <span style="font-weight:700;color:var(--primary);width:22px;flex-shrink:0;">D.</span>
+                                                            <span><h:outputText value="#{q.optionD}"/></span>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </ui:repeat>
+
+                                        <div style="text-align:center;margin-top:16px;">
+                                            <p:commandButton value="Soumettre le quiz" styleClass="abtn abtn-primary"
+                                                             action="#{elearningBean.soumettreQuiz}"
+                                                             update="fCours"
+                                                             onclick="return confirm('Soumettre vos réponses ?');"/>
+                                        </div>
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+                                <!-- ── /QUIZ ── -->
+
+                                <!-- ── TP / DEVOIR / EXAMEN FICHIER ── -->
+                                <h:panelGroup rendered="#{elearningBean.coursSelectionne.type eq 'TP'
+                                              or elearningBean.coursSelectionne.type eq 'DEVOIR'
+                                              or (elearningBean.coursSelectionne.type eq 'EXAMEN' and elearningBean.coursSelectionne.typeExamen eq 'FICHIER')}"
+                                              layout="block">
+                                    <!-- Sujet/instructions -->
+                                    <h:panelGroup rendered="#{not empty elearningBean.coursSelectionne.instructionsDetaillees}" layout="block">
+                                        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px;margin-bottom:14px;">
+                                            <div style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;margin-bottom:8px;">
+                                                <i class="ti ti-file-description"></i> Sujet / Consignes
+                                            </div>
+                                            <div style="font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.6;">
+                                                <h:outputText value="#{elearningBean.coursSelectionne.instructionsDetaillees}"/>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <!-- Infos deadline + barème -->
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                                        <h:panelGroup rendered="#{not empty elearningBean.coursSelectionne.dateLimite}">
+                                            <span style="display:inline-flex;align-items:center;gap:5px;background:#FEF3C7;color:#D97706;border:1px solid #FDE68A;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;">
+                                                <i class="ti ti-clock"></i>
+                                                Date limite : <h:outputText value="#{elearningBean.coursSelectionne.dateLimite}"/>
+                                            </span>
+                                        </h:panelGroup>
+                                        <span style="display:inline-flex;align-items:center;gap:5px;background:#EDE9FE;color:#7C3AED;border:1px solid #C4B5FD;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;">
+                                            <i class="ti ti-star"></i>
+                                            Barème : <h:outputText value="#{elearningBean.coursSelectionne.baremeOu20}"/> pts
+                                        </span>
+                                    </div>
+
+                                    <!-- Ma soumission (si déjà rendu) -->
+                                    <h:panelGroup rendered="#{elearningBean.maSoumission != null and elearningBean.maSoumission.corrige}" layout="block">
+                                        <div style="background:#F0FDF4;border:2px solid #6EE7B7;border-radius:10px;padding:16px;margin-bottom:14px;">
+                                            <div style="font-size:12px;font-weight:700;color:#065F46;margin-bottom:8px;">
+                                                <i class="ti ti-check-circle"></i> Corrigé par le formateur
+                                            </div>
+                                            <div style="font-size:22px;font-weight:800;color:#059669;margin-bottom:6px;">
+                                                <h:outputText value="#{elearningBean.maSoumission.note}"/>
+                                                <span style="font-size:14px;font-weight:400;color:#64748B;">
+                                                    / <h:outputText value="#{elearningBean.coursSelectionne.baremeOu20}"/>
+                                                </span>
+                                            </div>
+                                            <h:panelGroup rendered="#{not empty elearningBean.maSoumission.commentaireFormateur}" layout="block">
+                                                <div style="font-size:12px;color:#374151;background:#fff;border:1px solid #D1FAE5;border-radius:6px;padding:8px 12px;white-space:pre-wrap;">
+                                                    <h:outputText value="#{elearningBean.maSoumission.commentaireFormateur}"/>
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Statut soumission existante (non corrigée) -->
+                                    <h:panelGroup rendered="#{elearningBean.maSoumission != null and !elearningBean.maSoumission.corrige}" layout="block">
+                                        <div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#92400E;">
+                                            <i class="ti ti-clock"></i>
+                                            <strong>Travail soumis</strong> le <h:outputText value="#{elearningBean.maSoumission.dateCourteSoumission}"/> — en attente de correction.
+                                            <h:panelGroup rendered="#{elearningBean.maSoumission.aFichier}">
+                                                <br/>Fichier : <strong><h:outputText value="#{elearningBean.maSoumission.nomFichierOriginal}"/></strong>
+                                            </h:panelGroup>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Formulaire de soumission -->
+                                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:16px;">
+                                        <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:12px;">
+                                            <i class="ti ti-upload"></i>
+                                            #{elearningBean.maSoumission != null ? 'Modifier mon rendu' : 'Rendre mon travail'}
+                                        </div>
+                                        <!-- Champ texte -->
+                                        <div style="margin-bottom:10px;">
+                                            <label style="display:block;font-size:11px;font-weight:600;color:#64748B;margin-bottom:5px;text-transform:uppercase;">Réponse / Commentaire</label>
+                                            <p:inputTextarea value="#{elearningBean.texteRendu}" rows="4"
+                                                             autoResize="true"
+                                                             style="width:100%;font-size:12px;border:1px solid #CBD5E1;border-radius:6px;padding:8px;"
+                                                             placeholder="Décrivez votre approche, ajoutez vos observations…"/>
+                                        </div>
+                                        <!-- Champ lien -->
+                                        <div style="margin-bottom:12px;">
+                                            <label style="display:block;font-size:11px;font-weight:600;color:#64748B;margin-bottom:5px;text-transform:uppercase;">Lien (GitHub, Drive, etc.)</label>
+                                            <p:inputText value="#{elearningBean.lienRendu}"
+                                                         style="width:100%;font-size:12px;border:1px solid #CBD5E1;border-radius:6px;padding:8px;"
+                                                         placeholder="https://github.com/…"/>
+                                        </div>
+                                        <!-- Bouton soumettre texte -->
+                                        <p:commandButton value="✓ Soumettre ce travail"
+                                                         styleClass="abtn abtn-success"
+                                                         style="margin-right:8px;"
+                                                         action="#{elearningBean.soumettreTravailTexte}"
+                                                         update="@form"
+                                                         onclick="return confirm('Confirmer la soumission ?');"/>
+                                        <!-- OU upload fichier -->
+                                        <span style="font-size:11px;color:#94A3B8;margin-right:8px;">ou</span>
+                                        <p:fileUpload fileUploadListener="#{elearningBean.handleSoumissionFichier}"
+                                                      mode="advanced" auto="true"
+                                                      allowTypes="/(\.|\/)(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|txt|jpg|png)$/"
+                                                      sizeLimit="104857600"
+                                                      label="Joindre un fichier"
+                                                      uploadLabel="Envoyer"
+                                                      cancelLabel="Annuler"
+                                                      invalidSizeMessage="Fichier trop volumineux (max 100 Mo)"
+                                                      update="@form"/>
+                                    </div>
+                                </h:panelGroup>
+                                <!-- ── /TP/DEVOIR/EXAMEN FICHIER ── -->
+
+                                <!-- ── EXAMEN QCM CHRONOMÉTRÉ ── -->
+                                <h:panelGroup rendered="#{elearningBean.coursSelectionne.type eq 'EXAMEN' and elearningBean.coursSelectionne.typeExamen eq 'QCM'}"
+                                              layout="block">
+                                    <!-- Sujet/instructions -->
+                                    <h:panelGroup rendered="#{not empty elearningBean.coursSelectionne.instructionsDetaillees}" layout="block">
+                                        <div style="background:#FEE2E2;border:1px solid #FCA5A5;border-radius:8px;padding:14px;margin-bottom:14px;">
+                                            <div style="font-size:11px;font-weight:700;color:#991B1B;text-transform:uppercase;margin-bottom:8px;">
+                                                <i class="ti ti-alert-circle"></i> Consignes d'examen
+                                            </div>
+                                            <div style="font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.6;">
+                                                <h:outputText value="#{elearningBean.coursSelectionne.instructionsDetaillees}"/>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <!-- Infos examen -->
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                                        <h:panelGroup rendered="#{elearningBean.coursSelectionne.dureeExamen != null}">
+                                            <span style="background:#FEE2E2;color:#DC2626;border:1px solid #FCA5A5;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;">
+                                                <i class="ti ti-clock"></i> Durée : <h:outputText value="#{elearningBean.coursSelectionne.dureeExamen}"/> min
+                                            </span>
+                                        </h:panelGroup>
+                                        <span style="background:#EDE9FE;color:#7C3AED;border:1px solid #C4B5FD;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;">
+                                            <i class="ti ti-help"></i> <h:outputText value="#{elearningBean.nbQuestions}"/> questions
+                                        </span>
+                                        <span style="background:#DBEAFE;color:#1D4ED8;border:1px solid #93C5FD;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;">
+                                            <i class="ti ti-star"></i> Barème : <h:outputText value="#{elearningBean.coursSelectionne.baremeOu20}"/> pts
+                                        </span>
+                                    </div>
+
+                                    <!-- Résultat si déjà passé -->
+                                    <h:panelGroup rendered="#{elearningBean.maSoumission != null and elearningBean.maSoumission.corrige}" layout="block">
+                                        <div style="background:#F0FDF4;border:2px solid #6EE7B7;border-radius:10px;padding:16px;margin-bottom:14px;text-align:center;">
+                                            <div style="font-size:11px;font-weight:700;color:#065F46;margin-bottom:6px;">RÉSULTAT</div>
+                                            <div style="font-size:28px;font-weight:800;color:#059669;">
+                                                <h:outputText value="#{elearningBean.maSoumission.note}"/>
+                                                <span style="font-size:16px;color:#94A3B8;">/<h:outputText value="#{elearningBean.coursSelectionne.baremeOu20}"/></span>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Quiz non encore démarré -->
+                                    <h:panelGroup rendered="#{!elearningBean.quizEnCours and elearningBean.maSoumission == null}" layout="block">
+                                        <div style="text-align:center;padding:20px;">
+                                            <p:commandButton value="🎓 Démarrer l'examen"
+                                                             styleClass="abtn abtn-danger"
+                                                             style="font-size:14px;padding:10px 24px;"
+                                                             action="#{elearningBean.demarrerExamenQCM(elearningBean.coursSelectionne)}"
+                                                             update="@form"
+                                                             onclick="return confirm('Démarrer l\\'examen ? Le chronomètre va commencer.');"/>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Minuteur + questions (réutilise le composant quiz) -->
+                                    <h:panelGroup rendered="#{elearningBean.quizEnCours}" layout="block">
+                                        <!-- Chrono JS -->
+                                        <h:panelGroup rendered="#{elearningBean.coursSelectionne.dureeExamen != null}" layout="block">
+                                            <div id="examTimer" style="text-align:right;font-size:13px;font-weight:700;color:#DC2626;margin-bottom:10px;">
+                                                ⏱ <span id="timerDisplay">--:--</span>
+                                            </div>
+                                            <script>
+                                            //<![CDATA[
+                                            (function() {
+                                                var duree = #{elearningBean.coursSelectionne.dureeExamen} * 60;
+                                                var debut = '#{elearningBean.maSoumission != null ? elearningBean.maSoumission.debutExamen : ""}';
+                                                var restant = duree;
+                                                if (debut) {
+                                                    var debutMs = new Date(debut.replace('T',' ')).getTime();
+                                                    var elapsed = Math.floor((Date.now() - debutMs) / 1000);
+                                                    restant = Math.max(0, duree - elapsed);
+                                                }
+                                                var iv = setInterval(function() {
+                                                    if (restant <= 0) {
+                                                        clearInterval(iv);
+                                                        document.getElementById('timerDisplay').textContent = '00:00';
+                                                        document.getElementById('timerDisplay').style.color = '#DC2626';
+                                                        return;
+                                                    }
+                                                    restant--;
+                                                    var m = Math.floor(restant / 60), s = restant % 60;
+                                                    document.getElementById('timerDisplay').textContent =
+                                                        (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+                                                    if (restant <= 300) document.getElementById('timerDisplay').style.color = '#DC2626';
+                                                }, 1000);
+                                            })();
+                                            //]]>
+                                            </script>
+                                        </h:panelGroup>
+                                        <!-- Questions (même rendu que QUIZ) -->
+                                        <div>
+                                            <ui:repeat value="#{elearningBean.questions}" var="q" varStatus="vs">
+                                                <div class="el-quiz-q">
+                                                    <p>Q<h:outputText value="#{vs.index + 1}"/> — <h:outputText value="#{q.question}"/></p>
+                                                    <p:commandButton value="A. #{q.optionA}" styleClass="el-quiz-opt #{q.reponseApprenant eq 'A' ? 'selected' : ''}" rendered="#{not empty q.optionA}"
+                                                                     action="#{q.setReponseApprenant('A')}" update="@form" process="@none"/>
+                                                    <p:commandButton value="B. #{q.optionB}" styleClass="el-quiz-opt #{q.reponseApprenant eq 'B' ? 'selected' : ''}" rendered="#{not empty q.optionB}"
+                                                                     action="#{q.setReponseApprenant('B')}" update="@form" process="@none"/>
+                                                    <p:commandButton value="C. #{q.optionC}" styleClass="el-quiz-opt #{q.reponseApprenant eq 'C' ? 'selected' : ''}" rendered="#{not empty q.optionC}"
+                                                                     action="#{q.setReponseApprenant('C')}" update="@form" process="@none"/>
+                                                    <p:commandButton value="D. #{q.optionD}" styleClass="el-quiz-opt #{q.reponseApprenant eq 'D' ? 'selected' : ''}" rendered="#{not empty q.optionD}"
+                                                                     action="#{q.setReponseApprenant('D')}" update="@form" process="@none"/>
+                                                </div>
+                                            </ui:repeat>
+                                            <div style="text-align:right;padding-top:10px;">
+                                                <p:commandButton value="✓ Soumettre l'examen"
+                                                                 styleClass="abtn abtn-danger"
+                                                                 action="#{elearningBean.soumettreQuiz}"
+                                                                 update="@form"
+                                                                 onclick="return confirm('Soumettre l\\'examen ? Cette action est définitive.');"/>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- ── /EXAMEN QCM ── -->
+
+                            </div><!-- /el-viewer-body -->
+                        </div><!-- /el-viewer -->
+                    </h:panelGroup>
+                </div><!-- /viewer col -->
+
+            </div><!-- /el-grid -->
+        </h:form>
+    </h:panelGroup>
+
+<!-- ── Modal certificat ───────────────────────────────────── -->
+<div id="elCertModal" class="el-cert-modal" style="display:none;"
+     onclick="if(event.target===this)this.style.display='none'">
+    <div class="el-cert-box">
+        <button type="button" class="el-cert-close" onclick="document.getElementById('elCertModal').style.display='none'">✕</button>
+        <div class="el-cert-logo">🏆</div>
+        <div class="el-cert-title">Certificat de Complétion</div>
+        <div class="el-cert-sub">SenExpert Formation</div>
+        <hr style="border:none;border-top:1px solid #E5E7EB;margin:20px 0;"/>
+        <div style="font-size:13px;color:#6B7280;">Ce certificat est décerné à</div>
+        <div class="el-cert-name">#{sessionBean.nomComplet}</div>
+        <div style="font-size:13px;color:#6B7280;margin-bottom:8px;">pour avoir complété avec succès la formation</div>
+        <div class="el-cert-formation">#{elearningBean.offreTitre}</div>
+        <hr style="border:none;border-top:1px solid #E5E7EB;margin:16px 0;"/>
+        <div class="el-cert-date" id="elCertDate"></div>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;">
+            <button type="button" class="el-cert-btn" onclick="window.print()">
+                <i class="ti ti-printer"></i> Imprimer / Télécharger
+            </button>
+        </div>
+    </div>
+</div>
+
+</div><!-- /el-shell -->
+
+<script>
+//<![CDATA[
+function elFiltrerCours(val) {
+    var cards = document.querySelectorAll('.el-list .el-card');
+    var q = val.trim().toLowerCase();
+    var visible = 0;
+    cards.forEach(function(card) {
+        var titre = card.querySelector('.el-card-title');
+        var txt = titre ? titre.textContent.toLowerCase() : '';
+        var show = (q === '' || txt.indexOf(q) !== -1);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    var noRes = document.getElementById('elNoResult');
+    if (noRes) noRes.style.display = (q !== '' &amp;&amp; visible === 0) ? 'block' : 'none';
+}
+
+function elOuvrirCertificat() {
+    var mois = ['janvier','février','mars','avril','mai','juin',
+                'juillet','août','septembre','octobre','novembre','décembre'];
+    var d = new Date();
+    var label = 'Délivré le ' + d.getDate() + ' ' + mois[d.getMonth()] + ' ' + d.getFullYear();
+    var el = document.getElementById('elCertDate');
+    if (el) el.textContent = label;
+    document.getElementById('elCertModal').style.display = 'flex';
+}
+//]]>
+</script>
+</ui:define>
+</ui:composition>
+</html>

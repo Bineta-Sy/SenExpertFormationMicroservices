@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Gestion des Domaines</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div style="text-align:center;padding:60px;"><div style="font-size:4rem;">🚫</div><h2 style="color:var(--text-1);">Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                    <h1 class="page-title">🗂 Gestion des Domaines</h1>
+                    <p class="page-subtitle">Créez et supprimez les domaines de formation</p>
+                </div>
+                <h:link outcome="/admin/dashboard" style="padding:9px 18px;background:rgba(255,255,255,0.15);color:var(--text-1);border-radius:8px;text-decoration:none;font-size:0.88rem;">← Dashboard</h:link>
+            </div>
+
+            <div style="display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start;">
+
+                <!-- Formulaire -->
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <h2>➕ Nouveau Domaine</h2>
+                        <p>Ajouter un domaine de formation</p>
+                    </div>
+                    <div class="glass-card-body">
+                        <h:form id="domaineForm">
+                            <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:14px;border-radius:8px;"/>
+                            <div class="field">
+                                <label>Libellé <span style="color:#dc3545;">*</span></label>
+                                <p:inputText value="#{offreAdminBean.libelleNouveauDomaine}" required="true"
+                                             placeholder="Ex: Génie Logiciel, Base de données..."
+                                             style="width:100%;padding:10px;border-radius:8px;border:1.5px solid #dee2e6;font-size:0.93rem;"/>
+                            </div>
+                            <p:commandButton value="➕ Créer le domaine"
+                                             action="#{offreAdminBean.creerDomaine}"
+                                             update="domaineForm listeForm msgs"
+                                             style="width:100%;padding:12px;background:linear-gradient(135deg,#0072ff,#00c6ff);border:none;border-radius:8px;color:var(--text-1);font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(0,114,255,0.4);"/>
+                        </h:form>
+                    </div>
+                </div>
+
+                <!-- Liste domaines -->
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <h2>📋 Domaines configurés</h2>
+                        <p>#{fn:length(offreAdminBean.domaines)} domaine(s)</p>
+                    </div>
+                    <div class="glass-card-body" style="padding:0;">
+                        <h:form id="listeForm">
+                            <p:messages id="msgsL" showDetail="true" closable="true" style="margin:12px;border-radius:8px;"/>
+                            <p:dataTable value="#{offreAdminBean.domaines}" var="d"
+                                         emptyMessage="Aucun domaine configuré."
+                                         paginator="true" rows="10">
+                                <p:column headerText="#" style="width:50px;text-align:center;">
+                                    <span style="font-weight:600;color:#888;">#{d.id}</span>
+                                </p:column>
+                                <p:column headerText="Libellé">
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div style="width:36px;height:36px;background:linear-gradient(135deg,#0072ff,#00c6ff);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-1);">🗂</div>
+                                        <span style="font-weight:700;color:#1e3a5f;">#{d.libelle}</span>
+                                    </div>
+                                </p:column>
+                                <p:column headerText="Action" style="width:90px;text-align:center;">
+                                    <p:commandButton value="🗑"
+                                                     title="Supprimer"
+                                                     action="#{offreAdminBean.supprimerDomaine(d.id)}"
+                                                     update="listeForm msgsL"
+                                                     style="padding:6px 12px;background:linear-gradient(135deg,#dc3545,#c82333);border:none;border-radius:6px;color:var(--text-1);cursor:pointer;"
+                                                     onclick="return confirm('Supprimer ce domaine ? Les offres liées seront affectées.')"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="info-box" style="margin-top:20px;">
+                ⚠️ Supprimer un domaine peut affecter les offres qui y sont liées. Assurez-vous qu'aucune offre active n'utilise ce domaine avant de le supprimer.
+            </div>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

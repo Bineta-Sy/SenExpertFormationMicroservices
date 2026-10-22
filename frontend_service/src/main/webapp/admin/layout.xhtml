@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title><ui:insert name="title">SenExpertFormation</ui:insert></title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&amp;display=swap" rel="stylesheet"/>
+
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+
+    <!-- SenExpert Design System -->
+    <h:outputStylesheet library="css" name="senexpert.css"/>
+
+    <!-- PrimeFaces theme override (place after PF theme) -->
+    <style>
+        /* Ensure PrimeFaces tables inherit our styles */
+        .ui-widget, .ui-widget * { font-family: 'DM Sans', sans-serif !important; }
+        .db-sec { display: none; }
+        .db-sec.active { display: block; }
+        /* Dashboard shell: quand utilisé dans dashboard.xhtml, la sidebar est gérée via sef-shell */
+        /* Si ce layout inclut déjà une sidebar globale, retirer sef-shell de dashboard.xhtml */
+    </style>
+
+    <ui:insert name="head-extra"/>
+</h:head>
+
+<h:body>
+    <!-- Guard : accès réservé aux admins connectés -->
+    <h:panelGroup rendered="#{!sessionBean.connecte or !sessionBean.admin}" layout="block"
+        style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;font-family:system-ui,sans-serif;">
+        <div style="font-size:48px;">🔒</div>
+        <p style="font-size:16px;font-weight:600;color:#111827;">Accès non autorisé</p>
+        <p style="font-size:13px;color:#6B7280;">Cette section est réservée aux administrateurs.</p>
+        <h:link outcome="/login" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#0F2D5C;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">
+            Se connecter
+        </h:link>
+    </h:panelGroup>
+    <h:panelGroup rendered="#{sessionBean.connecte and sessionBean.admin}" layout="block">
+        <ui:insert name="content"/>
+        <ui:insert name="scripts"/>
+    </h:panelGroup>
+</h:body>
+</html>

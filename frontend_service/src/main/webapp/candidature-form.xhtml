@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Soumettre une Candidature</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.connecte}">
+            <div style="text-align:center;padding:60px;">
+                <div style="font-size:4rem;margin-bottom:16px;">🔐</div>
+                <h2 style="color:white;">Connexion requise</h2>
+                <h:link outcome="/login" style="color:#00c6ff;">Se connecter</h:link>
+            </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.connecte}">
+
+            <div style="margin-bottom:24px;">
+                <h1 class="page-title"> Soumettre une Candidature</h1>
+                <p class="page-subtitle">Choisissez une formation et soumettez votre demande</p>
+            </div>
+
+            <div style="max-width:640px;margin:0 auto;">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <h2>Formulaire de candidature</h2>
+                        <p>Sélectionnez la formation souhaitée</p>
+                    </div>
+                    <div class="glass-card-body">
+                        <h:form id="candidatureForm">
+                            <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:16px;border-radius:8px;"/>
+
+                            <div class="field">
+                                <label>Candidat</label>
+                                <div style="background:#f8faff;border-radius:8px;padding:10px 14px;font-weight:600;color:#1e3a5f;border:1.5px solid #dee2e6;">
+                                    #{sessionBean.nomComplet} (#{sessionBean.email})
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Filtrer par domaine</label>
+                                <p:selectOneMenu value="#{offreBean.domaineFiltre}"
+                                                 style="width:100%;border-radius:8px;border:1.5px solid #dee2e6;padding:9px 12px;">
+                                    <f:selectItem itemValue="#{null}" itemLabel="— Tous les domaines —"/>
+                                    <f:selectItems value="#{offreBean.domaines}" var="d"
+                                                   itemValue="#{d.id}" itemLabel="#{d.libelle}"/>
+                                    <p:ajax event="change" update="offreSelect"
+                                            listener="#{offreBean.filtrerParDomaine}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="field">
+                                <label>Formation souhaitée <span style="color:#dc3545;">*</span></label>
+                                <p:dataTable id="offreSelect" value="#{offreBean.offres}" var="offre"
+                                             emptyMessage="Aucune offre disponible."
+                                             style="border-radius:10px;overflow:hidden;">
+                                    <p:column headerText="Formation">
+                                        <div style="font-weight:700;color:#1e3a5f;">#{offre.titre}</div>
+                                        <span class="badge badge-online" style="margin-top:4px;display:inline-block;">#{offre.domaine.libelle}</span>
+                                    </p:column>
+                                    <p:column headerText="Type" style="width:120px;">
+                                        <span class="badge badge-custom">#{offre.type}</span>
+                                    </p:column>
+                                    <p:column headerText="Places" style="width:80px;text-align:center;">
+                                        <span class="badge #{offre.placesDisponibles gt 0 ? 'badge-ok' : 'badge-ko'}">#{offre.placesDisponibles}</span>
+                                    </p:column>
+                                    <p:column headerText="Action" style="width:110px;text-align:center;">
+                                        <p:commandButton value="Postuler"
+                                                         action="#{offreBean.postuler(offre.id)}"
+                                                         update="msgs"
+                                                         rendered="#{offre.placesDisponibles gt 0}"
+                                                         style="padding:7px 14px;background:linear-gradient(135deg,#198754,#28a745);border:none;border-radius:6px;color:white;font-size:0.82rem;font-weight:600;cursor:pointer;"/>
+                                        <span rendered="#{offre.placesDisponibles le 0}" class="badge badge-ko">Complet</span>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+
+                            <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
+                                <h:link outcome="/mes-demandes"
+                                        style="color:#0072ff;font-weight:600;text-decoration:none;font-size:0.9rem;">
+                                     Voir mes demandes →
+                                </h:link>
+                            </div>
+
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

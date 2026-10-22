@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Import en masse</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">&#x1F6AB;</div><h2>Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div class="a-header">
+                <div class="a-header-left">
+                    <h1>&#x1F4E5; Import en masse</h1>
+                    <p>Créer plusieurs comptes utilisateurs à partir d'un fichier CSV</p>
+                </div>
+                <a class="a-back" href="#{request.contextPath}/admin/admin-personnes.xhtml">← Personnes</a>
+            </div>
+
+            <!-- Format attendu -->
+            <div class="a-card" style="margin-bottom:20px;">
+                <div class="a-card-header"><h2>Format du fichier CSV</h2></div>
+                <div style="padding:20px;">
+                    <p style="color:var(--text-2);margin-bottom:12px;">
+                        Fichier texte avec séparateur <strong style="color:var(--text-1);">point-virgule (;)</strong>.
+                        La première ligne est l'entête (obligatoire). Encodage : UTF-8.
+                    </p>
+                    <pre style="background:var(--bg-muted);border-radius:10px;padding:16px;color:#a8f0c6;font-size:13px;overflow-x:auto;">nom;prenom;email;role;motDePasse
+Diallo;Mamadou;mamadou@example.com;PARTICULIER;MonMdp123!
+Ndiaye;Fatou;fatou@example.com;AGENT;AgentPass456!
+Fall;Ibrahim;ibrahim@example.com;PARTICULIER;</pre>
+                    <p style="color:var(--text-3);font-size:12px;margin-top:8px;">
+                        * Les colonnes <em>role</em> et <em>motDePasse</em> sont optionnelles (défauts : PARTICULIER / Changeme123!).<br/>
+                        * Les emails déjà existants sont ignorés silencieusement.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Upload -->
+            <div class="a-card">
+                <div class="a-card-header"><h2>Sélectionner le fichier</h2></div>
+                <div style="padding:24px;">
+                    <h:form id="fImport" enctype="multipart/form-data">
+                        <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:16px;"/>
+
+                        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px;">
+                            <div style="flex:1;min-width:260px;">
+                                <label style="display:block;color:var(--text-2);font-size:12px;margin-bottom:6px;">Fichier CSV</label>
+                                <h:inputFile value="#{importBean.fichierCsv}"
+                                             styleClass="a-input"
+                                             accept=".csv,text/csv"
+                                             style="width:100%;padding:10px;"/>
+                            </div>
+                            <p:commandButton value="Importer"
+                                             icon="pi pi-upload"
+                                             styleClass="abtn abtn-primary"
+                                             action="#{importBean.importer}"
+                                             update="fImport"
+                                             style="height:42px;"/>
+                        </div>
+
+                        <!-- Résultat -->
+                        <h:panelGroup rendered="#{importBean.nbCrees ge 0}">
+                            <div style="background:rgba(39,80,10,0.4);border:1px solid rgba(40,167,69,0.4);border-radius:12px;padding:20px;text-align:center;">
+                                <div style="font-size:3rem;margin-bottom:8px;">&#x2705;</div>
+                                <div style="color:var(--text-1);font-size:1.4rem;font-weight:700;">
+                                    #{importBean.nbCrees} compte(s) créé(s)
+                                </div>
+                                <div style="color:var(--text-3);font-size:13px;margin-top:4px;">
+                                    sur #{importBean.nbTotal} ligne(s) dans le fichier
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </h:form>
+
+                    <!-- Liens utiles -->
+                    <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);">
+                        <p style="color:var(--text-3);font-size:12px;">Après import, les comptes sont directement <span style="color:#a8f0c6;">ACTIFS</span>. Vous pouvez les retrouver dans la liste des personnes.</p>
+                        <a href="admin-personnes.xhtml" class="abtn abtn-secondary" style="display:inline-block;margin-top:8px;text-decoration:none;padding:8px 16px;border-radius:8px;">
+                            Voir les personnes →
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

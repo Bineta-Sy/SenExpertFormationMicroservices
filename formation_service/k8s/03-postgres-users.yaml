@@ -1,0 +1,100 @@
+##############################################
+# PersistentVolumeClaim — stockage db_users
+##############################################
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-postgres-users
+  namespace: senexpert
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+##############################################
+# Deployment — postgres-users
+##############################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-users
+  namespace: senexpert
+  labels:
+    app: postgres-users
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-users
+  template:
+    metadata:
+      labels:
+        app: postgres-users
+    spec:
+      containers:
+        - name: postgres-users
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "db_users"
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: senexpert-config
+                  key: db-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: senexpert-secret
+                  key: db-password
+            # PGDATA pointe vers un sous-dossier pour éviter l'erreur lost+found
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-users-data
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "db_users"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "db_users"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-users-data
+          persistentVolumeClaim:
+            claimName: pvc-postgres-users
+
+---
+##############################################
+# Service — postgres-users (ClusterIP interne)
+##############################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-users-svc
+  namespace: senexpert
+spec:
+  selector:
+    app: postgres-users
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP

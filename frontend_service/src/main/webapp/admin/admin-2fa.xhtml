@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Double authentification (2FA)</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">&#x1F6AB;</div><h2>Acces refuse</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div class="a-header">
+                <div class="a-header-left">
+                    <h1>&#x1F512; Double authentification (2FA)</h1>
+                    <p>Securisez votre compte administrateur avec un code TOTP (Google Authenticator / Authy)</p>
+                </div>
+                <a class="a-back" href="#{request.contextPath}/admin/admin-personnes.xhtml">&#x2190; Personnes</a>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px;">
+
+                <!-- Colonne gauche : activer -->
+                <div class="a-card">
+                    <div class="a-card-header"><h2>&#x1F4F1; Activer le 2FA sur mon compte</h2></div>
+                    <div style="padding:20px;">
+                        <h:form id="fSetup2FA">
+                            <p:messages id="msgs2fa" showDetail="true" closable="true" style="margin-bottom:14px;"/>
+
+                            <!-- Etape 1 : generer le secret -->
+                            <h:panelGroup id="panelSetup" rendered="#{twoFaBean.otpauthUrl == null}">
+                                <p style="color:var(--text-2);font-size:13px;line-height:1.6;margin-bottom:16px;">
+                                    Cliquez sur le bouton ci-dessous pour generer un QR code.
+                                    Scannez-le avec votre application d'authentification.
+                                </p>
+                                <p:commandButton value="Generer mon QR code"
+                                                 icon="pi pi-qrcode"
+                                                 styleClass="abtn abtn-primary"
+                                                 action="#{twoFaBean.genererSecret}"
+                                                 update="fSetup2FA"
+                                                 style="width:100%;"/>
+                            </h:panelGroup>
+
+                            <!-- Etape 2 : afficher le QR + verifier -->
+                            <h:panelGroup id="panelQR" rendered="#{twoFaBean.otpauthUrl != null and !twoFaBean.active}">
+                                <p style="color:var(--text-2);font-size:13px;margin-bottom:12px;">
+                                    1. Scannez ce QR code avec Google Authenticator ou Authy :
+                                </p>
+
+                                <!-- QR code genere via API Google Charts (CDN libre) -->
+                                <div style="text-align:center;margin-bottom:16px;">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&amp;data=#{twoFaBean.otpauthUrlEncoded}"
+                                         alt="QR Code 2FA"
+                                         style="border-radius:12px;background:white;padding:8px;width:180px;height:180px;"/>
+                                </div>
+
+                                <p style="color:var(--text-3);font-size:11px;text-align:center;margin-bottom:4px;">
+                                    Ou entrez ce secret manuellement :
+                                </p>
+                                <code style="display:block;text-align:center;background:var(--bg-muted);border-radius:8px;padding:8px;color:#a5b4fc;letter-spacing:2px;font-size:13px;margin-bottom:16px;">
+                                    #{twoFaBean.secret}
+                                </code>
+
+                                <p style="color:var(--text-2);font-size:13px;margin-bottom:8px;">
+                                    2. Entrez le code a 6 chiffres genere pour confirmer :
+                                </p>
+                                <div style="display:flex;gap:8px;">
+                                    <p:inputText value="#{twoFaBean.codeVerification}"
+                                                 placeholder="000000" maxlength="6"
+                                                 styleClass="a-input"
+                                                 style="flex:1;font-size:1.2rem;text-align:center;letter-spacing:4px;"/>
+                                    <p:commandButton value="Verifier et activer"
+                                                     styleClass="abtn abtn-ok"
+                                                     action="#{twoFaBean.verifierEtActiver}"
+                                                     update="fSetup2FA"
+                                                     style="white-space:nowrap;"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- 2FA actif -->
+                            <h:panelGroup rendered="#{twoFaBean.active}">
+                                <div style="text-align:center;padding:20px 0;">
+                                    <div style="font-size:3rem;margin-bottom:10px;">&#x2705;</div>
+                                    <div style="color:#059669;font-weight:700;font-size:1.1rem;margin-bottom:6px;">2FA actif sur votre compte</div>
+                                    <p style="color:var(--text-2);font-size:13px;margin-bottom:20px;">
+                                        A chaque connexion, un code vous sera demande apres le mot de passe.
+                                    </p>
+                                    <p:commandButton value="Desactiver le 2FA"
+                                                     styleClass="abtn abtn-ko"
+                                                     action="#{twoFaBean.desactiver}"
+                                                     update="fSetup2FA"
+                                                     onclick="return confirm('Desactiver le 2FA ? Votre compte sera moins securise.');"
+                                                     style="width:100%;"/>
+                                </div>
+                            </h:panelGroup>
+                        </h:form>
+                    </div>
+                </div>
+
+                <!-- Colonne droite : explications -->
+                <div class="a-card">
+                    <div class="a-card-header"><h2>&#x2139;&#xFE0F; Comment ca marche ?</h2></div>
+                    <div style="padding:20px;">
+                        <div style="display:flex;flex-direction:column;gap:16px;">
+                            <div style="display:flex;gap:12px;align-items:flex-start;">
+                                <div style="width:28px;height:28px;border-radius:50%;background:rgba(37,99,235,0.4);display:flex;align-items:center;justify-content:center;color:var(--text-1);font-weight:700;font-size:13px;flex-shrink:0;">1</div>
+                                <div>
+                                    <div style="color:var(--text-1);font-weight:600;font-size:13px;margin-bottom:3px;">Installez une application</div>
+                                    <div style="color:var(--text-2);font-size:12px;">Google Authenticator, Authy, ou toute app compatible TOTP.</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:12px;align-items:flex-start;">
+                                <div style="width:28px;height:28px;border-radius:50%;background:rgba(37,99,235,0.4);display:flex;align-items:center;justify-content:center;color:var(--text-1);font-weight:700;font-size:13px;flex-shrink:0;">2</div>
+                                <div>
+                                    <div style="color:var(--text-1);font-weight:600;font-size:13px;margin-bottom:3px;">Scannez le QR code</div>
+                                    <div style="color:var(--text-2);font-size:12px;">L'app genere un code a 6 chiffres qui change toutes les 30 secondes.</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:12px;align-items:flex-start;">
+                                <div style="width:28px;height:28px;border-radius:50%;background:rgba(37,99,235,0.4);display:flex;align-items:center;justify-content:center;color:var(--text-1);font-weight:700;font-size:13px;flex-shrink:0;">3</div>
+                                <div>
+                                    <div style="color:var(--text-1);font-weight:600;font-size:13px;margin-bottom:3px;">Connexion en 2 etapes</div>
+                                    <div style="color:var(--text-2);font-size:12px;">Apres le mot de passe, entrez le code de votre application pour acceder a votre espace admin.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:24px;background:rgba(245,127,23,0.12);border:1px solid rgba(245,127,23,0.3);border-radius:10px;padding:12px 14px;">
+                            <div style="display:flex;gap:8px;align-items:flex-start;">
+                                <span style="font-size:1rem;">&#x26A0;&#xFE0F;</span>
+                                <p style="color:var(--text-2);font-size:12px;margin:0;line-height:1.5;">
+                                    <strong style="color:var(--text-1);">Conservez votre secret en lieu sur.</strong>
+                                    Si vous perdez acces a votre application, un administrateur devra reinitialiser votre 2FA.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Gestion 2FA autres admins -->
+                        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+                            <h3 style="color:var(--text-1);font-size:13px;font-weight:600;margin-bottom:10px;">Statut 2FA des administrateurs</h3>
+                            <ui:repeat value="#{twoFaBean.admins}" var="adm">
+                                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+                                    <div style="flex:1;">
+                                        <div style="color:var(--text-1);font-size:12px;font-weight:600;">#{adm.prenom} #{adm.nom}</div>
+                                        <div style="color:var(--text-3);font-size:11px;">#{adm.email}</div>
+                                    </div>
+                                    <span class="ab #{adm.totpActif ? 'ab-ok' : 'ab-ko'}" style="font-size:10px;">
+                                        #{adm.totpActif ? '2FA actif' : '2FA inactif'}
+                                    </span>
+                                    <h:form rendered="#{adm.totpActif and adm.id != sessionBean.utilisateurId}">
+                                        <p:commandButton value="Reset"
+                                                         styleClass="abtn abtn-ko"
+                                                         action="#{twoFaBean.resetAutreAdmin(adm.id)}"
+                                                         update="@form"
+                                                         onclick="return confirm('Reinitialiser le 2FA de #{adm.email} ?');"
+                                                         style="font-size:11px;padding:3px 8px;"/>
+                                    </h:form>
+                                </div>
+                            </ui:repeat>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

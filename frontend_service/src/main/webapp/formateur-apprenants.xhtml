@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/formateur-layout.xhtml">
+
+<ui:define name="title">Mes apprenants</ui:define>
+<ui:define name="topbarTitle">Mes apprenants</ui:define>
+<ui:param name="navActiveApprenants" value="active"/>
+
+<ui:define name="pageStyle">
+/* ── Stats barre ── */
+.ap-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:22px; }
+.ap-stat  { background:#fff; border:1px solid #E2E8F0; border-radius:10px;
+    padding:16px 20px; display:flex; align-items:center; gap:14px; }
+.ap-stat-icon { width:40px; height:40px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:20px; }
+.ap-stat-val  { font-size:26px; font-weight:700; color:#0F172A; line-height:1; }
+.ap-stat-lbl  { font-size:11px; color:#64748B; margin-top:3px; }
+
+/* ── Recherche ── */
+.ap-search-bar { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.ap-search-wrap { position:relative; flex:1; max-width:360px; }
+.ap-search-wrap i { position:absolute; left:10px; top:50%; transform:translateY(-50%);
+    color:#94A3B8; font-size:15px; pointer-events:none; }
+.ap-search-wrap .ui-inputfield {
+    width:100% !important; padding:8px 12px 8px 32px !important;
+    border:1px solid #CBD5E1 !important; border-radius:8px !important;
+    font-size:12px !important; font-family:inherit !important; }
+
+/* ── Grille apprenants ── */
+.ap-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+
+/* ── Card apprenant ── */
+.ap-card { background:#fff; border:1px solid #E2E8F0; border-radius:10px; overflow:hidden; }
+.ap-card-head {
+    padding:16px 18px 12px;
+    border-bottom:1px solid #F1F5F9;
+    display:flex; align-items:center; gap:12px;
+}
+.ap-av { width:42px; height:42px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; }
+.ap-nom   { font-size:13px; font-weight:600; color:#0F172A; }
+.ap-email { font-size:11px; color:#94A3B8; margin-top:2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+
+/* ── Badge pct global ── */
+.ap-pct-badge { margin-left:auto; flex-shrink:0; font-size:13px; font-weight:700; }
+
+/* ── Barre globale ── */
+.ap-global-bar { padding:6px 18px 0; }
+.ap-bar-bg { height:5px; background:#F1F5F9; border-radius:3px; overflow:hidden; margin:4px 0 2px; }
+.ap-bar-fg { height:5px; border-radius:3px; }
+.ap-bar-lbl { font-size:10px; color:#94A3B8; display:flex; justify-content:space-between; }
+
+/* ── Offres detail ── */
+.ap-offres { padding:10px 18px 14px; }
+.ap-offre-row { margin-bottom:8px; }
+.ap-offre-name { font-size:11px; font-weight:600; color:#475569;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    display:flex; align-items:center; gap:5px; margin-bottom:3px; }
+.ap-offre-mini-bar-bg { height:4px; background:#F1F5F9; border-radius:2px; overflow:hidden; }
+.ap-offre-mini-bar-fg { height:4px; border-radius:2px; }
+.ap-offre-meta { font-size:10px; color:#94A3B8; margin-top:2px;
+    display:flex; justify-content:space-between; }
+
+/* ── Footer card ── */
+.ap-card-foot { padding:10px 18px; border-top:1px solid #F8FAFC;
+    display:flex; gap:8px; align-items:center; }
+.ap-btn-contact {
+    display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600;
+    padding:5px 12px; border-radius:7px; text-decoration:none;
+    background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;
+    white-space:nowrap; }
+.ap-btn-contact:hover { background:#DBEAFE; }
+.ap-btn-corr {
+    display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600;
+    padding:5px 12px; border-radius:7px; text-decoration:none;
+    background:#FEF3C7; color:#D97706; border:1px solid #FDE68A;
+    white-space:nowrap; }
+.ap-btn-corr:hover { background:#FDE68A; }
+
+/* ── Vide ── */
+.ap-empty { text-align:center; padding:60px 20px; color:#94A3B8; }
+.ap-empty i { font-size:44px; display:block; margin-bottom:12px; color:#CBD5E1; }
+.ap-empty h3 { font-size:14px; font-weight:600; color:#64748B; margin-bottom:6px; }
+</ui:define>
+
+<ui:define name="content">
+<f:metadata>
+    <f:viewAction action="#{formateurApprenantsBean.charger}"/>
+</f:metadata>
+
+<!-- Accès refusé -->
+<h:panelGroup rendered="#{!sessionBean.admin and sessionBean.role ne 'FORMATEUR'}" layout="block">
+    <div style="text-align:center;padding:60px;color:#EF4444;">
+        <i class="ti ti-lock" style="font-size:48px;display:block;margin-bottom:10px;"></i>
+        <strong>Accès réservé aux formateurs.</strong>
+    </div>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{sessionBean.admin or sessionBean.role eq 'FORMATEUR'}" layout="block">
+
+<!-- En-tête -->
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
+    <div>
+        <h1 style="font-size:18px;font-weight:700;color:#0F172A;margin:0 0 4px;">
+            <i class="ti ti-users" style="margin-right:6px;color:#3B82F6;"></i>
+            Mes apprenants
+        </h1>
+        <p style="font-size:12px;color:#64748B;margin:0;">
+            Suivi détaillé de la progression de chaque apprenant dans vos formations.
+        </p>
+    </div>
+    <a href="#{request.contextPath}/dashboard-formateur.xhtml"
+       style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;border-radius:7px;font-size:12px;font-weight:500;text-decoration:none;">
+        <i class="ti ti-arrow-left" style="font-size:13px;"></i> Tableau de bord
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="ap-stats">
+    <div class="ap-stat">
+        <div class="ap-stat-icon" style="background:#EFF6FF;color:#3B82F6;">
+            <i class="ti ti-users"></i>
+        </div>
+        <div>
+            <div class="ap-stat-val"><h:outputText value="#{formateurApprenantsBean.nbTotal}"/></div>
+            <div class="ap-stat-lbl">Apprenants inscrits</div>
+        </div>
+    </div>
+    <div class="ap-stat">
+        <div class="ap-stat-icon" style="background:#D1FAE5;color:#10B981;">
+            <i class="ti ti-circle-check"></i>
+        </div>
+        <div>
+            <div class="ap-stat-val"><h:outputText value="#{formateurApprenantsBean.nbCompletions}"/></div>
+            <div class="ap-stat-lbl">Ont complété 100%</div>
+        </div>
+    </div>
+    <div class="ap-stat">
+        <div class="ap-stat-icon" style="background:#EDE9FE;color:#8B5CF6;">
+            <i class="ti ti-chart-pie"></i>
+        </div>
+        <div>
+            <div class="ap-stat-val"><h:outputText value="#{formateurApprenantsBean.moyennePct}"/>%</div>
+            <div class="ap-stat-lbl">Taux moyen de complétion</div>
+        </div>
+    </div>
+</div>
+
+<!-- Barre de recherche -->
+<h:form id="fSearch" style="margin-bottom:18px;">
+    <div class="ap-search-bar">
+        <div class="ap-search-wrap">
+            <i class="ti ti-search"></i>
+            <p:inputText value="#{formateurApprenantsBean.recherche}"
+                         placeholder="Rechercher par nom ou email…"
+                         onkeyup="PF('fSearchBtn').jq.trigger('click')"
+                         style="width:100%;padding-left:32px;border:1px solid #CBD5E1;border-radius:8px;font-size:12px;font-family:inherit;padding-top:8px;padding-bottom:8px;"/>
+        </div>
+        <p:commandButton widgetVar="fSearchBtn"
+                         action="#{formateurApprenantsBean.chercher}"
+                         update=":appGrid"
+                         process="fSearch"
+                         style="display:none;"/>
+        <span style="font-size:11px;color:#94A3B8;">
+            <h:outputText value="#{formateurApprenantsBean.nbTotal}"/> résultat(s)
+        </span>
+    </div>
+</h:form>
+
+<!-- Grille des apprenants -->
+<h:panelGroup id="appGrid" layout="block">
+
+<h:panelGroup rendered="#{empty formateurApprenantsBean.apprenants}" layout="block">
+    <div class="ap-empty">
+        <i class="ti ti-users"></i>
+        <h3>Aucun apprenant inscrit</h3>
+        Aucun apprenant n'a encore été accepté dans vos offres de formation.
+    </div>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{not empty formateurApprenantsBean.apprenants}" layout="block">
+    <div class="ap-grid">
+        <ui:repeat value="#{formateurApprenantsBean.apprenants}" var="ap" varStatus="vs">
+
+            <div class="ap-card">
+
+                <!-- En-tête : avatar + nom + pct global -->
+                <div class="ap-card-head">
+                    <div class="ap-av"
+                         style="background:#{vs.index mod 4 == 0 ? '#DBEAFE' : vs.index mod 4 == 1 ? '#D1FAE5' : vs.index mod 4 == 2 ? '#FEF3C7' : '#EDE9FE'};
+                                color:#{vs.index mod 4 == 0 ? '#1D4ED8' : vs.index mod 4 == 1 ? '#065F46' : vs.index mod 4 == 2 ? '#92400E' : '#6D28D9'};">
+                        <h:outputText value="#{ap.initiales}"/>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="ap-nom"><h:outputText value="#{ap.nom}"/></div>
+                        <div class="ap-email"><h:outputText value="#{ap.email}"/></div>
+                    </div>
+                    <div class="ap-pct-badge"
+                         style="color:#{ap.pourcentage ge 100 ? '#10B981' : ap.pourcentage ge 50 ? '#3B82F6' : ap.pourcentage gt 0 ? '#F59E0B' : '#94A3B8'};">
+                        <h:outputText value="#{ap.pourcentageLabel}"/>
+                    </div>
+                </div>
+
+                <!-- Barre globale -->
+                <div class="ap-global-bar">
+                    <div class="ap-bar-lbl">
+                        <span>Progression globale</span>
+                        <span><h:outputText value="#{ap.pourcentageLabel}"/></span>
+                    </div>
+                    <div class="ap-bar-bg">
+                        <div class="ap-bar-fg"
+                             style="width:#{ap.pourcentage}%;background:#{ap.barColor};"></div>
+                    </div>
+                </div>
+
+                <!-- Détail par offre -->
+                <div class="ap-offres">
+                    <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;
+                                letter-spacing:.06em;margin-bottom:8px;">
+                        <h:outputText value="#{ap.nbOffres}"/> formation(s)
+                    </div>
+                    <ui:repeat value="#{ap.offresProgress}" var="op">
+                        <div class="ap-offre-row">
+                            <div class="ap-offre-name">
+                                <i class="ti ti-folder" style="font-size:11px;color:#94A3B8;flex-shrink:0;"></i>
+                                <h:outputText value="#{op.offre.titre}"/>
+                                <h:panelGroup rendered="#{op.termine}">
+                                    <i class="ti ti-circle-check" style="font-size:11px;color:#10B981;margin-left:auto;flex-shrink:0;"></i>
+                                </h:panelGroup>
+                            </div>
+                            <div class="ap-offre-mini-bar-bg">
+                                <div class="ap-offre-mini-bar-fg"
+                                     style="width:#{op.pourcentage}%;background:#{op.pourcentage ge 100 ? '#10B981' : op.pourcentage ge 50 ? '#3B82F6' : '#F59E0B'};"></div>
+                            </div>
+                            <div class="ap-offre-meta">
+                                <span><h:outputText value="#{op.nbDone}"/>/<h:outputText value="#{op.nbAll}"/> cours</span>
+                                <span><h:outputText value="#{op.pourcentageLabel}"/></span>
+                            </div>
+                        </div>
+                    </ui:repeat>
+                    <h:panelGroup rendered="#{empty ap.offresProgress}" layout="block">
+                        <div style="font-size:11px;color:#94A3B8;text-align:center;padding:8px 0;">
+                            Aucune progression enregistrée.
+                        </div>
+                    </h:panelGroup>
+                </div>
+
+                <!-- Footer : actions -->
+                <div class="ap-card-foot">
+                    <h:panelGroup rendered="#{not empty ap.email}" layout="block">
+                        <a href="mailto:#{ap.email}?subject=[SenExpertFormation] Message de votre formateur"
+                           class="ap-btn-contact">
+                            <i class="ti ti-mail" style="font-size:12px;"></i> Contacter
+                        </a>
+                    </h:panelGroup>
+                    <a href="#{request.contextPath}/formateur-corrections.xhtml"
+                       class="ap-btn-corr">
+                        <i class="ti ti-clipboard-check" style="font-size:12px;"></i> Corrections
+                    </a>
+                </div>
+
+            </div><!-- /ap-card -->
+
+        </ui:repeat>
+    </div><!-- /ap-grid -->
+</h:panelGroup>
+
+</h:panelGroup><!-- /appGrid -->
+
+</h:panelGroup>
+
+</ui:define>
+</ui:composition>
+</html>

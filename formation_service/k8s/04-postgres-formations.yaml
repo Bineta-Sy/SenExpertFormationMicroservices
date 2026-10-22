@@ -1,0 +1,100 @@
+##############################################
+# PersistentVolumeClaim — stockage db_formations
+##############################################
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-postgres-formations
+  namespace: senexpert
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+##############################################
+# Deployment — postgres-formations
+##############################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-formations
+  namespace: senexpert
+  labels:
+    app: postgres-formations
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-formations
+  template:
+    metadata:
+      labels:
+        app: postgres-formations
+    spec:
+      containers:
+        - name: postgres-formations
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "db_formations"
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: senexpert-config
+                  key: db-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: senexpert-secret
+                  key: db-password
+            # PGDATA pointe vers un sous-dossier pour éviter l'erreur lost+found
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-formations-data
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "db_formations"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "db_formations"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-formations-data
+          persistentVolumeClaim:
+            claimName: pvc-postgres-formations
+
+---
+##############################################
+# Service — postgres-formations (ClusterIP interne)
+##############################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-formations-svc
+  namespace: senexpert
+spec:
+  selector:
+    app: postgres-formations
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP

@@ -1,0 +1,96 @@
+services:
+  postgres-users:
+    image: postgres:15
+    container_name: senexpert-postgres-users
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-bineta28j03}
+    volumes:
+      - users_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d user_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  postgres-formations:
+    image: postgres:15
+    container_name: senexpert-postgres-formations
+    environment:
+      POSTGRES_DB: formation_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-bineta28j03}
+    volumes:
+      - formations_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d formation_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  user-service:
+    build: ./user_service
+    container_name: senexpert-user-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres-users:5432/user_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-bineta28j03}
+      JWT_SECRET: ${JWT_SECRET:-6A576E5A7234753778214125442A472D4B6150645367566B59703373367639792F423F4528482B4D6251655468576D5A71}
+    depends_on:
+      postgres-users:
+        condition: service_healthy
+    restart: unless-stopped
+
+  formation-service:
+    build: ./formation_service
+    container_name: senexpert-formation-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres-formations:5432/formation_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-bineta28j03}
+      USER_SERVICE_URL: http://user-service:8081
+      JWT_SECRET: ${JWT_SECRET:-6A576E5A7234753778214125442A472D4B6150645367566B59703373367639792F423F4528482B4D6251655468576D5A71}
+      UPLOAD_DIR: /uploads
+      MAIL_ENABLED: "false"
+    volumes:
+      - uploads_data:/uploads
+    depends_on:
+      postgres-formations:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend-service:
+    build: ./frontend_service
+    container_name: senexpert-frontend-service
+    environment:
+      USER_SERVICE_URL: http://user-service:8081
+      FORMATION_SERVICE_URL: http://formation-service:8082
+    depends_on:
+      - user-service
+      - formation-service
+    restart: unless-stopped
+
+  api-gateway:
+    build: ./api_gateway
+    container_name: senexpert-api-gateway
+    environment:
+      USER_SERVICE_URL: http://user-service:8081
+      FORMATION_SERVICE_URL: http://formation-service:8082
+      FRONTEND_URL: http://frontend-service:8080
+    ports:
+      - "8083:8083"
+    depends_on:
+      - user-service
+      - formation-service
+      - frontend-service
+    restart: unless-stopped
+
+volumes:
+  users_data:
+  formations_data:
+  uploads_data:

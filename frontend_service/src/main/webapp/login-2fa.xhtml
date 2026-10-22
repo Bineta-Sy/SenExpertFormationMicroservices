@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<h:head>
+    <title>Verification 2FA — SenExpertFormation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { min-height: 100vh; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+               display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; }
+        .card { background: rgba(255,255,255,0.07); backdrop-filter: blur(20px);
+                border: 1px solid rgba(255,255,255,0.15); border-radius: 20px;
+                padding: 40px 36px; width: 380px; text-align: center; }
+        .icon { font-size: 3rem; margin-bottom: 12px; }
+        h1 { color: white; font-size: 1.3rem; margin-bottom: 6px; }
+        p { color: rgba(255,255,255,0.55); font-size: 13px; margin-bottom: 24px; }
+        .code-input { width: 100%; padding: 14px; font-size: 1.8rem; text-align: center;
+                      letter-spacing: 8px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.2);
+                      background: rgba(0,0,0,0.3); color: white; margin-bottom: 16px; }
+        .code-input:focus { outline: none; border-color: #a5b4fc; }
+        .btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #3730a3, #6366f1);
+               color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+               cursor: pointer; margin-bottom: 12px; }
+        .link { color: rgba(255,255,255,0.4); font-size: 12px; text-decoration: none; }
+        .link:hover { color: white; }
+        .err { background: rgba(220,38,38,0.15); border: 1px solid rgba(220,38,38,0.4);
+               border-radius: 10px; padding: 10px; color: #fca5a5; font-size: 13px; margin-bottom: 14px; }
+    </style>
+</h:head>
+<h:body>
+    <div class="card">
+        <div class="icon">&#x1F512;</div>
+        <h1>Double authentification</h1>
+        <p>Entrez le code a 6 chiffres genere par votre application d'authentification.</p>
+
+        <h:form id="f2fa">
+            <p:messages showDetail="true" styleClass="err" closable="true" style="margin-bottom:14px;text-align:left;"/>
+
+            <p:inputText value="#{authBean.code2FA}"
+                         maxlength="6" placeholder="000000"
+                         styleClass="code-input"
+                         autocomplete="one-time-code"
+                         onkeydown="if(event.key==='Enter'){document.querySelector('[id*=btnVerif]').click();}"/>
+
+            <p:commandButton id="btnVerif"
+                             value="Verifier"
+                             action="#{authBean.verifier2FA}"
+                             update="f2fa"
+                             styleClass="btn"/>
+        </h:form>
+
+        <a href="login.xhtml" class="link">Annuler et revenir a la connexion</a>
+    </div>
+</h:body>
+</html>

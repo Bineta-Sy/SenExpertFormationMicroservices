@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Sessions de formation</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">&#x1F6AB;</div><h2>Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div class="a-header">
+                <div class="a-header-left">
+                    <h1>&#x1F4C5; Sessions de formation</h1>
+                    <p>Créneaux, salles et formateurs pour les offres présentielles</p>
+                </div>
+                <a class="a-back" href="#{request.contextPath}/admin/admin-offres.xhtml">← Offres</a>
+            </div>
+
+            <!-- Formulaire création -->
+            <div class="a-card" style="margin-bottom:20px;">
+                <div class="a-card-header"><h2>Planifier une session</h2></div>
+                <div style="padding:20px;">
+                    <h:form id="fSession">
+                        <p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">
+
+                            <div>
+                                <label class="a-label">Offre *</label>
+                                <p:selectOneMenu value="#{sessionAdminBean.sessionOffreId}" styleClass="a-input" style="width:100%;">
+                                    <f:selectItem itemValue="#{null}" itemLabel="-- Choisir une offre --"/>
+                                    <f:selectItems value="#{sessionAdminBean.offres}" var="o"
+                                                   itemValue="#{o.id}" itemLabel="#{o.titre}"/>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div>
+                                <label class="a-label">Date et heure *</label>
+                                <p:inputText value="#{sessionAdminBean.sessionDateHeure}"
+                                             type="datetime-local"
+                                             styleClass="a-input" style="width:100%;"/>
+                            </div>
+
+                            <div>
+                                <label class="a-label">Durée (minutes)</label>
+                                <p:inputNumber value="#{sessionAdminBean.sessionDuree}"
+                                               styleClass="a-input" style="width:100%;"/>
+                            </div>
+
+                            <div>
+                                <label class="a-label">Salle / Lieu</label>
+                                <p:inputText value="#{sessionAdminBean.sessionSalle}"
+                                             placeholder="ex: Salle A, Dakar Centre"
+                                             styleClass="a-input" style="width:100%;"/>
+                            </div>
+
+                            <div>
+                                <label class="a-label">Formateur</label>
+                                <p:inputText value="#{sessionAdminBean.sessionFormateur}"
+                                             placeholder="Nom du formateur"
+                                             styleClass="a-input" style="width:100%;"/>
+                            </div>
+
+                            <div>
+                                <label class="a-label">Nb places</label>
+                                <p:inputNumber value="#{sessionAdminBean.sessionNbPlaces}"
+                                               placeholder="Défaut = places offre"
+                                               styleClass="a-input" style="width:100%;"/>
+                            </div>
+                        </div>
+
+                        <p:commandButton value="Planifier la session"
+                                         icon="pi pi-calendar-plus"
+                                         styleClass="abtn abtn-primary"
+                                         action="#{sessionAdminBean.creerSession}"
+                                         update="fSession fListe"/>
+                    </h:form>
+                </div>
+            </div>
+
+            <!-- Filtre par offre -->
+            <div class="a-card">
+                <div class="a-card-header">
+                    <h2>Toutes les sessions</h2>
+                    <span class="a-count">#{fn:length(sessionAdminBean.sessions)} session(s)</span>
+                </div>
+                <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <h:form id="fFiltre">
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <p:selectOneMenu value="#{sessionAdminBean.filtreOffreId}"
+                                             style="font-size:13px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px;background:var(--bg-muted);color:var(--text-1);">
+                                <f:selectItem itemValue="#{null}" itemLabel="-- Toutes les offres --"/>
+                                <f:selectItems value="#{sessionAdminBean.offres}" var="o"
+                                               itemValue="#{o.id}" itemLabel="#{o.titre}"/>
+                            </p:selectOneMenu>
+                            <p:commandButton value="Filtrer" styleClass="abtn abtn-secondary"
+                                             action="#{sessionAdminBean.filtrerParOffre}"
+                                             update="fListe" style="height:36px;"/>
+                            <p:commandButton value="Tout" styleClass="abtn abtn-secondary"
+                                             action="#{sessionAdminBean.reinitialiserFiltre}"
+                                             update="fListe fFiltre" style="height:36px;"/>
+                        </div>
+                    </h:form>
+                </div>
+
+                <h:form id="fListe">
+                    <p:messages showDetail="true" closable="true" style="margin:8px;"/>
+                    <p:dataTable value="#{sessionAdminBean.sessions}" var="s"
+                                 paginator="true" rows="10"
+                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                 emptyMessage="Aucune session planifiée.">
+
+                        <p:column headerText="Offre">
+                            <div style="font-weight:600;color:var(--text-1);font-size:13px;">
+                                #{s.offre != null ? s.offre.titre : '-'}
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="Date / Heure" style="width:160px;">
+                            <span style="color:var(--text-1);font-size:13px;">
+                                #{s.dateHeure != null ? s.dateHeure.replace('T',' ') : '-'}
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="Durée" style="width:90px;">
+                            <span style="color:var(--text-2);font-size:13px;">
+                                #{s.dureeMinutes != null ? s.dureeMinutes.toString().concat(' min') : '-'}
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="Salle" style="width:130px;">
+                            <span style="color:var(--text-2);font-size:13px;">#{s.salle != null ? s.salle : '-'}</span>
+                        </p:column>
+
+                        <p:column headerText="Formateur" style="width:140px;">
+                            <span style="color:var(--text-2);font-size:13px;">#{s.formateur != null ? s.formateur : '-'}</span>
+                        </p:column>
+
+                        <p:column headerText="Places" style="width:70px;text-align:center;">
+                            <span style="color:var(--text-1);font-weight:600;">#{s.nbPlaces != null ? s.nbPlaces : '-'}</span>
+                        </p:column>
+
+                        <p:column headerText="Statut" style="width:110px;">
+                            <h:panelGroup rendered="#{s.statut eq 'PLANIFIEE'}"><span class="ab ab-wait">Planifiée</span></h:panelGroup>
+                            <h:panelGroup rendered="#{s.statut eq 'EN_COURS'}"><span class="ab ab-info">En cours</span></h:panelGroup>
+                            <h:panelGroup rendered="#{s.statut eq 'TERMINEE'}"><span class="ab ab-ok">Terminée</span></h:panelGroup>
+                            <h:panelGroup rendered="#{s.statut eq 'ANNULEE'}"><span class="ab ab-ko">Annulée</span></h:panelGroup>
+                        </p:column>
+
+                        <p:column headerText="Actions" style="width:220px;">
+                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                <p:commandButton value="Démarrer" styleClass="abtn abtn-primary"
+                                                 action="#{sessionAdminBean.changerStatut(s.id, 'EN_COURS')}"
+                                                 update="fListe" rendered="#{s.statut eq 'PLANIFIEE'}"
+                                                 style="font-size:11px;padding:4px 8px;"/>
+                                <p:commandButton value="Terminer" styleClass="abtn abtn-secondary"
+                                                 action="#{sessionAdminBean.changerStatut(s.id, 'TERMINEE')}"
+                                                 update="fListe" rendered="#{s.statut eq 'EN_COURS'}"
+                                                 style="font-size:11px;padding:4px 8px;"/>
+                                <p:commandButton value="Annuler" styleClass="abtn abtn-ko"
+                                                 action="#{sessionAdminBean.changerStatut(s.id, 'ANNULEE')}"
+                                                 update="fListe"
+                                                 rendered="#{s.statut eq 'PLANIFIEE' or s.statut eq 'EN_COURS'}"
+                                                 style="font-size:11px;padding:4px 8px;"/>
+                                <p:commandButton value="Suppr." styleClass="abtn abtn-ko"
+                                                 action="#{sessionAdminBean.supprimerSession(s.id)}"
+                                                 update="fListe"
+                                                 rendered="#{s.statut eq 'ANNULEE' or s.statut eq 'TERMINEE'}"
+                                                 style="font-size:11px;padding:4px 8px;"/>
+                            </div>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </div>
+
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

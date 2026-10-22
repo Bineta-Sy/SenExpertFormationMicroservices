@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Gestion des Demandes</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div style="text-align:center;padding:60px;"><div style="font-size:4rem;">🚫</div>
+                <h2 style="color:var(--text-1);">Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                    <h1 class="page-title">📋 Gestion des Demandes</h1>
+                    <p class="page-subtitle">Validez ou rejetez les demandes de formation</p>
+                </div>
+                <h:link outcome="/admin/dashboard"
+                        style="padding:9px 18px;background:rgba(255,255,255,0.15);color:var(--text-1);border-radius:8px;text-decoration:none;font-size:0.88rem;">
+                    ← Dashboard
+                </h:link>
+            </div>
+
+            <div class="glass-card">
+                <div class="glass-card-body" style="padding:0;">
+                    <h:form id="formDemandes">
+                        <p:messages id="msgs" showDetail="true" closable="true" style="margin:12px;border-radius:8px;"/>
+                        <p:dataTable value="#{adminBean.demandes}" var="dem"
+                                     emptyMessage="Aucune demande reçue."
+                                     paginator="true" rows="10">
+
+                            <p:column headerText="#" style="width:50px;text-align:center;">
+                                <span style="font-weight:600;color:#888;font-size:0.85rem;">##{dem.id}</span>
+                            </p:column>
+
+                            <p:column headerText="Formation">
+                                <div style="font-weight:700;color:#1e3a5f;">#{dem.offre.titre}</div>
+                                <div style="font-size:0.78rem;color:#888;margin-top:2px;">#{dem.offre.domaine.libelle}</div>
+                            </p:column>
+
+                            <p:column headerText="Candidat" style="width:160px;">
+                                <span style="font-size:0.88rem;color:#555;">#{dem.nomCandidat}</span>
+                            </p:column>
+
+                            <p:column headerText="Date" style="width:130px;">
+                                <span style="font-size:0.83rem;color:#666;">#{dem.dateDemande}</span>
+                            </p:column>
+
+                            <p:column headerText="Statut" style="width:140px;">
+                                <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}">
+                                    <span class="badge badge-wait">⏳ En attente</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dem.statut eq 'VALIDEE'}">
+                                    <span class="badge badge-ok">✅ Validée</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dem.statut eq 'REJETEE'}">
+                                    <span class="badge badge-ko">❌ Rejetée</span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="width:160px;text-align:center;">
+                                <h:panelGroup rendered="#{dem.statut eq 'EN_ATTENTE'}" style="display:flex;gap:6px;justify-content:center;">
+                                    <p:commandButton value="✔ Valider"
+                                                     action="#{adminBean.validerDemande(dem.id)}"
+                                                     update="@form"
+                                                     style="padding:6px 12px;background:linear-gradient(135deg,#198754,#28a745);border:none;border-radius:6px;color:var(--text-1);font-weight:700;cursor:pointer;font-size:0.8rem;"/>
+                                    <p:commandButton value="✘ Rejeter"
+                                                     action="#{adminBean.rejeterDemande(dem.id)}"
+                                                     update="@form"
+                                                     style="padding:6px 12px;background:linear-gradient(135deg,#dc3545,#c82333);border:none;border-radius:6px;color:var(--text-1);font-weight:700;cursor:pointer;font-size:0.8rem;"/>
+                                </h:panelGroup>
+                                <span rendered="#{dem.statut ne 'EN_ATTENTE'}" style="color:#ccc;">—</span>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>
+                </div>
+            </div>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:c="jakarta.tags.core"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition>
+    <nav style="background:rgba(255,255,255,0.08);border-radius:12px;padding:16px;margin-bottom:20px;">
+
+        <!-- ── Menu FORMATEUR (réduit) ── -->
+        <c:if test="#{sessionBean.formateur}">
+            <div style="font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Espace Formateur</div>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:4px;">
+                <li><a href="#{request.contextPath}/dashboard-formateur.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">🏠 <span>Mon tableau de bord</span></a></li>
+            </ul>
+        </c:if>
+
+        <!-- ── Menu ADMIN (complet) ── -->
+        <c:if test="#{sessionBean.admin}">
+            <div style="font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Administration</div>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:4px;">
+
+                <li><a href="#{request.contextPath}/admin/admin-dashboard.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">🛡 <span>Dashboard</span></a></li>
+
+                <li style="margin-top:8px;padding:0 14px 4px;font-size:0.72rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;">Utilisateurs</li>
+                <li><a href="#{request.contextPath}/admin/admin-personnes.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">👥 <span>Personnes</span></a></li>
+                <li><a href="#{request.contextPath}/admin/admin-profils.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">🎭 <span>Profils</span></a></li>
+                <li><a href="#{request.contextPath}/admin/admin-permissions.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">🔐 <span>Permissions</span></a></li>
+
+                <li style="margin-top:8px;padding:0 14px 4px;font-size:0.72rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;">Formations</li>
+                <li><a href="#{request.contextPath}/admin/admin-offres.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">📚 <span>Offres</span></a></li>
+                <li><a href="#{request.contextPath}/admin/admin-sessions.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">📅 <span>Sessions</span></a></li>
+                <li><a href="#{request.contextPath}/admin/admin-domaines.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">🗂 <span>Domaines</span></a></li>
+                <li><a href="#{request.contextPath}/admin/admin-formateurs.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">&#x1F468;&#x200D;&#x1F3EB; <span>Formateurs</span></a></li>
+
+                <li style="margin-top:8px;padding:0 14px 4px;font-size:0.72rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;">Demandes</li>
+                <li><a href="#{request.contextPath}/admin/admin-demandes.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">📋 <span>Demandes</span></a></li>
+                <li><a href="#{request.contextPath}/admin/admin-candidatures.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">🎯 <span>Candidatures</span></a></li>
+
+                <li style="margin-top:8px;padding:0 14px 4px;font-size:0.72rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;">Analyse</li>
+                <li><a href="#{request.contextPath}/admin/admin-analytics.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">&#x1F4CA; <span>Statistiques</span></a></li>
+
+                <li style="margin-top:8px;padding:0 14px 4px;font-size:0.72rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;">Securite</li>
+                <li><a href="#{request.contextPath}/admin/admin-2fa.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">&#x1F512; <span>Double auth (2FA)</span></a></li>
+                <li><a href="#{request.contextPath}/admin/admin-audit.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">&#x1F4DD; <span>Journal d'audit</span></a></li>
+
+                <li style="margin-top:8px;padding:0 14px 4px;font-size:0.72rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;">Outils</li>
+                <li><a href="#{request.contextPath}/admin/admin-import.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">&#x1F4E5; <span>Import CSV</span></a></li>
+                <li><a href="#{request.contextPath}/catalogue.xhtml" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;color:white;text-decoration:none;font-size:0.88rem;font-weight:500;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='transparent'">&#x1F310; <span>Catalogue</span></a></li>
+            </ul>
+        </c:if>
+
+    </nav>
+</ui:composition>
+</html>

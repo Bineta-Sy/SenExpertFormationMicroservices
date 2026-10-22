@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Gestion des personnes</ui:define>
+
+    <ui:define name="pageStyle">
+        .prs-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+        .prs-stat{background:#fff;border:1px solid var(--border);border-top:3px solid var(--blue);border-radius:var(--radius-lg);padding:18px 22px;}
+        .prs-stat-val{font-size:2rem;font-weight:800;color:var(--text-1);line-height:1;margin-bottom:4px;}
+        .prs-stat-val.green{color:var(--success);}
+        .prs-stat-val.amber{color:var(--warning);}
+        .prs-stat-lbl{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px;}
+        .prs-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;}
+        .prs-card-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg-muted);}
+        .prs-card-hd h2{font-size:14px;font-weight:600;color:var(--text-1);margin:0;}
+        .prs-card-hd .count{font-size:12px;color:var(--text-3);background:var(--info-bg);border:1px solid var(--info-bd);border-radius:20px;padding:2px 10px;}
+        .prs-search{display:flex;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg-muted);}
+        .prs-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#6366F1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+        .prs-name{font-weight:600;color:var(--text-1);font-size:13px;margin-bottom:2px;}
+        .prs-email{font-size:11px;color:var(--text-3);}
+        .pb{font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;border:1px solid transparent;white-space:nowrap;}
+        .pb-admin{background:var(--info-bg);color:var(--info);border-color:var(--info-bd);}
+        .pb-agent{background:#F5F3FF;color:#7C3AED;border-color:#DDD6FE;}
+        .pb-ok{background:var(--success-bg);color:var(--success);border-color:var(--success-bd);}
+        .pb-wait{background:var(--warning-bg);color:var(--warning);border-color:var(--warning-bd);}
+        .pb-ko{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bd);}
+        .pb-gray{background:var(--bg-muted);color:var(--text-2);border-color:var(--border);}
+        .prs-actions{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+        .pact{width:32px;height:32px;border-radius:8px;cursor:pointer;border:1px solid;transition:all .15s;background:transparent;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;outline:none;}
+        .pact .pi{font-size:14px;line-height:1;}
+        .pact-ok{color:var(--success);border-color:var(--success-bd);background:var(--success-bg);}
+        .pact-ok:hover{background:var(--success);color:#fff;border-color:var(--success);}
+        .pact-ko{color:var(--danger);border-color:var(--danger-bd);background:var(--danger-bg);}
+        .pact-ko:hover{background:var(--danger);color:#fff;border-color:var(--danger);}
+        .pact-warn{color:var(--warning);border-color:var(--warning-bd);background:var(--warning-bg);}
+        .pact-warn:hover{background:var(--warning);color:#fff;border-color:var(--warning);}
+        .pact-def{color:var(--text-2);border-color:var(--border);background:var(--bg-muted);}
+        .pact-def:hover{background:var(--text-2);color:#fff;border-color:var(--text-2);}
+        .pact-edit{color:#2563EB;border-color:#BFDBFE;background:#EFF6FF;}
+        .pact-edit:hover{background:#2563EB;color:#fff;border-color:#2563EB;}
+        .pact-del{color:#DC2626;border-color:#FECACA;background:#FEF2F2;}
+        .pact-del:hover{background:#DC2626;color:#fff;border-color:#DC2626;}
+        .pact-perm{color:#7C3AED;border-color:#DDD6FE;background:#F5F3FF;}
+        .pact-perm:hover{background:#7C3AED;color:#fff;border-color:#7C3AED;}
+        .pact-eye{color:#0891B2;border-color:#BAE6FD;background:#F0F9FF;}
+        .pact-eye:hover{background:#0891B2;color:#fff;border-color:#0891B2;}
+        /* masquer le texte PrimeFaces — icône seule */
+        .pact span.ui-button-text{display:none !important;}
+        .pact.ui-button{font-family:inherit;}
+        .prs-profil-wrap{display:flex;gap:6px;align-items:center;}
+        .prs-mdp-panel{display:flex;align-items:flex-start;gap:14px;background:var(--warning-bg);border:1px solid var(--warning-bd);border-left:3px solid var(--warning);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:16px;}
+        .mdp-title{color:var(--warning);font-weight:700;font-size:13px;margin-bottom:6px;}
+        .prs-mdp-panel code{background:rgba(0,0,0,.06);border:1px solid var(--warning-bd);padding:7px 14px;border-radius:8px;color:var(--warning);font-size:15px;letter-spacing:2px;display:inline-block;margin-bottom:6px;}
+        .mdp-hint{color:var(--text-3);font-size:11px;}
+        .edit-dlg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+        .edit-dlg-row.full{grid-template-columns:1fr;}
+        .edit-dlg label{font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px;}
+        .edit-dlg .a-input{width:100%;box-sizing:border-box;}
+        .prs-exp-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;}
+        .prs-exp-hd{padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg-muted);}
+        .prs-exp-hd h2{font-size:14px;font-weight:600;color:var(--text-1);margin:0;}
+        .prs-exp-body{padding:20px;}
+        .prs-exp-body p{color:var(--text-2);font-size:13px;line-height:1.6;margin-bottom:16px;}
+        .exp-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+        .exp-label{font-size:13px;color:var(--text-2);font-weight:500;}
+    </ui:define>
+
+    <ui:define name="content">
+
+        <div class="a-header">
+            <div class="a-header-left">
+                <h1><i class="ti ti-users" style="margin-right:6px;"></i>Gestion des personnes</h1>
+                <p>Comptes, roles, statuts et profils</p>
+            </div>
+        </div>
+
+        <div class="prs-stats">
+            <div class="prs-stat">
+                <div class="prs-stat-val"><h:outputText value="#{adminDashboardBean.nbPersonnes}"/></div>
+                <div class="prs-stat-lbl">Total personnes</div>
+            </div>
+            <div class="prs-stat">
+                <div class="prs-stat-val green"><h:outputText value="#{adminDashboardBean.nbPersonnesActives}"/></div>
+                <div class="prs-stat-lbl">Actives</div>
+            </div>
+            <div class="prs-stat">
+                <div class="prs-stat-val amber"><h:outputText value="#{adminDashboardBean.nbPersonnesEnAttente}"/></div>
+                <div class="prs-stat-lbl">En attente</div>
+            </div>
+        </div>
+
+        <h:panelGroup id="panelMdp" rendered="#{adminDashboardBean.motDePasseTemporaire != null}">
+            <div class="prs-mdp-panel">
+                <div style="font-size:1.8rem;flex-shrink:0;">&#x1F511;</div>
+                <div>
+                    <div class="mdp-title">Mot de passe temporaire</div>
+                    <code><h:outputText value="#{adminDashboardBean.motDePasseTemporaire}"/></code>
+                    <div class="mdp-hint">Communiquez ce mot de passe. L'utilisateur pourra le modifier.</div>
+                </div>
+            </div>
+        </h:panelGroup>
+
+        <div class="prs-card">
+            <div class="prs-card-hd">
+                <h2>&#x1F4CB; Liste des personnes</h2>
+                <span class="count"><h:outputText value="#{adminDashboardBean.nbPersonnes}"/> compte(s)</span>
+            </div>
+            <h:form id="fPersonnes">
+                <p:messages id="msgs" showDetail="true" closable="true" style="margin:12px;border-radius:10px;"/>
+                <div class="prs-search">
+                    <p:inputText value="#{adminDashboardBean.recherchePersonne}"
+                                 placeholder="Rechercher par nom, prenom ou email..."
+                                 styleClass="a-input" style="flex:1;"/>
+                    <p:commandButton value="Rechercher" styleClass="abtn abtn-primary"
+                                     style="height:36px;padding:0 16px;"
+                                     action="#{adminDashboardBean.rechercherPersonnes}"
+                                     update="fPersonnes"/>
+                    <p:commandButton value="Tout afficher" styleClass="abtn abtn-secondary"
+                                     style="height:36px;padding:0 14px;"
+                                     action="#{adminDashboardBean.rechercherPersonnes}"
+                                     update="fPersonnes" immediate="true"/>
+                </div>
+
+                <div class="prs-table">
+                    <p:dataTable id="dtPersonnes"
+                                 value="#{adminDashboardBean.personnes}"
+                                 var="u"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="10,25,50"
+                                 emptyMessage="Aucune personne trouvee.">
+
+                        <p:column headerText="Personne" style="width:51%">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div class="prs-avatar">
+                                    <h:outputText value="#{u.prenom != null and !u.prenom.isEmpty() ? u.prenom.substring(0,1).toUpperCase() : '?'}"/>
+                                </div>
+                                <div>
+                                    <div class="prs-name"><h:outputText value="#{u.prenom} #{u.nom}"/></div>
+                                    <div class="prs-email"><h:outputText value="#{u.email}"/></div>
+                                </div>
+                            </div>
+                        </p:column>
+
+                        <p:column headerText="Role" style="width:14%">
+                            <h:panelGroup rendered="#{u.role eq 'ADMIN'}"><span class="pb pb-admin">ADMIN</span></h:panelGroup>
+                            <h:panelGroup rendered="#{u.role eq 'AGENT'}"><span class="pb pb-agent">AGENT</span></h:panelGroup>
+                            <h:panelGroup rendered="#{u.role ne 'ADMIN' and u.role ne 'AGENT'}"><span class="pb pb-gray"><h:outputText value="#{u.role}"/></span></h:panelGroup>
+                        </p:column>
+
+                        <p:column headerText="Statut" style="width:13%">
+                            <h:panelGroup rendered="#{u.statut eq 'ACTIF'}"><span class="pb pb-ok">Actif</span></h:panelGroup>
+                            <h:panelGroup rendered="#{u.statut eq 'EN_ATTENTE'}"><span class="pb pb-wait">Attente</span></h:panelGroup>
+                            <h:panelGroup rendered="#{u.statut eq 'INACTIF'}"><span class="pb pb-ko">Suspendu</span></h:panelGroup>
+                        </p:column>
+
+                        <p:column headerText="Actions" style="width:22%">
+                            <div class="prs-actions">
+                                <!-- Valider (EN_ATTENTE) -->
+                                <p:commandButton icon="pi pi-check" title="Valider"
+                                                 styleClass="pact pact-ok"
+                                                 rendered="#{u.statut eq 'EN_ATTENTE'}"
+                                                 action="#{adminDashboardBean.validerPersonne(u.id)}"
+                                                 update="fPersonnes panelMdp"/>
+                                <!-- Réactiver (INACTIF) -->
+                                <p:commandButton icon="pi pi-replay" title="Réactiver"
+                                                 styleClass="pact pact-warn"
+                                                 rendered="#{u.statut eq 'INACTIF'}"
+                                                 action="#{adminDashboardBean.reactiverPersonne(u.id)}"
+                                                 update="fPersonnes"/>
+                                <!-- Modifier -->
+                                <p:commandButton icon="pi pi-pencil" title="Modifier"
+                                                 styleClass="pact pact-edit"
+                                                 action="#{adminDashboardBean.ouvrirModifierUtilisateur(u)}"
+                                                 update=":fPersonnes:dialogModifier"
+                                                 oncomplete="PF('wvModifier').show()"
+                                                 process="@this"/>
+                                <!-- Inactiver (ACTIF, non-ADMIN) -->
+                                <p:commandButton icon="pi pi-ban" title="Inactiver"
+                                                 styleClass="pact pact-ko"
+                                                 rendered="#{u.statut eq 'ACTIF' and u.role ne 'ADMIN'}"
+                                                 action="#{adminDashboardBean.inactiverPersonne(u.id)}"
+                                                 update="fPersonnes"/>
+                                <!-- Supprimer (non-ADMIN) -->
+                                <p:commandButton icon="pi pi-trash" title="Supprimer"
+                                                 styleClass="pact pact-del"
+                                                 rendered="#{u.role ne 'ADMIN'}"
+                                                 onclick="return confirm('Supprimer définitivement ce compte ?')"
+                                                 action="#{adminDashboardBean.supprimerPersonne(u.id)}"
+                                                 update="fPersonnes"/>
+                                <!-- Permission -->
+                                <p:commandButton icon="pi pi-shield" title="Permissions"
+                                                 styleClass="pact pact-perm"
+                                                 action="#{adminDashboardBean.ouvrirPermissionsUtilisateur(u)}"
+                                                 update=":fPersonnes:dialogPermission"
+                                                 oncomplete="PF('wvPermission').show()"
+                                                 process="@this"/>
+                                <!-- Détails -->
+                                <p:commandButton icon="pi pi-eye" title="Détails"
+                                                 styleClass="pact pact-eye"
+                                                 action="#{adminDashboardBean.ouvrirDetailUtilisateur(u)}"
+                                                 update=":fPersonnes:dialogDetail"
+                                                 oncomplete="PF('wvDetail').show()"
+                                                 process="@this"/>
+                            </div>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+
+                <!-- Dialog détail utilisateur — fiche profil -->
+                <p:dialog id="dialogDetail" widgetVar="wvDetail"
+                          modal="true" resizable="false" closable="true"
+                          style="width:540px;border-radius:16px;overflow:hidden;"
+                          styleClass="detail-dialog">
+                    <f:facet name="header"><span/></f:facet>
+                    <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail != null}">
+                    <div style="font-family:'Inter',sans-serif;">
+
+                        <!-- ── Bandeau supérieur avec avatar ── -->
+                        <div style="background:linear-gradient(135deg,#1B3A6B 0%,#2563EB 100%);padding:28px 24px 20px;margin:-1px -1px 0;position:relative;">
+                            <div style="display:flex;align-items:center;gap:16px;">
+                                <!-- Avatar initiales -->
+                                <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;border:2px solid rgba(255,255,255,0.4);">
+                                    <h:outputText value="#{adminDashboardBean.utilisateurDetail.prenom != null ? adminDashboardBean.utilisateurDetail.prenom.substring(0,1).toUpperCase() : '?'}"/>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:18px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                        <h:outputText value="#{adminDashboardBean.utilisateurDetail.prenom} #{adminDashboardBean.utilisateurDetail.nom}"/>
+                                    </div>
+                                    <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:3px;">
+                                        <h:outputText value="#{adminDashboardBean.utilisateurDetail.email}"/>
+                                    </div>
+                                    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                                        <!-- Badge rôle -->
+                                        <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.role eq 'ADMIN'}">
+                                            <span style="background:#7C3AED;color:#fff;font-size:10px;padding:2px 10px;border-radius:20px;font-weight:600;">ADMIN</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.role eq 'AGENT' or adminDashboardBean.utilisateurDetail.role eq 'AGENT_INSTITUTION'}">
+                                            <span style="background:#0891B2;color:#fff;font-size:10px;padding:2px 10px;border-radius:20px;font-weight:600;">AGENT</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.role eq 'PARTICULIER'}">
+                                            <span style="background:#059669;color:#fff;font-size:10px;padding:2px 10px;border-radius:20px;font-weight:600;">PARTICULIER</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.role eq 'FORMATEUR'}">
+                                            <span style="background:#D97706;color:#fff;font-size:10px;padding:2px 10px;border-radius:20px;font-weight:600;">FORMATEUR</span>
+                                        </h:panelGroup>
+                                        <!-- Badge statut -->
+                                        <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.statut eq 'ACTIF'}">
+                                            <span style="background:#D1FAE5;color:#065F46;font-size:10px;padding:2px 10px;border-radius:20px;font-weight:600;">Actif</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.statut eq 'EN_ATTENTE'}">
+                                            <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:2px 10px;border-radius:20px;font-weight:600;">En attente</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.statut eq 'INACTIF'}">
+                                            <span style="background:#FEE2E2;color:#991B1B;font-size:10px;padding:2px 10px;border-radius:20px;font-weight:600;">Suspendu</span>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Corps : sections d'informations ── -->
+                        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
+
+                            <!-- Section Contact -->
+                            <div>
+                                <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Contact</div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+                                        <div style="font-size:10px;color:#94A3B8;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Email</div>
+                                        <div style="font-size:12px;color:#0F172A;font-weight:500;word-break:break-all;">
+                                            <h:outputText value="#{adminDashboardBean.utilisateurDetail.email}"/>
+                                        </div>
+                                    </div>
+                                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+                                        <div style="font-size:10px;color:#94A3B8;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Téléphone</div>
+                                        <div style="font-size:12px;color:#0F172A;font-weight:500;">
+                                            <h:outputText value="#{adminDashboardBean.utilisateurDetail.telephone != null ? adminDashboardBean.utilisateurDetail.telephone : '—'}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Accès & Sécurité -->
+                            <div>
+                                <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Accès &amp; Sécurité</div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+                                        <div style="font-size:10px;color:#94A3B8;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Profil</div>
+                                        <div style="font-size:12px;color:#0F172A;font-weight:500;">
+                                            <h:outputText value="#{adminDashboardBean.utilisateurDetail.profil != null ? adminDashboardBean.utilisateurDetail.profil.nom : '—'}"/>
+                                        </div>
+                                    </div>
+                                    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+                                        <div style="font-size:10px;color:#94A3B8;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Double authentification</div>
+                                        <div style="font-size:12px;font-weight:600;">
+                                            <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.totpActif}">
+                                                <span style="color:#059669;">&#10003; Activée</span>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{!adminDashboardBean.utilisateurDetail.totpActif}">
+                                                <span style="color:#94A3B8;">Non activée</span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section PARTICULIER -->
+                            <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.role eq 'PARTICULIER'}" layout="block">
+                                <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Identité civile</div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 14px;">
+                                        <div style="font-size:10px;color:#15803D;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Profession</div>
+                                        <div style="font-size:12px;color:#0F172A;font-weight:500;">
+                                            <h:outputText value="#{adminDashboardBean.utilisateurDetail.profession != null ? adminDashboardBean.utilisateurDetail.profession : '—'}"/>
+                                        </div>
+                                    </div>
+                                    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 14px;">
+                                        <div style="font-size:10px;color:#15803D;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">N° CNI</div>
+                                        <div style="font-size:12px;color:#0F172A;font-weight:500;font-family:monospace;">
+                                            <h:outputText value="#{adminDashboardBean.utilisateurDetail.numeroCni != null ? adminDashboardBean.utilisateurDetail.numeroCni : '—'}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Section AGENT -->
+                            <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.role eq 'AGENT' or adminDashboardBean.utilisateurDetail.role eq 'AGENT_INSTITUTION'}" layout="block">
+                                <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Institution</div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 14px;">
+                                        <div style="font-size:10px;color:#1D4ED8;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">N° Institution</div>
+                                        <div style="font-size:12px;color:#0F172A;font-weight:500;font-family:monospace;">
+                                            <h:outputText value="#{adminDashboardBean.utilisateurDetail.numeroInstitution != null ? adminDashboardBean.utilisateurDetail.numeroInstitution : '—'}"/>
+                                        </div>
+                                    </div>
+                                    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 14px;">
+                                        <div style="font-size:10px;color:#1D4ED8;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Institution liée</div>
+                                        <div style="font-size:12px;color:#0F172A;font-weight:500;">
+                                            <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.institution != null}">
+                                                <h:outputText value="#{adminDashboardBean.utilisateurDetail.institution.nom}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{adminDashboardBean.utilisateurDetail.institution == null}">
+                                                <span style="color:#94A3B8;">—</span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                        </div>
+
+                        <!-- ── Pied de dialog ── -->
+                        <div style="padding:0 24px 20px;display:flex;justify-content:flex-end;">
+                            <p:commandButton value="Fermer" styleClass="abtn abtn-secondary"
+                                             style="padding:8px 22px;font-size:13px;border-radius:8px;"
+                                             onclick="PF('wvDetail').hide(); return false;"/>
+                        </div>
+
+                    </div>
+                    </h:panelGroup>
+                </p:dialog>
+
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- Dialog MODIFIER utilisateur                                 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <p:dialog id="dialogModifier" widgetVar="wvModifier"
+                          modal="true" resizable="false" closable="true"
+                          style="width:480px;" header="Modifier l'utilisateur">
+                    <div class="edit-dlg" style="padding:16px;">
+                        <div class="edit-dlg-row">
+                            <div>
+                                <label>Prénom</label>
+                                <p:inputText value="#{adminDashboardBean.editPrenom}"
+                                             styleClass="a-input" style="width:100%;"/>
+                            </div>
+                            <div>
+                                <label>Nom</label>
+                                <p:inputText value="#{adminDashboardBean.editNom}"
+                                             styleClass="a-input" style="width:100%;"/>
+                            </div>
+                        </div>
+                        <div class="edit-dlg-row">
+                            <div>
+                                <label>Téléphone</label>
+                                <p:inputText value="#{adminDashboardBean.editTelephone}"
+                                             styleClass="a-input" style="width:100%;"/>
+                            </div>
+                            <div>
+                                <label

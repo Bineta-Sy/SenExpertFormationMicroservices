@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Journal d'audit</ui:define>
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">🚫</div><h2>Accès refusé</h2></div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{sessionBean.admin}">
+            <div class="a-header">
+                <div class="a-header-left">
+                    <h1>Journal d'audit</h1>
+                    <p>Historique des actions effectuées par les administrateurs</p>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <h:form>
+                        <p:commandButton value="Vider le journal" styleClass="abtn-sm abtn-sm-ko"
+                                         action="#{auditBean.vider}" update="@all"
+                                         onclick="return confirm('Vider tout le journal ?')"/>
+                    </h:form>
+                    
+                </div>
+            </div>
+
+            <div class="a-stats">
+                <div class="a-stat">
+                    <div class="sv">#{fn:length(auditBean.entries)}</div>
+                    <div class="sl">Entrees chargees</div>
+                </div>
+                <div class="a-stat">
+                    <div class="sv">
+                        #{auditBean.entries.stream().filter(e -> 'INFO'.equals(e.niveau)).count()}
+                    </div>
+                    <div class="sl">Actions INFO</div>
+                </div>
+                <div class="a-stat">
+                    <div class="sv">
+                        #{auditBean.entries.stream().filter(e -> 'WARN'.equals(e.niveau) or 'WARNING'.equals(e.niveau)).count()}
+                    </div>
+                    <div class="sl">Avertissements</div>
+                </div>
+            </div>
+
+            <div class="a-card">
+                <div class="a-card-header">
+                    <h2>Entrées du journal</h2>
+                    <span class="a-count">#{auditBean.count} entrée(s)</span>
+                </div>
+                <p:dataTable value="#{auditBean.entries}" var="e" paginator="true" rows="20"
+                             paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                             emptyMessage="Aucune action enregistrée. Les actions admin apparaîtront ici.">
+                    <p:column headerText="Date" style="width:160px;">
+                        <span style="font-size:12px;color:#64748B;font-family:monospace;">#{e.date}</span>
+                    </p:column>
+                    <p:column headerText="Niveau" style="width:90px;">
+                        <span class="ab #{e.niveau eq 'INFO' ? 'ab-info' : e.niveau eq 'WARNING' ? 'ab-wait' : 'ab-ko'}">
+                            #{e.niveau}
+                        </span>
+                    </p:column>
+                    <p:column headerText="Action" style="width:130px;">
+                        <span style="font-weight:600;font-size:12px;color:#0F172A;">#{e.action}</span>
+                    </p:column>
+                    <p:column headerText="Entité" style="width:130px;">
+                        <span class="ab ab-purple">#{e.entite}</span>
+                    </p:column>
+                    <p:column headerText="Detail">
+                        <span style="font-size:13px;">#{e.detail}</span>
+                    </p:column>
+                    <p:column headerText="Admin" style="width:160px;">
+                        <span style="font-size:12px;opacity:0.7;">#{e.adminEmail}</span>
+                    </p:column>
+                </p:dataTable>
+            </div>
+
+                        <div style="background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.3);border-left:4px solid #6366f1;border-radius:10px;padding:12px 16px;font-size:12px;color:rgba(255,255,255,0.65);margin-top:12px;line-height:1.6;">
+                &#x1F4BE; Les entrees sont <strong style="color:var(--text-1);">persistees en base de donnees</strong>
+                (table <code style="color:#a5b4fc;background:var(--bg-muted);padding:1px 5px;border-radius:4px;">audit_logs</code>)
+                et survivent aux redemarrages du serveur.
+                L&#x27;affichage charge les 200 entrees les plus recentes depuis la BD.
+                Le buffer memoire (500 max) sert de fallback si le service est indisponible.
+            </div>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

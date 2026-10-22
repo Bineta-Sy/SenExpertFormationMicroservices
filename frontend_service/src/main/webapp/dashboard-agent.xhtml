@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Mon espace</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.connecte}">
+            <div style="text-align:center;padding:80px 20px;">
+                <p style="color:#64748B;font-size:13px;margin-bottom:16px;">Connexion requise.</p>
+                <h:link outcome="/login"
+                        style="padding:9px 20px;background:#4F46E5;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;">
+                    Se connecter
+                </h:link>
+            </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.connecte and !sessionBean.admin}">
+
+            <div style="margin-bottom:28px;">
+                <h1 class="page-title">Bonjour, #{sessionBean.email}</h1>
+                <p class="page-subtitle">Votre espace personnel SenExpertFormation</p>
+            </div>
+
+            <div class="nav-cards">
+                <a href="#{request.contextPath}/catalogue.xhtml" class="nav-card">
+                    <div class="nc-title">Catalogue</div>
+                    <div class="nc-sub">Voir les offres disponibles</div>
+                </a>
+                <a href="#{request.contextPath}/mes-demandes.xhtml" class="nav-card">
+                    <div class="nc-title">Mes demandes</div>
+                    <div class="nc-sub">Suivi de vos candidatures</div>
+                </a>
+                <a href="#{request.contextPath}/institution.xhtml" class="nav-card">
+                    <div class="nc-title">Mon institution</div>
+                    <div class="nc-sub">Gérer votre institution</div>
+                </a>
+                <a href="#{request.contextPath}/profile.xhtml" class="nav-card">
+                    <div class="nc-title">Mon profil</div>
+                    <div class="nc-sub">Vos informations</div>
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h2>Mes dernières demandes</h2></div>
+                <p:dataTable value="#{offreBean.mesDemandes}" var="d"
+                             emptyMessage="Aucune demande. Consultez le catalogue pour postuler."
+                             paginator="true" rows="5">
+                    <p:column headerText="Formation">
+                        <span style="font-weight:600;color:#0F172A;font-size:13px;">#{d.offre.titre}</span>
+                    </p:column>
+                    <p:column headerText="Domaine" style="width:130px;">
+                        <h:panelGroup rendered="#{d.offre.domaine != null}">
+                            <span class="badge badge-info">#{d.offre.domaine.libelle}</span>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column headerText="Date" style="width:120px;">
+                        <span style="color:#64748B;font-size:12px;">#{d.dateDemande}</span>
+                    </p:column>
+                    <p:column headerText="Statut" style="width:120px;">
+                        <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}"><span class="badge badge-wait">En attente</span></h:panelGroup>
+                        <h:panelGroup rendered="#{d.statut eq 'VALIDEE'}"><span class="badge badge-ok">Validée</span></h:panelGroup>
+                        <h:panelGroup rendered="#{d.statut eq 'REJETEE'}"><span class="badge badge-ko">Rejetée</span></h:panelGroup>
+                    </p:column>
+                </p:dataTable>
+            </div>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

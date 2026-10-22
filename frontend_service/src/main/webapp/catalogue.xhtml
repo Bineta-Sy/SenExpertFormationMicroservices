@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Catalogue des formations</ui:define>
+    <ui:define name="content">
+
+        <div style="margin-bottom:24px;">
+            <h1 class="page-title">Catalogue des formations</h1>
+            <p class="page-subtitle">Découvrez et candidatez aux formations disponibles</p>
+        </div>
+
+        <!-- Filtre domaine -->
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-body" style="padding:14px 20px;">
+                <h:form id="filtreForm">
+                    <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:200px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:5px;">Domaine</label>
+                            <p:selectOneMenu value="#{offreBean.domaineFiltre}"
+                                             style="width:100%;padding:9px 12px;border:1px solid #CBD5E1;border-radius:8px;font-size:13px;background:#fff;">
+                                <f:selectItem itemValue="#{null}" itemLabel="Tous les domaines"/>
+                                <f:selectItems value="#{offreBean.domaines}" var="d" itemValue="#{d.id}" itemLabel="#{d.libelle}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <p:commandButton value="Filtrer" action="#{offreBean.filtrerParDomaine}"
+                                         update="offresSection filtreForm"
+                                         style="padding:9px 18px;background:#4F46E5;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;"/>
+                        <p:commandButton value="Réinitialiser" action="#{offreBean.filtrerParDomaine}"
+                                         update="offresSection filtreForm"
+                                         style="padding:9px 16px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:8px;color:#475569;font-size:13px;font-weight:500;cursor:pointer;"/>
+                    </div>
+                </h:form>
+            </div>
+        </div>
+
+        <!-- Grille des offres -->
+        <h:form id="offresSection">
+            <p:messages showDetail="true" closable="true" style="margin-bottom:12px;border-radius:8px;"/>
+            <div class="offer-grid">
+                <ui:repeat value="#{offreBean.offres}" var="offre">
+                    <div class="offer-card">
+                        <div class="offer-stripe"></div>
+                        <div class="offer-card-top">
+                            <h3>#{offre.titre}</h3>
+                            <h:panelGroup rendered="#{offre.domaine != null}">
+                                <span class="badge badge-info">#{offre.domaine.libelle}</span>
+                            </h:panelGroup>
+                            <p class="offer-meta" style="margin-top:8px;line-height:1.5;">#{offre.description}</p>
+                        </div>
+                        <div class="offer-card-bottom">
+                            <div>
+                                <p class="offer-meta">#{offre.dateDebut} → #{offre.dateFin}</p>
+                                <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+                                    <span class="badge #{offre.placesDisponibles gt 0 ? 'badge-ok' : 'badge-ko'}">#{offre.placesDisponibles} place(s)</span>
+                                    <span class="badge badge-gray">#{offre.type}</span>
+                                </div>
+                            </div>
+                            <div style="flex-shrink:0;display:flex;gap:6px;align-items:center;">
+                                <!-- Bouton Voir détails (toujours visible) -->
+                                <p:commandButton value="Détails" icon="pi pi-info-circle"
+                                                 styleClass="abtn abtn-secondary"
+                                                 style="font-size:11px;padding:5px 10px;"
+                                                 action="#{offreBean.voirDetail(offre.id)}"
+                                                 process="@this"
+                                                 update=":offresSection:dialogDetail"
+                                                 oncomplete="PF('wDialogDetail').show()"/>
+                                <h:panelGroup rendered="#{sessionBean.connecte}">
+                                    <!-- Déjà postulé -->
+                                    <h:panelGroup rendered="#{offreBean.postulesMap[offre.id]}" layout="block">
+                                        <span style="padding:7px 14px;background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;border-radius:8px;font-size:12px;font-weight:600;display:inline-block;cursor:default;">
+                                            &#10003; D&#233;j&#224; postul&#233;
+                                        </span>
+                                    </h:panelGroup>
+                                    <!-- Pas encore postulé -->
+                                    <h:panelGroup rendered="#{not offreBean.postulesMap[offre.id]}" layout="block">
+                                        <a href="#{request.contextPath}/postuler.xhtml?offreId=#{offre.id}"
+                                           style="padding:7px 16px;background:#4F46E5;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block;">
+                                            Postuler
+                                        </a>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{!sessionBean.connecte}">
+                                    <h:link outcome="/login"
+                                            style="padding:7px 14px;background:#1E293B;color:#94A3B8;border:1px solid #334155;border-radius:8px;font-size:12px;text-decoration:none;display:inline-block;">
+                                        Connexion
+                                    </h:link>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </div>
+                </ui:repeat>
+            </div>
+
+            <h:panelGroup rendered="#{empty offreBean.offres}">
+                <div style="text-align:center;padding:60px 20px;background:#1E293B;border-radius:12px;border:1px solid #334155;margin-top:12px;">
+                    <p style="color:#64748B;font-size:13px;">Aucune offre disponible pour le moment.</p>
+                </div>
+            </h:panelGroup>
+
+            <!-- Dialog Détails formation -->
+            <style>
+                /* Overlay flou */
+                .ui-widget-overlay { backdrop-filter: blur(6px) !important; background:rgba(15,23,42,.45) !important; }
+                /* Fond opaque + ombre */
+                #offresSection\:dialogDetail { background:#fff !important; border-radius:16px !important; box-shadow:0 24px 60px rgba(15,23,42,.25) !important; }
+                #offresSection\:dialogDetail .ui-dialog-titlebar { background:#fff !important; border-bottom:1px solid #e2e8f0 !important; border-radius:16px 16px 0 0 !important; padding:1.1rem 1.5rem !important; }
+                #offresSection\:dialogDetail .ui-dialog-titlebar .ui-dialog-title { font-size:.9375rem; font-weight:700; color:#0f172a; }
+                #offresSection\:dialogDetail .ui-dialog-content { background:#fff !important; border-radius:0 0 16px 16px !important; padding:1.25rem 1.5rem !important; }
+                #offresSection\:dialogDetail .ui-dialog-footer { background:#fff !important; border-top:1px solid #e2e8f0 !important; border-radius:0 0 16px 16px !important; padding:.875rem 1.5rem !important; display:flex !important; align-items:center !important; justify-content:space-between !important; }
+            </style>
+
+            <p:dialog id="dialogDetail" widgetVar="wDialogDetail"
+                      header="Détails de la formation"
+                      modal="true" responsive="true"
+                      width="680" closable="true" closeOnEscape="true"
+                      style="border-radius:16px;"
+                      contentStyle="background:#fff;padding:1.25rem 1.5rem;"
+                      appendTo="@(body)">
+
+                <h:panelGroup rendered="#{offreBean.offreDetail != null}" layout="block">
+                    <!-- En-tête titre + domaine -->
+                    <div style="margin-bottom:16px;">
+                        <h2 style="font-size:1.125rem;font-weight:700;color:#0f172a;margin:0 0 8px;">
+                            #{offreBean.offreDetail.titre}
+                        </h2>
+                        <h:panelGroup rendered="#{offreBean.offreDetail.domaine != null}">
+                            <span class="badge badge-info">#{offreBean.offreDetail.domaine.libelle}</span>
+                        </h:panelGroup>
+                    </div>
+
+                    <!-- Grille infos clés -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;background:#f8fafc;border-radius:10px;padding:14px;border:1px solid #e2e8f0;">
+                        <div>
+                            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Dates</div>
+                            <div style="font-size:13px;color:#1e293b;font-weight:500;">#{offreBean.offreDetail.dateDebut} → #{offreBean.offreDetail.dateFin}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Places</div>
+                            <div style="font-size:13px;color:#1e293b;font-weight:500;">#{offreBean.offreDetail.placesDisponibles} disponible(s)</div>
+                        </div>
+                        <div>
+                            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Type</div>
+                            <div style="font-size:13px;color:#1e293b;font-weight:500;">#{offreBean.offreDetail.type}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Coût</div>
+                            <div style="font-size:13px;color:#1e293b;font-weight:500;">#{offreBean.offreDetail.coutFormate}</div>
+                        </div>
+                        <h:panelGroup rendered="#{not empty offreBean.offreDetail.niveau}">
+                            <div>
+                                <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Niveau</div>
+                                <div style="font-size:13px;color:#1e293b;font-weight:500;">#{offreBean.offreDetail.niveau}</div>
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not empty offreBean.offreDetail.duree}">
+                            <div>
+                                <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Durée</div>
+                                <div style="font-size:13px;color:#1e293b;font-weight:500;">#{offreBean.offreDetail.duree}</div>
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not empty offreBean.offreDetail.lieu}">
+                            <div>
+                                <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Lieu</div>
+                                <div style="font-size:13px;color:#1e293b;font-weight:500;">#{offreBean.offreDetail.lieu}</div>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+
+                    <!-- Description -->
+                    <h:panelGroup rendered="#{not empty offreBean.offreDetail.description}">
+                        <div style="margin-bottom:14px;">
+                            <div style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Description</div>
+                            <p style="font-size:13px;color:#334155;line-height:1.6;margin:0;">#{offreBean.offreDetail.description}</p>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Documents requis -->
+                    <h:panelGroup rendered="#{not empty offreBean.offreDetail.documentsRequis}">
+                        <div style="margin-bottom:6px;background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:14px;">
+                            <div style="font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">
+                                <i class="pi pi-file" style="margin-right:5px;"/>
+                                Documents à fournir
+                            </div>
+                            <ui:repeat value="#{offreBean.offreDetail.documentsRequis}" var="doc">
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:#78350f;">
+                                    <i class="pi pi-check-circle" style="color:#d97706;font-size:13px;flex-shrink:0;"/>
+                                    #{doc}
+                                </div>
+                            </ui:repeat>
+                        </div>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <!-- Footer : Retour + Postuler -->
+                <f:facet name="footer">
+                    <!-- Bouton Retour -->
+                    <button type="button"
+                            onclick="PF('wDialogDetail').hide();"
+                            style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
+                                   background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;
+                                   font-size:13px;font-weight:600;color:#475569;cursor:pointer;">
+                        <i class="pi pi-arrow-left" style="font-size:12px;"/>
+                        Retour
+                    </button>
+
+                    <!-- Postuler / Déjà postulé / Non connecté -->
+                    <h:panelGroup rendered="#{offreBean.offreDetail != null}" layout="block">
+                        <h:panelGroup rendered="#{sessionBean.connecte and not offreBean.postulesMap[offreBean.offreDetail.id]}" layout="block">
+                            <a href="#{request.contextPath}/postuler.xhtml?offreId=#{offreBean.offreDetail.id}"
+                               style="display:inline-flex;align-items:center;gap:6px;padding:9px 22px;
+                                      background:#4F46E5;color:#fff;border-radius:8px;
+                                      font-size:13px;font-weight:600;text-decoration:none;">
+                                <i class="pi pi-send" style="font-size:12px;"/>
+                                Postuler à cette formation
+                            </a>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{sessionBean.connecte and offreBean.postulesMap[offreBean.offreDetail.id]}" layout="block">
+                            <span style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
+                                         background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;
+                                         border-radius:8px;font-size:13px;font-weight:600;">
+                                <i class="pi pi-check" style="font-size:12px;"/>
+                                Déjà postulé
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{!sessionBean.connecte}" layout="block">
+                            <a href="#{request.contextPath}/login.xhtml"
+                               style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
+                                      background:#1e293b;color:#94a3b8;border:1px solid #334155;
+                                      border-radius:8px;font-size:13px;text-decoration:none;">
+                                Connectez-vous pour postuler
+                            </a>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </f:facet>
+
+            </p:dialog>
+
+        </h:form>
+
+        <!-- Mes demandes si connecté -->
+        <h:panelGroup id="mesDemandes" rendered="#{sessionBean.connecte}">
+            <div style="margin-top:40px;">
+                <h2 style="color:#F1F5F9;font-size:1.1rem;font-weight:600;margin-bottom:14px;">Mes demandes</h2>
+                <div class="card">
+                    <p:dataTable value="#{offreBean.mesDemandes}" var="d"
+                                 emptyMessage="Aucune demande soumise.">
+                        <p:column headerText="Formation">
+                            <span style="font-weight:600;color:#0F172A;font-size:13px;">#{d.offre.titre}</span>
+                        </p:column>
+                        <p:column headerText="Domaine" style="width:130px;">
+                            <h:panelGroup rendered="#{d.offre.domaine != null}">
+                                <span class="badge badge-info">#{d.offre.domaine.libelle}</span>
+                            </h:panelGroup>
+                        </p:column>
+                        <p:column headerText="Date" style="width:130px;">
+                            <span style="color:#64748B;font-size:12px;">#{d.dateDemande}</span>
+                        </p:column>
+                        <p:column headerText="Statut" style="width:160px;">
+                            <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}"><span class="badge badge-wait">En attente</span></h:panelGroup>
+                            <h:panelGroup rendered="#{d.statut eq 'VALIDEE'}"><span class="badge" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;">&#9203; Paiement requis</span></h:panelGroup>
+                            <h:panelGroup rendered="#{d.statut eq 'CONFIRMEE'}"><span class="badge badge-ok">&#10003; Confirm&#233;e</span></h:panelGroup>
+                            <h:panelGroup rendered="#{d.statut eq 'REJETEE'}"><span class="badge badge-ko">Rejet&#233;e</span></h:panelGroup>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </div>
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

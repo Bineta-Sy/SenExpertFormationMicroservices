@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Gestion des Utilisateurs</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div style="text-align:center;padding:60px;">
+                <div style="font-size:4rem;">🚫</div>
+                <h2 style="color:var(--text-1);">Accès refusé</h2>
+            </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                    <h1 class="page-title">👥 Gestion des Utilisateurs</h1>
+                    <p class="page-subtitle">Gérez les comptes, rôles et permissions des utilisateurs</p>
+                </div>
+                <h:link outcome="/admin/dashboard"
+                        style="padding:9px 18px;background:rgba(255,255,255,0.15);color:var(--text-1);border-radius:8px;text-decoration:none;font-size:0.88rem;">
+                    ← Dashboard
+                </h:link>
+            </div>
+
+            <!-- Stats rapides -->
+            <h:form id="statsForm">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+                    <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;margin-bottom:4px;">👤</div>
+                        <div style="color:var(--text-1);font-size:1.3rem;font-weight:800;">#{fn:length(adminBean.utilisateurs)}</div>
+                        <div style="color:var(--text-3);font-size:0.8rem;">Total</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;margin-bottom:4px;">⏳</div>
+                        <div style="color:#ffc107;font-size:1.3rem;font-weight:800;">
+                            #{adminBean.utilisateurs.stream().filter(u -> 'EN_ATTENTE'.equals(u.statut)).count()}
+                        </div>
+                        <div style="color:var(--text-3);font-size:0.8rem;">En attente</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;margin-bottom:4px;">✅</div>
+                        <div style="color:#28a745;font-size:1.3rem;font-weight:800;">
+                            #{adminBean.utilisateurs.stream().filter(u -> 'ACTIF'.equals(u.statut)).count()}
+                        </div>
+                        <div style="color:var(--text-3);font-size:0.8rem;">Actifs</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:16px;text-align:center;">
+                        <div style="font-size:1.8rem;margin-bottom:4px;">🚫</div>
+                        <div style="color:#dc3545;font-size:1.3rem;font-weight:800;">
+                            #{adminBean.utilisateurs.stream().filter(u -> 'INACTIF'.equals(u.statut)).count()}
+                        </div>
+                        <div style="color:var(--text-3);font-size:0.8rem;">Inactifs</div>
+                    </div>
+                </div>
+            </h:form>
+
+            <!-- Tableau utilisateurs -->
+            <div class="glass-card">
+                <div class="glass-card-body" style="padding:0;">
+                    <h:form id="formUsers">
+                        <p:messages id="msgs" showDetail="true" closable="true" style="margin:12px;border-radius:8px;"/>
+
+                        <p:dataTable value="#{adminBean.utilisateurs}" var="u"
+                                     emptyMessage="Aucun utilisateur enregistré."
+                                     paginator="true" rows="10"
+                                     paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+
+                            <!-- Utilisateur -->
+                            <p:column headerText="Utilisateur" sortBy="#{u.nom}">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:38px;height:38px;background:linear-gradient(135deg,#0072ff,#00c6ff);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-1);font-weight:800;font-size:0.9rem;flex-shrink:0;">
+                                        #{u.prenom != null ? u.prenom.substring(0,1).toUpperCase() : 'U'}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:700;color:#1e3a5f;">#{u.prenom} #{u.nom}</div>
+                                        <div style="font-size:0.78rem;color:#888;">#{u.email}</div>
+                                    </div>
+                                </div>
+                            </p:column>
+
+                            <!-- Rôle avec changement -->
+                            <p:column headerText="Rôle" style="width:180px;">
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <span class="badge #{u.role eq 'ADMIN' ? 'badge-ko' : u.role eq 'AGENT' ? 'badge-online' : 'badge-custom'}">
+                                        #{u.role}
+                                    </span>
+                                    <h:panelGroup rendered="#{u.role ne 'ADMIN'}">
+                                        <p:selectOneMenu value="#{u.role}" style="font-size:0.75rem;border-radius:6px;border:1px solid #dee2e6;padding:3px 6px;max-width:100px;">
+                                            <f:selectItem itemValue="AGENT" itemLabel="AGENT"/>
+                                            <f:selectItem itemValue="PARTICULIER" itemLabel="PARTICULIER"/>
+                                            <p:ajax event="change"
+                                                    listener="#{adminBean.changerRole(u.id, u.role)}"
+                                                    update="msgs formUsers"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </div>
+                            </p:column>
+
+                            <!-- Statut -->
+                            <p:column headerText="Statut" style="width:140px;">
+                                <h:panelGroup rendered="#{u.statut eq 'EN_ATTENTE'}">
+                                    <span class="badge badge-wait">⏳ En attente</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{u.statut eq 'ACTIF'}">
+                                    <span class="badge badge-ok">✅ Actif</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{u.statut eq 'INACTIF'}">
+                                    <span class="badge badge-ko">🚫 Inactif</span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <!-- Actions -->
+                            <p:column headerText="Actions" style="width:220px;">
+                                <div style="display:flex;gap:5px;flex-wrap:wrap;">
+
+                                    <!-- Valider -->
+                                    <p:commandButton value="✔"
+                                                     title="Valider le compte"
+                                                     rendered="#{u.statut eq 'EN_ATTENTE'}"
+                                                     action="#{adminBean.validerUtilisateur(u.id)}"
+                                                     update="formUsers msgs"
+                                                     style="padding:5px 10px;background:linear-gradient(135deg,#198754,#28a745);border:none;border-radius:6px;color:var(--text-1);font-weight:700;cursor:pointer;font-size:0.85rem;"/>
+
+                                    <!-- Désactiver -->
+                                    <p:commandButton value="🚫"
+                                                     title="Désactiver"
+                                                     rendered="#{u.statut eq 'ACTIF' and u.role ne 'ADMIN'}"
+                                                     action="#{adminBean.desactiverUtilisateur(u.id)}"
+                                                     update="formUsers msgs"
+                                                     style="padding:5px 10px;background:linear-gradient(135deg,#fd7e14,#e55a00);border:none;border-radius:6px;color:var(--text-1);font-weight:700;cursor:pointer;font-size:0.85rem;"/>
+
+                                    <!-- Réactiver -->
+                                    <p:commandButton value="▶"
+                                                     title="Réactiver"
+                                                     rendered="#{u.statut eq 'INACTIF'}"
+                                                     action="#{adminBean.reactiverUtilisateur(u.id)}"
+                                                     update="formUsers msgs"
+                                                     style="padding:5px 10px;background:linear-gradient(135deg,#0072ff,#00c6ff);border:none;border-radius:6px;color:var(--text-1);font-weight:700;cursor:pointer;font-size:0.85rem;"/>
+
+                                    <!-- Supprimer -->
+                                    <p:commandButton value="🗑"
+                                                     title="Supprimer"
+                                                     rendered="#{u.role ne 'ADMIN'}"
+                                                     action="#{adminBean.supprimerUtilisateur(u.id)}"
+                                                     update="formUsers msgs"
+                                                     style="padding:5px 10px;background:linear-gradient(135deg,#dc3545,#c82333);border:none;border-radius:6px;color:var(--text-1);font-weight:700;cursor:pointer;font-size:0.85rem;"
+                                                     onclick="return confirm('Supprimer ce compte définitivement ?')"/>
+
+                                </div>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>
+                </div>
+            </div>
+
+            <!-- Légende -->
+            <div class="info-box" style="margin-top:20px;">
+                <strong>Permissions :</strong>
+                ✔ Valider un compte en attente &#160;|&#160;
+                🚫 Désactiver un compte actif (bloque la connexion) &#160;|&#160;
+                ▶ Réactiver un compte inactif &#160;|&#160;
+                🗑 Supprimer définitivement &#160;|&#160;
+                Sélecteur de rôle : changer AGENT ↔ PARTICULIER
+            </div>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

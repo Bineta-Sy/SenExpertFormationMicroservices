@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/particulier-layout.xhtml">
+<ui:define name="title">Paiement — SenExpertFormation</ui:define>
+<ui:define name="topbar-title">Paiement de la formation</ui:define>
+<ui:define name="content">
+
+<style>
+/* ── Variables paiement ── */
+:root {
+    --pay-border: #E5E7EB;
+    --pay-bg:     #F9FAFB;
+    --pay-txt:    #111827;
+    --pay-txt2:   #6B7280;
+    --pay-accent: #BA7517;
+    --pay-ok:     #059669;
+    --pay-r:      10px;
+}
+
+/* Redéfinir body pour page paiement */
+.pay-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Breadcrumb */
+.pay-breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--pay-txt2); margin-bottom: 24px;
+}
+.pay-breadcrumb a { color: var(--pay-txt2); text-decoration: none; }
+.pay-breadcrumb a:hover { color: var(--pay-accent); }
+.pay-breadcrumb .sep { color: #D1D5DB; }
+
+/* Layout 2 colonnes */
+.pay-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Card générique */
+.pay-card {
+    background: #fff;
+    border: 1px solid var(--pay-border);
+    border-radius: var(--pay-r);
+    overflow: hidden;
+}
+.pay-card-hd {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--pay-border);
+    background: var(--pay-bg);
+    font-size: 13px; font-weight: 600; color: var(--pay-txt);
+    display: flex; align-items: center; gap: 8px;
+}
+.pay-card-bd { padding: 20px; }
+
+/* Méthodes de paiement */
+.pay-methods { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.pay-method {
+    border: 2px solid var(--pay-border);
+    border-radius: 8px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: all .15s;
+}
+.pay-method:hover { border-color: var(--pay-accent); background: #FAEEDA22; }
+.pay-method.selected { border-color: var(--pay-accent); background: #FAEEDA33; }
+.pay-method input[type=radio] { accent-color: var(--pay-accent); width: 16px; height: 16px; }
+.pay-method-logo {
+    width: 44px; height: 28px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; letter-spacing: -0.5px;
+    flex-shrink: 0;
+}
+.logo-wave   { background: #1A56DB; color: #fff; }
+.logo-orange { background: #FF6B00; color: #fff; }
+.logo-carte  { background: #1A1A2E; color: #fff; font-size: 10px; }
+.pay-method-info { flex: 1; }
+.pay-method-name { font-size: 13px; font-weight: 600; color: var(--pay-txt); }
+.pay-method-desc { font-size: 11px; color: var(--pay-txt2); margin-top: 1px; }
+
+/* Champs */
+.pay-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.pay-field label { font-size: 12px; font-weight: 500; color: var(--pay-txt2); }
+.pay-field input {
+    padding: 10px 12px;
+    border: 1px solid var(--pay-border);
+    border-radius: 8px; font-size: 13px;
+    color: var(--pay-txt);
+    width: 100%; box-sizing: border-box;
+    transition: border-color .15s;
+}
+.pay-field input:focus { outline: none; border-color: var(--pay-accent); box-shadow: 0 0 0 3px rgba(186,117,23,.1); }
+.pay-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pay-field input::placeholder { color: #9CA3AF; }
+
+/* Section carte cachée par défaut */
+.pay-section { display: none; }
+.pay-section.visible { display: block; }
+
+/* Bouton payer */
+.pay-btn {
+    width: 100%; padding: 13px;
+    background: var(--pay-accent); color: #fff;
+    border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.pay-btn:hover { background: #854F0B; }
+.pay-btn:disabled { background: #D1D5DB; cursor: not-allowed; }
+
+/* Résumé commande */
+.pay-summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+}
+.pay-summary-row:last-child { border-bottom: none; }
+.pay-summary-lbl { color: var(--pay-txt2); }
+.pay-summary-val { font-weight: 500; color: var(--pay-txt); }
+.pay-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0 0;
+    border-top: 2px solid var(--pay-border);
+    margin-top: 4px;
+}
+.pay-total-lbl { font-size: 14px; font-weight: 600; color: var(--pay-txt); }
+.pay-total-val { font-size: 20px; font-weight: 700; color: var(--pay-accent); }
+
+/* Badges sécurité */
+.pay-secure {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--pay-txt2);
+    margin-top: 12px; justify-content: center;
+}
+.pay-secure-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pay-ok); }
+
+/* Messages */
+.pay-wrap .ui-messages { border-radius: 8px; font-size: 12px; margin-bottom: 16px; }
+</style>
+
+<!-- Redirection si non connecté -->
+<h:panelGroup layout="block" rendered="#{!sessionBean.connecte}"
+              style="text-align:center;padding:60px 20px;">
+    <p style="color:#6B7280;margin-bottom:16px;">Connexion requise.</p>
+    <h:link outcome="/login" style="padding:9px 20px;background:#BA7517;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;">Se connecter</h:link>
+</h:panelGroup>
+
+<h:panelGroup layout="block" rendered="#{sessionBean.connecte}" styleClass="pay-wrap">
+
+    <!-- Breadcrumb -->
+    <div class="pay-breadcrumb">
+        <a href="#{request.contextPath}/dashboard-particulier.xhtml">Mon espace</a>
+        <span class="sep">›</span>
+        <span>Paiement</span>
+        <span class="sep">›</span>
+        <strong style="color:#111827;"><h:outputText value="#{paiementBean.offreTitre}"/></strong>
+    </div>
+
+    <h:form id="formPaiement">
+        <p:messages id="msgsPay" showDetail="true" closable="true"/>
+
+        <div class="pay-grid">
+
+            <!-- ── Colonne gauche : formulaire ── -->
+            <div>
+
+                <!-- Méthodes de paiement -->
+                <div class="pay-card" style="margin-bottom:16px;">
+                    <div class="pay-card-hd">💳 Méthode de paiement</div>
+                    <div class="pay-card-bd">
+                        <div class="pay-methods">
+
+                            <!-- Wave -->
+                            <label class="pay-method #{paiementBean.methodePaiement eq 'WAVE' ? 'selected' : ''}">
+                                <input type="radio" name="methode" value="WAVE"
+                                       onclick="selectMethode('WAVE')"
+                                       checked="#{paiementBean.methodePaiement eq 'WAVE'}"/>
+                                <div class="pay-method-logo logo-wave">WAVE</div>
+                                <div class="pay-method-info">
+                                    <div class="pay-method-name">Wave</div>
+                                    <div class="pay-method-desc">Paiement mobile instantané · Sénégal</div>
+                                </div>
+                                <span style="font-size:10px;background:#DBEAFE;color:#1E40AF;padding:2px 7px;border-radius:20px;">Recommandé</span>
+                            </label>
+
+                            <!-- Orange Money -->
+                            <label class="pay-method #{paiementBean.methodePaiement eq 'ORANGE_MONEY' ? 'selected' : ''}">
+                                <input type="radio" name="methode" value="ORANGE_MONEY"
+                                       onclick="selectMethode('ORANGE_MONEY')"
+                                       checked="#{paiementBean.methodePaiement eq 'ORANGE_MONEY'}"/>
+                                <div class="pay-method-logo logo-orange">OM</div>
+                                <div class="pay-method-info">
+                                    <div class="pay-method-name">Orange Money</div>
+                                    <div class="pay-method-desc">Mobile Money · Orange Sénégal</div>
+                                </div>
+                            </label>
+
+                            <!-- Carte bancaire -->
+                            <label class="pay-method #{paiementBean.methodePaiement eq 'CARTE' ? 'selected' : ''}">
+                                <input type="radio" name="methode" value="CARTE"
+                                       onclick="selectMethode('CARTE')"
+                                       checked="#{paiementBean.methodePaiement eq 'CARTE'}"/>
+                                <div class="pay-method-logo logo-carte">VISA MC</div>
+                                <div class="pay-method-info">
+                                    <div class="pay-method-name">Carte bancaire</div>
+                                    <div class="pay-method-desc">Visa / Mastercard</div>
+                                </div>
+                            </label>
+
+                        </div>
+
+                        <!-- Champ téléphone (Wave / Orange Money) -->
+                        <div id="section-mobile" class="pay-section #{paiementBean.methodePaiement ne 'CARTE' ? 'visible' : ''}">
+                            <div class="pay-field">
+                                <label>Numéro de téléphone *</label>
+                                <p:inputText value="#{paiementBean.telephone}"
+                                             placeholder="+221 77 000 00 00"
+                                             style="padding:10px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;width:100%;"/>
+                            </div>
+                            <div style="background:#F0FDF4;border:1px solid #A7F3D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#065F46;">
+                                📱 Vous recevrez une notification sur votre téléphone pour confirmer le paiement de
+                                <strong><h:outputText value="#{paiementBean.montantFormate}"/></strong>.
+                            </div>
+                        </div>
+
+                        <!-- Champs carte bancaire -->
+                        <div id="section-carte" class="pay-section #{paiementBean.methodePaiement eq 'CARTE' ? 'visible' : ''}">
+                            <div class="pay-field">
+                                <label>Nom sur la carte *</label>
+                                <p:inputText value="#{paiementBean.nomCarte}"
+                                             placeholder="MAMADOU DIALLO"
+                                             style="padding:10px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;width:100%;text-transform:uppercase;"/>
+                            </div>
+                            <div class="pay-field">
+                                <label>Numéro de carte *</label>
+                                <p:inputText value="#{paiementBean.numeroCarte}"
+                                             placeholder="4242 4242 4242 4242"
+                                             maxlength="19"
+                                             style="padding:10px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;width:100%;letter-spacing:1px;"/>
+                            </div>
+                            <div class="pay-field-row">
+                                <div class="pay-field">
+                                    <label>Expiration *</label>
+                                    <p:inputText value="#{paiementBean.expiration}"
+                                                 placeholder="MM/AA"
+                                                 maxlength="5"
+                                                 style="padding:10px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;width:100%;"/>
+                                </div>
+                                <div class="pay-field">
+                                    <label>CVV *</label>
+                                    <p:inputText value="#{paiementBean.cvv}"
+                                                 placeholder="123"
+                                                 maxlength="4"
+                                                 style="padding:10px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;width:100%;"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sélecteur JSF caché (synchronisé avec le radio JS) -->
+                        <p:selectOneRadio id="methodeJSF" value="#{paiementBean.methodePaiement}"
+                                          layout="custom" style="display:none;">
+                            <f:selectItem itemValue="WAVE"         itemLabel="Wave"/>
+                            <f:selectItem itemValue="ORANGE_MONEY" itemLabel="Orange Money"/>
+                            <f:selectItem itemValue="CARTE"        itemLabel="Carte"/>
+                        </p:selectOneRadio>
+
+                    </div>
+                </div>
+
+                <!-- Bouton payer -->
+                <p:commandButton id="btnPayer"
+                                 styleClass="pay-btn"
+                                 value="🔒 Payer #{paiementBean.montantFormate}"
+                                 action="#{paiementBean.traiterPaiement()}"
+                                 update="formPaiement msgsPay"
+                                 onclick="setMethodeJSF()"/>
+
+                <div class="pay-secure" style="margin-top:10px;">
+                    <div class="pay-secure-dot"></div>
+                    Paiement sécurisé · Données chiffrées SSL · SenExpertFormation
+                </div>
+
+                <div style="text-align:center;margin-top:12px;">
+                    <h:link outcome="/dashboard-particulier"
+                            style="font-size:12px;color:#6B7280;text-decoration:none;">
+                        ← Annuler et revenir à mon espace
+                    </h:link>
+                </div>
+
+            </div>
+
+            <!-- ── Colonne droite : résumé ── -->
+            <div>
+                <div class="pay-card">
+                    <div class="pay-card-hd">🎓 Résumé de la commande</div>
+                    <div class="pay-card-bd">
+
+                        <div style="padding:14px;background:#F9FAFB;border-radius:8px;margin-bottom:16px;border:1px solid #E5E7EB;">
+                            <div style="font-size:14px;font-weight:600;color:#111827;margin-bottom:4px;">
+                                <h:outputText value="#{paiementBean.offreTitre}"/>
+                            </div>
+                            <div style="font-size:12px;color:#6B7280;">
+                                <h:outputText value="#{paiementBean.domaine}"/>
+                            </div>
+                        </div>
+
+                        <div class="pay-summary-row">
+                            <span class="pay-summary-lbl">Formation</span>
+                            <span class="pay-summary-val" style="font-size:12px;max-width:180px;text-align:right;overflow:hidden;text-overflow:ellipsis;">
+                                <h:outputText value="#{paiementBean.offreTitre}"/>
+                            </span>
+                        </div>
+                        <div class="pay-summary-row">
+                            <span class="pay-summary-lbl">Participant</span>
+                            <span class="pay-summary-val" style="font-size:12px;">
+                                <h:outputText value="#{sessionBean.nomComplet}"/>
+                            </span>
+                        </div>
+                        <div class="pay-summary-row">
+                            <span class="pay-summary-lbl">Sous-total</span>
+                            <span class="pay-summary-val"><h:outputText value="#{paiementBean.montantFormate}"/></span>
+                        </div>
+                        <div class="pay-summary-row">
+                            <span class="pay-summary-lbl">Frais de service</span>
+                            <span class="pay-summary-val" style="color:#059669;">Offerts</span>
+                        </div>
+
+                        <div class="pay-total">
+                            <span class="pay-total-lbl">Total à payer</span>
+                            <span class="pay-total-val"><h:outputText value="#{paiementBean.montantFormate}"/></span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Mentions légales -->
+                <div style="font-size:11px;color:#9CA3AF;margin-top:12px;line-height:1.6;text-align:center;">
+                    En payant, vous acceptez les
+                    <a href="#" style="color:#BA7517;text-decoration:none;">conditions générales</a>
+                    de SenExpertFormation. Votre inscription sera confirmée par email après validation du paiement.
+                </div>
+            </div>
+
+        </div>
+    </h:form>
+
+</h:panelGroup>
+
+<script>
+// Synchronise le radio JS avec le composant JSF caché
+function selectMethode(val) {
+    // Mettre à jour l'affichage visuel
+    document.querySelectorAll('.pay-method').forEach(function(m) {
+        m.classList.remove('selected');
+    });
+    var checked = document.querySelector('.pay-method input[value="' + val + '"]');
+    if (checked) checked.closest('.pay-method').classList.add('selected');
+
+    // Afficher/masquer les sections
+    document.getElementById('section-mobile').classList.toggle('visible', val !== 'CARTE');
+    document.getElementById('section-carte').classList.toggle('visible', val === 'CARTE');
+
+    // Mettre à jour le select JSF caché
+    var jsf = document.querySelector('[id$="methodeJSF"]');
+    if (jsf) {
+        var radios = jsf.querySelectorAll('input[type=radio]');
+        radios.forEach(function(r) { r.checked = (r.value === val); });
+    }
+}
+
+function setMethodeJSF() {
+    var selected = document.querySelector('.pay-method input[type=radio]:checked');
+    if (!selected) return;
+    var jsf = document.querySelector('[id$="methodeJSF"]');
+    if (!jsf) return;
+    jsf.querySelectorAll('input[type=radio]').forEach(function(r) {
+        r.checked = (r.value === selected.value);
+    });
+}
+
+// Formatage automatique numéro carte
+document.addEventListener('DOMContentLoaded', function() {
+    var carteInput = document.querySelector('input[placeholder="4242 4242 4242 4242"]');
+    if (carteInput) {
+        carteInput.addEventListener('input', function() {
+            var val = this.value.replace(/\D/g, '').substring(0, 16);
+            this.value = val.replace(/(.{4})/g, '$1 ').trim();
+        });
+    }
+    var expInput = document.querySelector('input[placeholder="MM/AA"]');
+    if (expInput) {
+        expInput.addEventListener('input', function() {
+            var val = this.value.replace(/\D/g, '').substring(0, 4);
+            if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
+            this.value = val;
+        });
+    }
+});
+</script>
+
+</ui:define>
+</ui:composition>
+</html>

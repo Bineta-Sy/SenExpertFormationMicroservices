@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: senexpert-config
+  namespace: senexpert
+data:
+  # URLs JDBC internes au cluster (nom du Service Kubernetes)
+  db-users-url: "jdbc:postgresql://postgres-users-svc:5432/db_users"
+  db-formations-url: "jdbc:postgresql://postgres-formations-svc:5432/db_formations"
+  db-username: "postgres"
+  user-service-port: "8081"
+  formation-service-port: "8082"
+  # URLs internes pour la communication inter-services dans le cluster
+  user-service-url: "http://user-service-svc:8081"
+  formation-service-url: "http://formation-service-svc:8082"

@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/formateur-layout.xhtml">
+
+<ui:define name="title">Mes cours</ui:define>
+<ui:define name="topbarTitle">Gestion des cours</ui:define>
+<ui:param name="navActiveCours" value="active"/>
+
+<ui:define name="pageStyle">
+/* ── Filtre formations ── */
+.formation-filter { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;
+    padding:10px 14px; background:#fff; border:1px solid #E2E8F0; border-radius:10px; }
+.formation-filter-label { font-size:11px; font-weight:600; color:#94A3B8;
+    text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+.formation-pill { display:inline-flex; align-items:center; gap:5px;
+    padding:6px 14px; border-radius:20px; border:1px solid #E2E8F0;
+    font-size:12px; font-weight:500; cursor:pointer; background:#fff;
+    color:#475569; white-space:nowrap; font-family:inherit; }
+.formation-pill:hover  { background:#F8FAFC; border-color:#CBD5E1; }
+.formation-pill.active { background:#EFF6FF; color:#1D4ED8; border-color:#93C5FD; font-weight:700; }
+.formation-pill-cnt { font-size:10px; background:#E2E8F0; color:#64748B;
+    padding:1px 6px; border-radius:20px; font-weight:700; }
+.formation-pill.active .formation-pill-cnt { background:#BFDBFE; color:#1D4ED8; }
+
+/* ── Badge formation inline ── */
+.offre-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600;
+    padding:2px 8px; border-radius:20px; background:#F1F5F9; color:#475569;
+    white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; }
+.offre-tab i { font-size:14px; }
+
+/* ── Barre d'actions ── */
+.action-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    margin-bottom:16px; padding:12px 16px; background:#fff;
+    border:1px solid #E2E8F0; border-radius:10px; }
+.action-bar-title { font-size:14px; font-weight:600; color:#0F172A; flex:1; min-width:0; }
+.action-bar-sub   { font-size:11px; color:#64748B; }
+
+/* ── Boutons d'action principaux ── */
+.btn-primary  { display:inline-flex; align-items:center; gap:5px; padding:8px 14px;
+    font-size:12px; font-weight:600; border-radius:7px; cursor:pointer;
+    border:none; font-family:inherit; text-decoration:none; white-space:nowrap; }
+.btn-blue     { background:#3B82F6; color:#fff; }
+.btn-blue:hover { background:#2563EB; }
+.btn-cyan     { background:#0891B2; color:#fff; }
+.btn-cyan:hover { background:#0E7490; }
+.btn-violet   { background:#7C3AED; color:#fff; }
+.btn-violet:hover { background:#6D28D9; }
+.btn-red      { background:#DC2626; color:#fff; }
+.btn-red:hover { background:#B91C1C; }
+.btn-gray     { background:#F1F5F9; color:#475569; border:1px solid #E2E8F0; }
+.btn-gray:hover { background:#E2E8F0; }
+.btn-green    { background:#059669; color:#fff; }
+.btn-green:hover { background:#047857; }
+.btn-orange   { background:#D97706; color:#fff; }
+.btn-orange:hover { background:#B45309; }
+
+/* ── Tableau cours ── */
+.cours-table { width:100%; border-collapse:collapse; background:#fff;
+    border:1px solid #E2E8F0; border-radius:10px; overflow:hidden; }
+.cours-table th { background:#F8FAFC; font-size:11px; font-weight:600; color:#64748B;
+    text-transform:uppercase; letter-spacing:.04em; padding:10px 14px;
+    border-bottom:1px solid #E2E8F0; text-align:left; white-space:nowrap; }
+.cours-table td { padding:10px 14px; border-bottom:1px solid #F8FAFC;
+    vertical-align:middle; font-size:12px; color:#374151; }
+.cours-table tr:last-child td { border-bottom:none; }
+.cours-table tr:hover td { background:#FAFCFF; }
+
+/* ── Icône type ── */
+.type-icon { width:32px; height:32px; border-radius:7px; flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center; font-size:14px; }
+
+/* ── Pills statut ── */
+.pill { display:inline-flex; align-items:center; gap:3px; font-size:10px;
+    padding:3px 8px; border-radius:20px; font-weight:600; white-space:nowrap; }
+.pill-publie  { background:#D1FAE5; color:#065F46; }
+.pill-draft   { background:#F1F5F9; color:#64748B; }
+.pill-video   { background:#FEE2E2; color:#DC2626; }
+.pill-document{ background:#DBEAFE; color:#2563EB; }
+.pill-quiz    { background:#EDE9FE; color:#7C3AED; }
+.pill-lien    { background:#DCFCE7; color:#059669; }
+.pill-live    { background:#FEF3C7; color:#D97706; }
+.pill-tp      { background:#CFFAFE; color:#0891B2; }
+.pill-devoir  { background:#EDE9FE; color:#7C3AED; }
+.pill-examen  { background:#FEE2E2; color:#DC2626; }
+.pill-attente { background:#FEF3C7; color:#D97706; }
+
+/* ── Boutons inline table ── */
+.tbl-btns { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.tbl-btn { display:inline-flex; align-items:center; gap:4px; padding:5px 10px;
+    font-size:11px; font-weight:600; border-radius:6px; cursor:pointer;
+    border:1px solid #E2E8F0; background:#F8FAFC; color:#475569;
+    font-family:inherit; white-space:nowrap; text-decoration:none; }
+.tbl-btn:hover     { background:#F1F5F9; }
+.tbl-btn-pub   { background:#EDE9FE; color:#7C3AED; border-color:#C4B5FD; }
+.tbl-btn-pub:hover { background:#DDD6FE; }
+.tbl-btn-green { background:#D1FAE5; color:#065F46; border-color:#6EE7B7; }
+.tbl-btn-green:hover { background:#A7F3D0; }
+.tbl-btn-blue  { background:#DBEAFE; color:#1D4ED8; border-color:#93C5FD; }
+.tbl-btn-blue:hover { background:#BFDBFE; }
+.tbl-btn-red   { background:#FEE2E2; color:#DC2626; border-color:#FCA5A5; }
+.tbl-btn-red:hover { background:#FECACA; }
+.tbl-btn-orange { background:#FEF3C7; color:#D97706; border-color:#FDE68A; }
+.tbl-btn-orange:hover { background:#FDE68A; }
+.tbl-btn-cyan { background:#CFFAFE; color:#0891B2; border-color:#67E8F9; }
+.tbl-btn-cyan:hover { background:#A5F3FC; }
+
+/* ── Formulaire dialog ── */
+.dlg-grid  { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.dlg-full  { grid-column:1/-1; }
+.dlg-label { display:block; font-size:11px; font-weight:600; color:#64748B;
+    margin-bottom:4px; text-transform:uppercase; letter-spacing:.4px; }
+.dlg-input { width:100% !important; font-size:12px !important; font-family:inherit !important;
+    padding:7px 10px !important; border:1px solid #CBD5E1 !important;
+    border-radius:6px !important; }
+.dlg-section { border-top:1px solid #F1F5F9; padding-top:10px; margin-top:4px; }
+.dlg-section-title { font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; margin-bottom:10px; display:flex; align-items:center; gap:5px; }
+
+/* ── Soumissions ── */
+.soum-item { display:flex; align-items:flex-start; gap:10px; padding:12px 16px;
+    border-bottom:1px solid #F1F5F9; font-size:12px; }
+.soum-item:last-child { border-bottom:none; }
+.soum-av { width:34px; height:34px; border-radius:50%; background:#EDE9FE;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:#6D28D9; flex-shrink:0; }
+.nota-row { display:flex; align-items:center; gap:8px; margin-top:8px;
+    padding:8px 10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:7px; flex-wrap:wrap; }
+.nota-input { width:65px !important; text-align:center !important;
+    font-size:12px !important; border:1px solid #CBD5E1 !important; border-radius:6px !important;
+    padding:5px 8px !important; font-family:inherit !important; }
+
+/* ── Vide ── */
+.empty-state { text-align:center; padding:48px 20px; color:#94A3B8; }
+.empty-state i { font-size:40px; display:block; margin-bottom:10px; color:#CBD5E1; }
+.empty-state h3 { font-size:14px; font-weight:600; color:#64748B; margin-bottom:8px; }
+
+/* ── Carte info TP/Devoir/Examen ── */
+.tp-info { background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px;
+    padding:10px 14px; font-size:12px; color:#92400E; margin-bottom:2px; }
+
+/* ── Onglets filtre types ── */
+.filter-tab { display:inline-flex; align-items:center; gap:5px; padding:6px 12px;
+    font-size:11px; font-weight:600; border-radius:7px; cursor:pointer;
+    border:1px solid #E2E8F0; background:#fff; color:#475569;
+    font-family:inherit; white-space:nowrap; transition:all .15s; }
+.filter-tab:hover { background:#F8FAFC; }
+.filter-tab.active { background:#EFF6FF; color:#1D4ED8; border-color:#93C5FD; }
+.filter-cnt { background:#E2E8F0; color:#475569; border-radius:20px;
+    font-size:10px; padding:1px 6px; font-weight:700; }
+.filter-tab.active .filter-cnt { background:#BFDBFE; color:#1D4ED8; }
+
+/* ── Dialogs scrollables ── */
+.ui-dialog .ui-dialog-content {
+    max-height: 72vh !important;
+    overflow-y: auto !important;
+}
+</ui:define>
+
+<ui:define name="content">
+
+<!-- Accès refusé -->
+<h:panelGroup rendered="#{!sessionBean.admin and sessionBean.role ne 'FORMATEUR'}" layout="block">
+    <div style="text-align:center;padding:60px;color:#EF4444;">
+        <i class="ti ti-lock" style="font-size:48px;display:block;margin-bottom:10px;"></i>
+        <strong>Accès réservé aux formateurs.</strong>
+    </div>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{sessionBean.admin or sessionBean.role eq 'FORMATEUR'}" layout="block">
+
+<!-- Aucune offre -->
+<h:panelGroup rendered="#{empty formateurGestionBean.mesOffres}" layout="block">
+    <div class="empty-state" style="margin-top:40px;">
+        <i class="ti ti-briefcase-off"></i>
+        <h3>Aucune offre assignée</h3>
+        <p style="font-size:12px;">Vous n'avez pas encore été assigné à une offre de formation.<br/>
+           Contactez l'administrateur pour être associé à une offre.</p>
+        <a href="#{request.contextPath}/dashboard-formateur.xhtml" class="btn-primary btn-blue"
+           style="margin-top:14px;display:inline-flex;">
+            <i class="ti ti-arrow-left"></i> Retour au tableau de bord
+        </a>
+    </div>
+</h:panelGroup>
+
+<!-- Contenu principal -->
+<h:panelGroup rendered="#{not empty formateurGestionBean.mesOffres}" layout="block">
+
+<h:form id="fGestion">
+
+<!-- ═══ FILTRE PAR FORMATION ══════════════════════════════════════════ -->
+<div class="formation-filter">
+    <span class="formation-filter-label"><i class="ti ti-briefcase"></i> Formation :</span>
+
+    <!-- Toutes -->
+    <p:commandLink styleClass="formation-pill #{formateurGestionBean.filtreOffreId == null ? 'active' : ''}"
+                   action="#{formateurGestionBean.filtrer(null)}"
+                   update=":fGestion" process="@none" immediate="true">
+        <i class="ti ti-layers"></i> Toutes
+        <span class="formation-pill-cnt"><h:outputText value="#{formateurGestionBean.nbTousLesCours}"/></span>
+    </p:commandLink>
+
+    <!-- Une pill par offre -->
+    <ui:repeat value="#{formateurGestionBean.mesOffres}" var="o">
+        <p:commandLink styleClass="formation-pill #{formateurGestionBean.isOffreActive(o.id) ? 'active' : ''}"
+                       action="#{formateurGestionBean.filtrer(o.id)}"
+                       update=":fGestion" process="@none" immediate="true">
+            <i class="ti ti-folder"></i>
+            <h:outputText value="#{o.titre}"/>
+        </p:commandLink>
+    </ui:repeat>
+</div>
+<p:messages id="msgs" showDetail="true" closable="true" style="margin-bottom:12px;"/>
+
+<!-- ═══ BARRE D'ACTIONS ══════════════════════════════════════════════ -->
+<div class="action-bar">
+    <div>
+        <div class="action-bar-title">
+            <i class="ti ti-books" style="color:#3B82F6;margin-right:4px;"></i>
+            <h:outputText value="#{formateurGestionBean.filtreOffreId == null ? 'Toutes les formations' : formateurGestionBean.offreActiveTitre}"/>
+        </div>
+        <div class="action-bar-sub">
+            <h:outputText value="#{formateurGestionBean.nbCours}"/> cours
+        </div>
+    </div>
+
+    <!-- Formation pour création (visible si filtre = Toutes et plusieurs offres) -->
+    <h:panelGroup rendered="#{formateurGestionBean.filtreOffreId == null and formateurGestionBean.nbMesOffres gt 1}" layout="block"
+                  style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:#94A3B8;white-space:nowrap;">Ajouter dans :</span>
+        <p:selectOneMenu value="#{formateurGestionBean.offreActiveId}"
+                         style="font-size:12px;font-family:inherit;">
+            <f:selectItems value="#{formateurGestionBean.mesOffres}"
+                           var="o" itemLabel="#{o.titre}" itemValue="#{o.id}"/>
+            <p:ajax event="change" process="@this" update="@none" immediate="true" listener="#{formateurGestionBean.onOffreChange}"/>
+        </p:selectOneMenu>
+    </h:panelGroup>
+
+    <!-- Ajouter cours classique -->
+    <p:commandLink styleClass="btn-primary btn-blue"
+                     action="#{formateurGestionBean.nouveauCours}"
+                     update=":fGestion:dlgCoursId" oncomplete="setTimeout(function(){ PF('dlgCours').show(); },50);"
+                     process="@none" immediate="true">
+        <i class="ti ti-circle-plus"></i>&#160;Nouveau cours
+    </p:commandLink>
+
+    <!-- Ajouter TP -->
+    <p:commandLink styleClass="btn-primary btn-cyan"
+                     action="#{formateurGestionBean.nouveauTP}"
+                     update=":fGestion:dlgCoursId" oncomplete="setTimeout(function(){ PF('dlgCours').show(); },50);"
+                     process="@none" immediate="true">
+        <i class="ti ti-tools"></i>&#160;TP
+    </p:commandLink>
+
+    <!-- Ajouter Devoir -->
+    <p:commandLink styleClass="btn-primary btn-violet"
+                     action="#{formateurGestionBean.nouveauDevoir}"
+                     update=":fGestion:dlgCoursId" oncomplete="setTimeout(function(){ PF('dlgCours').show(); },50);"
+                     process="@none" immediate="true">
+        <i class="ti ti-clipboard-text"></i>&#160;Devoir
+    </p:commandLink>
+
+    <!-- Ajouter Examen -->
+    <p:commandLink styleClass="btn-primary btn-orange"
+                     action="#{formateurGestionBean.nouveauExamen}"
+                     update=":fGestion:dlgCoursId" oncomplete="setTimeout(function(){ PF('dlgCours').show(); },50);"
+                     process="@none" immediate="true">
+        <i class="ti ti-school"></i>&#160;Examen
+    </p:commandLink>
+</div>
+
+<!-- ═══ TABLEAU DES COURS ══════════════════════════════════════════= -->
+<h:panelGroup rendered="#{empty formateurGestionBean.cours}" layout="block">
+    <div class="empty-state">
+        <i class="ti ti-books"></i>
+        <h3>Aucun cours</h3>
+        <p style="font-size:12px;">Utilisez les boutons ci-dessus pour ajouter votre premier cours,<br/>
+           TP, devoir ou examen.</p>
+    </div>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{not empty formateurGestionBean.cours}" layout="block">
+
+<!-- Onglets filtre -->
+<div id="filter-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+    <button class="filter-tab active" onclick="filterCours('ALL',this)" type="button">
+        <i class="ti ti-list"></i> Tous
+        <span class="filter-cnt" id="cnt-ALL"></span>
+    </button>
+    <button class="filter-tab" onclick="filterCours('VIDEO',this)" type="button">
+        <i class="ti ti-player-play"></i> Video
+        <span class="filter-cnt" id="cnt-VIDEO"></span>
+    </button>
+    <button class="filter-tab" onclick="filterCours('DOCUMENT',this)" type="button">
+        <i class="ti ti-file-text"></i> Document
+        <span class="filter-cnt" id="cnt-DOCUMENT"></span>
+    </button>
+    <button class="filter-tab" onclick="filterCours('QUIZ',this)" type="button">
+        <i class="ti ti-checklist"></i> Quiz
+        <span class="filter-cnt" id="cnt-QUIZ"></span>
+    </button>
+    <button class="filter-tab" onclick="filterCours('LIVE',this)" type="button">
+        <i class="ti ti-video"></i> Live
+        <span class="filter-cnt" id="cnt-LIVE"></span>
+    </button>
+    <button class="filter-tab" style="border-color:#67E8F9;color:#0891B2;"
+            onclick="filterCours('TP',this)" type="button">
+        <i class="ti ti-tools"></i> TP
+        <span class="filter-cnt" id="cnt-TP"></span>
+    </button>
+    <button class="filter-tab" style="border-color:#C4B5FD;color:#7C3AED;"
+            onclick="filterCours('DEVOIR',this)" type="button">
+        <i class="ti ti-clipboard-text"></i> Devoirs
+        <span class="filter-cnt" id="cnt-DEVOIR"></span>
+    </button>
+    <button class="filter-tab" style="border-color:#FCA5A5;color:#DC2626;"
+            onclick="filterCours('EXAMEN',this)" type="button">
+        <i class="ti ti-school"></i> Examens
+        <span class="filter-cnt" id="cnt-EXAMEN"></span>
+    </button>
+</div>
+
+<table class="cours-table" id="cours-table-main">
+    <thead>
+        <tr>
+            <th style="width:36px;"></th>
+            <th>Titre</th>
+            <th>Formation</th>
+            <th>Type</th>
+            <th>Statut</th>
+            <th>Durée</th>
+            <th style="min-width:340px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <ui:repeat value="#{formateurGestionBean.cours}" var="c">
+            <tr data-type="#{c.type}">
+                <!-- Icône -->
+                <td>
+                    <div class="type-icon"
+                         style="background:#{c.typeCouleur}1A;color:#{c.typeCouleur};">
+                        <i class="ti #{c.typeIcon}"></i>
+                    </div>
+                </td>
+                <!-- Titre -->
+                <td>
+                    <div style="font-size:13px;font-weight:600;color:#0F172A;">
+                        <h:outputText value="#{c.ordre != null ? c.ordre.toString().concat('. ') : ''}"/>
+                        <h:outputText value="#{c.titre}"/>
+                    </div>
+                    <h:panelGroup rendered="#{not empty c.instructionsDetaillees}" layout="block">
+                        <div style="font-size:11px;color:#94A3B8;margin-top:2px;max-width:280px;
+                             overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            <h:outputText value="#{c.instructionsDetaillees}"/>
+                        </div>
+                    </h:panelGroup>
+                    <!-- Info TP/Devoir/Examen -->
+                    <h:panelGroup rendered="#{c.travauxPratiques}" layout="block">
+                        <div style="margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;">
+                            <h:panelGroup rendered="#{c.baremeNote != null}">
+                                <span class="pill" style="background:#FEF3C7;color:#D97706;">
+                                    <i class="ti ti-star" style="font-size:9px;"></i>
+                                    Barème : <h:outputText value="#{c.baremeNote}"/> pts
+                                </span>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not empty c.dateDebut}">
+                                <span class="pill" style="background:#D1FAE5;color:#065F46;">
+                                    <i class="ti ti-calendar-event" style="font-size:9px;"></i>
+                                    Ouverture : <h:outputText value="#{c.dateDebutCourte}"/>
+                                </span>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not empty c.dateLimite}">
+                                <span class="pill pill-attente">
+                                    <i class="ti ti-clock" style="font-size:9px;"></i>
+                                    Limite : <h:outputText value="#{c.dateLimiteCourte}"/>
+                                </span>
+                            </h:panelGroup>
+                        </div>
+                    </h:panelGroup>
+                </td>
+                <!-- Formation -->
+                <td>
+                    <h:panelGroup rendered="#{not empty c.offreTitre}" layout="block">
+                        <span class="offre-badge">
+                            <i class="ti ti-folder" style="font-size:10px;"></i>
+                            <h:outputText value="#{c.offreTitre}"/>
+                        </span>
+                    </h:panelGroup>
+                </td>
+                <!-- Type -->
+                <td>
+                    <span class="pill pill-#{not empty c.type ? c.type.toLowerCase() : 'video'}">
+                        <h:outputText value="#{c.typeLabel}"/>
+                    </span>
+                </td>
+                <!-- Statut publié -->
+                <td>
+                    <span class="pill #{c.publie ? 'pill-publie' : 'pill-draft'}">
+                        <i class="ti #{c.publie ? 'ti-eye' : 'ti-eye-off'}" style="font-size:10px;"></i>
+                        <h:outputText value="#{c.publie ? 'Publié' : 'Brouillon'}"/>
+                    </span>
+                </td>
+                <!-- Durée -->
+                <td style="color:#94A3B8;">
+                    <h:panelGroup rendered="#{c.dureeMinutes != null}">
+                        <h:outputText value="#{c.dureeMinutes}"/> min
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{c.dureeMinutes == null}">—</h:panelGroup>
+                </td>
+                <!-- ═══ ACTIONS — tous les boutons visibles ═══ -->
+                <td>
+                    <div class="tbl-btns">
+
+                        <!-- Publier / Dépublier -->
+                        <p:commandLink styleClass="tbl-btn #{c.publie ? '' : 'tbl-btn-green'}"
+                                         action="#{formateurGestionBean.togglePublier(c)}"
+                                         update=":fGestion" process="@none" immediate="true">
+                            <i class="ti #{c.publie ? 'ti-eye-off' : 'ti-eye'}"></i>
+                            <h:outputText value="#{c.publie ? 'Dépublier' : 'Publier'}"/>
+                        </p:commandLink>
+
+                        <!-- Modifier -->
+                        <p:commandLink styleClass="tbl-btn tbl-btn-blue"
+                                         action="#{formateurGestionBean.editerCours(c)}"
+                                         update=":fGestion:dlgCoursId" oncomplete="setTimeout(function(){ var s=document.getElementById('fGestion:gestionTypeSelect_input'); if(s) gestionTypeChange(s.value); PF('dlgCours').show(); },50);" process="@none" immediate="true">
+                            <i class="ti ti-edit"></i> Modifier
+                        </p:commandLink>
+
+                        <!-- Upload fichier (VIDEO, DOCUMENT, TP, DEVOIR, EXAMEN) -->
+                        <h:panelGroup rendered="#{c.type eq 'VIDEO' or c.type eq 'DOCUMENT'
+                                                or c.type eq 'TP' or c.type eq 'DEVOIR'
+                                                or c.type eq 'EXAMEN'}">
+                            <p:commandLink styleClass="tbl-btn #{c.type eq 'TP' or c.type eq 'DEVOIR' or c.type eq 'EXAMEN' ? 'tbl-btn-cyan' : 'tbl-btn-blue'}"
+                                             action="#{formateurGestionBean.preparerUpload(c)}"
+                                             update=":fUpload" oncomplete="PF('dlgUpload').show();" process="@none" immediate="true">
+                                <i class="ti ti-file-upload"></i>
+                                <h:outputText value="#{c.type eq 'TP' or c.type eq 'DEVOIR' or c.type eq 'EXAMEN' ? 'Énoncé PDF' : 'Fichier'}"/>
+                                <h:panelGroup rendered="#{not empty c.cheminFichier}">
+                                    <span style="margin-left:3px;font-size:9px;opacity:.8;">✓</span>
+                                </h:panelGroup>
+                            </p:commandLink>
+                        </h:panelGroup>
+
+                        <!-- Questions quiz (QUIZ ou EXAMEN QCM) -->
+                        <h:panelGroup rendered="#{c.type eq 'QUIZ' or (c.type eq 'EXAMEN' and c.typeExamen eq 'QCM')}">
+                            <p:commandLink styleClass="tbl-btn tbl-btn-pub"
+                                             action="#{formateurGestionBean.ouvrirQuiz(c)}"
+                                             update=":fGestion" oncomplete="PF('dlgQuiz').show();" process="@none" immediate="true">
+                                <i class="ti ti-list-check"></i> Questions
+                            </p:commandLink>
+                        </h:panelGroup>
+
+                        <!-- Soumissions (TP, Devoir, Examen fichier) -->
+                        <h:panelGroup rendered="#{c.type eq 'TP' or c.type eq 'DEVOIR' or (c.type eq 'EXAMEN' and c.typeExamen eq 'FICHIER')}">
+                            <p:commandLink styleClass="tbl-btn tbl-btn-orange"
+                                             action="#{formateurGestionBean.ouvrirSoumissions(c)}"
+                                             update="fGestion :fSoum" oncomplete="PF('dlgSoum').show();" process="@none" immediate="true">
+                                <i class="ti ti-clipboard-check"></i> Copies
+                            </p:commandLink>
+                        </h:panelGroup>
+
+                        <!-- Supprimer -->
+                        <p:commandLink styleClass="tbl-btn tbl-btn-red"
+                                         action="#{formateurGestionBean.supprimerCours(c.id)}"
+                                         update=":fGestion" process="@none"
+                                         onclick="return confirm('Supprimer «#{c.titre}» définitivement ?');">
+                            <i class="ti ti-trash"></i> Supprimer
+                        </p:commandLink>
+
+                    </div>
+                </td>
+            </tr>
+        </ui:repeat>
+    </tbody>
+</table>
+</h:panelGroup>
+
+
+<!-- ═══ DIALOG : CRÉER / MODIFIER UN COURS ══════════════════════════ -->
+<p:dialog id="dlgCoursId"
+          header="#{formateurGestionBean.modeEditionCours ? 'Modifier le cours' : 'Nouveau cours'}"
+          widgetVar="dlgCours" modal="true" responsive="true"
+          style="width:min(640px,96vw);"
+          contentStyle="max-height:75vh;overflow-y:auto;"
+          onShow="(function(){var s=document.getElementById('fGestion:gestionTypeSelect_input');if(s)gestionTypeChange(s.value);})()">
+    <div class="dlg-grid" style="padding:4px 0 12px;">
+
+        <!-- Titre -->
+        <div class="dlg-full">
+            <label class="dlg-label">Titre *</label>
+            <p:inputText value="#{formateurGestionBean.coursForm.titre}" required="true"
+                         styleClass="dlg-input" placeholder="Ex : Introduction à Spring Boot"/>
+        </div>
+
+        <!-- Type + Ordre -->
+        <div>
+            <label class="dlg-label">Type *</label>
+            <p:selectOneMenu id="gestionTypeSelect"
+                             value="#{formateurGestionBean.coursForm.type}"
+                             required="true" styleClass="dlg-input"
+                             onchange="gestionTypeChange(this.value)">
+                <f:selectItem itemLabel="— Choisir —" itemValue=""/>
+                <f:selectItem itemLabel="🎬 Vidéo"               itemValue="VIDEO"/>
+                <f:selectItem itemLabel="📄 Document"             itemValue="DOCUMENT"/>
+                <f:selectItem itemLabel="✅ Quiz"                 itemValue="QUIZ"/>
+                <f:selectItem itemLabel="🔗 Lien externe"         itemValue="LIEN"/>
+                <f:selectItem itemLabel="🎥 Session live"         itemValue="LIVE"/>
+                <f:selectItem itemLabel="🔧 TP (Travaux Pratiques)" itemValue="TP"/>
+                <f:selectItem itemLabel="📋 Devoir à rendre"      itemValue="DEVOIR"/>
+                <f:selectItem itemLabel="🎓 Examen"               itemValue="EXAMEN"/>
+            </p:selectOneMenu>
+        </div>
+        <div>
+            <label class="dlg-label">Ordre d'affichage</label>
+            <p:inputText value="#{formateurGestionBean.coursForm.ordre}" styleClass="dlg-input"
+                         placeholder="Ex : 1"/>
+        </div>
+
+        <!-- URL contenu (VIDEO / DOCUMENT / LIEN seulement) -->
+        <div id="g-field-url" class="dlg-full" style="display:none;">
+            <label class="dlg-label">URL du contenu <span style="font-weight:400;text-transform:none;">(vidéo, lien…)</span></label>
+            <p:inputText value="#{formateurGestionBean.coursForm.urlContenu}" styleClass="dlg-input"
+                         placeholder="https://youtube.com/embed/..."/>
+        </div>
+
+        <!-- Durée + Publié (non TP/DEVOIR/EXAMEN) -->
+        <div id="g-field-duree" style="display:none;">
+            <label class="dlg-label">Durée (minutes)</label>
+            <p:inputText value="#{formateurGestionBean.coursForm.dureeMinutes}" styleClass="dlg-input"
+                         placeholder="Ex : 45"/>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding-top:18px;">
+            <p:selectBooleanCheckbox value="#{formateurGestionBean.coursForm.publie}" id="cbPublieG"/>
+            <label for="cbPublieG" style="font-size:12px;cursor:pointer;font-weight:500;">
+                Publier immédiatement
+            </label>
+        </div>
+
+        <!-- ── Section LIVE ───────────────────────────────────────────── -->
+        <div id="g-section-live" class="dlg-full dlg-section" style="display:none;">
+            <div class="dlg-section-title" style="color:#D97706;">
+                <i class="ti ti-video"></i> Session Live
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                <div>
+                    <label class="dlg-label">Lien visio</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.lienVisio}" styleClass="dlg-input"
+                                 placeholder="https://zoom.us/j/..."/>
+                </div>
+                <div>
+                    <label class="dlg-label">Plateforme</label>
+                    <p:selectOneMenu value="#{formateurGestionBean.coursForm.plateforme}" styleClass="dlg-input">
+                        <f:selectItem itemLabel="—"     itemValue="#{null}"/>
+                        <f:selectItem itemLabel="Zoom"  itemValue="ZOOM"/>
+                        <f:selectItem itemLabel="Teams" itemValue="TEAMS"/>
+                        <f:selectItem itemLabel="Meet"  itemValue="MEET"/>
+                        <f:selectItem itemLabel="Autre" itemValue="AUTRE"/>
+                    </p:selectOneMenu>
+                </div>
+                <div>
+                    <label class="dlg-label">Date / Heure</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.dateHeureLive}" styleClass="dlg-input"
+                                 placeholder="2025-09-01T10:00:00"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section TP ────────────────────────────────────────────── -->
+        <div id="g-section-tp" class="dlg-full dlg-section" style="display:none;">
+            <div class="dlg-section-title" style="color:#0891B2;">
+                <i class="ti ti-tools"></i> Travaux Pratiques
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                    <label class="dlg-label">Date d'ouverture</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.dateDebut}" styleClass="dlg-input"
+                                 placeholder="2025-09-01T08:00"/>
+                </div>
+                <div>
+                    <label class="dlg-label">Date limite</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.dateLimite}" styleClass="dlg-input"
+                                 placeholder="2025-09-30T23:59"/>
+                </div>
+                <div>
+                    <label class="dlg-label">Barème (points)</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.baremeNote}" styleClass="dlg-input"
+                                 placeholder="20"/>
+                </div>
+            </div>
+            <div>
+                <label class="dlg-label">Consignes</label>
+                <p:inputTextarea value="#{formateurGestionBean.coursForm.instructionsDetaillees}" rows="3"
+                                 autoResize="true" styleClass="dlg-input"
+                                 placeholder="Décrivez le travail attendu, les ressources autorisées, le format de rendu…"/>
+            </div>
+        </div>
+
+        <!-- ── Section DEVOIR ─────────────────────────────────────────── -->
+        <div id="g-section-devoir" class="dlg-full dlg-section" style="display:none;">
+            <div class="dlg-section-title" style="color:#7C3AED;">
+                <i class="ti ti-clipboard-text"></i> Devoir à rendre
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                    <label class="dlg-label">Date d'ouverture</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.dateDebut}" styleClass="dlg-input"
+                                 placeholder="2025-09-01T08:00"/>
+                </div>
+                <div>
+                    <label class="dlg-label">Date limite de remise</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.dateLimite}" styleClass="dlg-input"
+                                 placeholder="2025-09-30T23:59"/>
+                </div>
+                <div>
+                    <label class="dlg-label">Barème (points)</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.baremeNote}" styleClass="dlg-input"
+                                 placeholder="20"/>
+                </div>
+            </div>
+            <div>
+                <label class="dlg-label">Consignes</label>
+                <p:inputTextarea value="#{formateurGestionBean.coursForm.instructionsDetaillees}" rows="3"
+                                 autoResize="true" styleClass="dlg-input"
+                                 placeholder="Décrivez le travail attendu, le format de rendu, les critères d'évaluation…"/>
+            </div>
+        </div>
+
+        <!-- ── Section EXAMEN ─────────────────────────────────────────── -->
+        <div id="g-section-examen" class="dlg-full dlg-section" style="display:none;">
+            <div class="dlg-section-title" style="color:#DC2626;">
+                <i class="ti ti-school"></i> Examen
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                    <label class="dlg-label">Type d'examen</label>
+                    <p:selectOneMenu value="#{formateurGestionBean.coursForm.typeExamen}" styleClass="dlg-input">
+                        <f:selectItem itemLabel="— Choisir —"          itemValue="#{null}"/>
+                        <f:selectItem itemLabel="QCM chronométré"      itemValue="QCM"/>
+                        <f:selectItem itemLabel="Fichier à remettre"   itemValue="FICHIER"/>
+                    </p:selectOneMenu>
+                </div>
+                <div>
+                    <label class="dlg-label">Durée (minutes)</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.dureeExamen}" styleClass="dlg-input"
+                                 placeholder="60"/>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                    <label class="dlg-label">Date d'ouverture</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.dateDebut}" styleClass="dlg-input"
+                                 placeholder="2025-09-01T08:00"/>
+                </div>
+                <div>
+                    <label class="dlg-label">Date limite</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.dateLimite}" styleClass="dlg-input"
+                                 placeholder="2025-09-30T23:59"/>
+                </div>
+                <div>
+                    <label class="dlg-label">Barème (points)</label>
+                    <p:inputText value="#{formateurGestionBean.coursForm.baremeNote}" styleClass="dlg-input"
+                                 placeholder="20"/>
+                </div>
+            </div>
+            <div>
+                <label class="dlg-label">Consignes</label>
+                <p:inputTextarea value="#{formateurGestionBean.coursForm.instructionsDetaillees}" rows="3"
+                                 autoResize="true" styleClass="dlg-input"
+                                 placeholder="Décrivez les règles de l'examen, les ressources autorisées…"/>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="dlg-full" style="margin-top:2px;">
+            <label class="dlg-label">Description courte</label>
+            <p:inputTextarea value="#{formateurGestionBean.coursForm.description}" rows="2"
+                             autoResize="true" styleClass="dlg-input"
+                             placeholder="Résumé en une phrase…"/>
+        </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid #E2E8F0;">
+        <button type="button" class="btn-primary btn-gray" onclick="PF('dlgCours').hide();">
+            <i class="ti ti-x"></i> Annuler
+        </button>
+        <p:commandLink styleClass="btn-primary btn-blue"
+                         action="#{formateurGestionBean.sauvegarderCours}"
+                         process="dlgCoursId"
+                         update=":fGestion"
+                         oncomplete="if(!args.validationFailed) PF('dlgCours').hide();">
+            <i class="ti ti-device-floppy"></i>
+            <span id="g-btn-save-label"><h:outputText value="#{formateurGestionBean.modeEditionCours ? ' Enregistrer' : ' Créer le cours'}"/></span>
+        </p:commandLink>
+    </div>
+</p:dialog>
+
+
+<!-- ═══ DIALOG : QUESTIONS QUIZ ═════════════════════════════════════ -->
+<p:dialog id="dlgQuizId" header="Questions du quiz"
+          widgetVar="dlgQuiz" modal="true" responsive="true"
+          style="width:min(700px,96vw);">
+
+    <!-- Liste questions -->
+    <h:panelGroup rendered="#{not empty formateurGestionBean.questions}" layout="block"
+                  style="max-height:280px;overflow-y:auto;margin-bottom:12px;">
+        <ui:repeat value="#{formateurGestionBean.questions}" var="q" varStatus="vs">
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;
+                        padding:12px;margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                    <span style="font-size:12px;font-weight:600;color:#0F172A;">
+                        Q<h:outputText value="#{vs.index+1}"/> — <h:outputText value="#{q.question}"/>
+                    </span>
+                    <p:commandLink styleClass="tbl-btn tbl-btn-red"
+                                     style="padding:3px 8px!important;"
+                                     action="#{formateurGestionBean.supprimerQuestion(q.id)}"
+                                     update=":fGestion" process="@none" immediate="true">
+                        <i class="ti ti-trash"></i>
+                    </p:commandLink>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:#64748B;">
+                    <span style="#{q.bonneReponse eq 'A' ? 'color:#059669;font-weight:700;' : ''}">
+                        A. <h:outputText value="#{q.optionA}"/>
+                    </span>
+                    <span style="#{q.bonneReponse eq 'B' ? 'color:#059669;font-weight:700;' : ''}">
+                        B. <h:outputText value="#{q.optionB}"/>
+                    </span>
+                    <span style="#{q.bonneReponse eq 'C' ? 'color:#059669;font-weight:700;' : ''}">
+                        C. <h:outputText value="#{q.optionC}"/>
+                    </span>
+                    <span style="#{q.bonneReponse eq 'D' ? 'color:#059669;font-weight:700;' : ''}">
+                        D. <h:outputText value="#{q.optionD}"/>
+                    </span>
+                </div>
+            </div>
+        </ui:repeat>
+    </h:panelGroup>
+    <h:panelGroup rendered="#{empty formateurGestionBean.questions}" layout="block">
+        <div class="empty-state" style="padding:20px;">
+            <i class="ti ti-help-circle" style="font-size:28px;color:#CBD5E1;display:block;margin-bottom:6px;"></i>
+            Aucune question. Ajoutez-en une ci-dessous.
+        </div>
+    </h:panelGroup>
+
+    <!-- Formulaire nouvelle question -->
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:14px;">
+        <div style="font-size:11px;font-weight:700;color:#1D4ED8;margin-bottom:10px;text-transform:uppercase;">
+            <i class="ti ti-plus"></i> Nouvelle question
+        </div>
+        <div style="margin-bottom:8px;">
+            <label class="dlg-label">Question *</label>
+            <p:inputTextarea value="#{formateurGestionBean.questionForm.question}" rows="2"
+                             required="true" styleClass="dlg-input" autoResize="true"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div><label class="dlg-label">Option A *</label>
+                <p:inputText value="#{formateurGestionBean.questionForm.optionA}" required="true" styleClass="dlg-input"/></div>
+            <div><label class="dlg-label">Option B *</label>
+                <p:inputText value="#{formateurGestionBean.questionForm.optionB}" required="true" styleClass="dlg-input"/></div>
+            <div><label class="dlg-label">Option C</label>
+                <p:inputText value="#{formateurGestionBean.questionForm.optionC}" styleClass="dlg-input"/></div>
+            <div><label class="dlg-label">Option D</label>
+                <p:inputText value="#{formateurGestionBean.questionForm.optionD}" styleClass="dlg-input"/></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-end;">
+            <div>
+                <label class="dlg-label">Bonne réponse *</label>
+                <p:selectOneMenu value="#{formateurGestionBean.questionForm.bonneReponse}"
+                                 styleClass="dlg-input" style="min-width:80px;">
+                    <f:selectItem itemLabel="—" itemValue="#{null}"/>
+                    <f:selectItem itemLabel="A" itemValue="A"/>
+                    <f:selectItem itemLabel="B" itemValue="B"/>
+                    <f:selectItem itemLabel="C" itemValue="C"/>
+                    <f:selectItem itemLabel="D" itemValue="D"/>
+                </p:selectOneMenu>
+            </div>
+            <div>
+                <label class="dlg-label">Points</label>
+                <p:inputText value="#{formateurGestionBean.questionForm.points}"
+                             styleClass="dlg-input" style="width:60px;" placeholder="1"/>
+            </div>
+            <p:commandLink styleClass="btn-primary btn-blue"
+                             style="height:34px;padding:0 14px;"
+                             action="#{formateurGestionBean.ajouterQuestion}"
+                             update=":fGestion" process="dlgQuizId">
+                <i class="ti ti-plus"></i> Ajouter
+            </p:commandLink>
+        </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+        <button type="button" class="btn-primary btn-gray" onclick="PF('dlgQuiz').hide();">
+            Fermer
+        </button>
+    </div>
+</p:dialog>
+
+</h:form>
+
+
+<!-- ═══ DIALOG : SOUMISSIONS (form séparé) ══════════════════════════ -->
+<h:form id="fSoum">
+<p:dialog id="dlgSoumId"
+          widgetVar="dlgSoum" modal="true" responsive="true"
+          style="width:min(800px,96vw);">
+    <f:facet name="header">
+        <span>
+            <i class="ti ti-clipboard-check" style="margin-right:6px;color:#D97706;"></i>
+            Copies soumises —
+            <h:outputText value="#{formateurGestionBean.coursSoumission.titre}"/>
+            <span style="margin-left:10px;font-size:11px;color:#94A3B8;">
+                Barème : <h:outputText value="#{formateurGestionBean.coursSoumission.baremeOu20}"/> pts
+            </span>
+        </span>
+    </f:facet>
+
+    <p:messages id="msgsSoum" showDetail="true" closable="true" style="margin-bottom:10px;"/>
+
+    <!-- Compteurs -->
+    <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:10px 16px;font-size:12px;">
+            <strong style="font-size:18px;display:block;color:#1D4ED8;">
+                <h:outputText value="#{formateurGestionBean.nbSoumissions}"/>
+            </strong>
+            soumission(s)
+        </div>
+        <div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:10px 16px;font-size:12px;">
+            <strong style="font-size:18px;display:block;color:#D97706;">
+                <h:outputText value="#{formateurGestionBean.nbEnAttente}"/>
+            </strong>
+            en attente
+        </div>
+        <a href="#{request.contextPath}/formateur-corrections.xhtml"
+           style="display:flex;align-items:center;gap:6px;padding:10px 14px;background:#F8FAFC;
+                  border:1px solid #E2E8F0;border-radius:8px;font-size:12px;color:#475569;text-decoration:none;">
+            <i class="ti ti-external-link"></i> Voir page Corrections complète
+        </a>
+    </div>
+
+    <!-- Vide -->
+    <h:panelGroup rendered="#{empty formateurGestionBean.soumissions}" layout="block">
+        <div class="empty-state" style="padding:30px;">
+            <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+            Aucune soumission pour ce cours.
+        </div>
+    </h:panelGroup>
+
+    <!-- Liste soumissions -->
+    <div style="max-height:500px;overflow-y:auto;">
+        <ui:repeat value="#{formateurGestionBean.soumissions}" var="s">
+            <div class="soum-item">
+                <div class="soum-av">
+                    <h:outputText value="#{not empty s.nomApprenant ? s.nomApprenant.substring(0,1).toUpperCase() : '?'}"/>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <!-- En-tête apprenant -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <strong style="font-size:13px;"><h:outputText value="#{s.nomApprenant}"/></strong>
+                            <span style="font-size:10px;color:#94A3B8;"><h:outputText value="#{s.dateCourteSoumission}"/></span>
+                            <h:panelGroup rendered="#{s.enRetard}">
+                                <span class="pill" style="background:#FEE2E2;color:#DC2626;">⚠ En retard</span>
+                            </h:panelGroup>
+                        </div>
+                        <span class="pill #{s.corrige ? 'pill-publie' : 'pill-attente'}">
+                            <h:outputText value="#{s.statutLabel}"/>
+                        </span>
+                    </div>
+
+                    <!-- Contenu soumis -->
+                    <h:panelGroup rendered="#{s.aTexte}" layout="block">
+                        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;
+                                    padding:8px 12px;font-size:12px;color:#374151;margin-bottom:6px;
+                                    max-height:100px;overflow-y:auto;white-space:pre-wrap;">
+                            <h:outputText value="#{s.contenuTexte}"/>
+                        </div>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{s.aFichier}" layout="block">
+                        <a href="#{request.contextPath}/../formation_service/#{s.urlFichier}"
+                           target="_blank" class="tbl-btn tbl-btn-blue"
+                           style="display:inline-flex;margin-bottom:6px;">
+                            <i class="ti ti-download"></i>
+                            <h:outputText value="#{s.nomFichierOriginal}"/>
+                            (<h:outputText value="#{s.tailleFormatee}"/>)
+                        </a>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{s.aLien}" layout="block">
+                        <a href="#{s.lienUrl}" target="_blank"
+                           style="font-size:11px;color:#059669;display:block;margin-bottom:6px;word-break:break-all;">
+                            <i class="ti ti-external-link"></i>
+                            <h:outputText value="#{s.lienUrl}"/>
+                        </a>
+                    </h:panelGroup>
+
+                    <!-- Note existante -->
+                    <h:panelGroup rendered="#{s.corrige}" layout="block">
+                        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;
+                                    padding:8px 12px;font-size:12px;margin-bottom:6px;">
+                            <strong style="color:#065F46;">
+                                &#x2713; Note : <h:outputText value="#{s.note}"/>/<h:outputText value="#{formateurGestionBean.coursSoumission.baremeOu20}"/>
+                            </strong>
+                            <h:panelGroup rendered="#{not empty s.commentaireFormateur}">
+                                <span style="margin-left:10px;color:#374151;">
+                                    <h:outputText value="#{s.commentaireFormateur}"/>
+                                </span>
+                            </h:panelGroup>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Formulaire notation -->
+                    <div class="nota-row">
+                        <span style="font-size:11px;font-weight:600;color:#64748B;white-space:nowrap;">
+                            Note / <h:outputText value="#{formateurGestionBean.coursSoumission.baremeOu20}"/> :
+                        </span>
+                        <p:inputText value="#{s.noteSaisie}" styleClass="nota-input" placeholder="0"/>
+                        <p:inputText value="#{s.commentaireSaisie}"
+                                     styleClass="dlg-input" placeholder="Commentaire (optionnel)"
+                                     style="flex:1;min-width:120px;"/>
+                        <p:commandLink styleClass="btn-primary btn-green"
+                                         style="padding:5px 12px;"
+                                         action="#{formateurGestionBean.noter(s)}"
+                                         update="fSoum" process="fSoum">
+                            <i class="ti ti-check"></i> Valider
+                        </p:commandLink>
+                    </div>
+                </div>
+            </div>
+        </ui:repeat>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;padding-top:12px;border-top:1px solid #E2E8F0;">
+        <button type="button" class="btn-primary btn-gray" onclick="PF('dlgSoum').hide();">
+            Fermer
+        </button>
+    </div>
+</p:dialog>
+</h:form>
+
+
+<!-- ═══ DIALOG : UPLOAD FICHIER ═════════════════════════════════════ -->
+<h:form id="fUpload">
+<p:dialog id="dlgUploadId" header="D&#233;poser un fichier"
+          widgetVar="dlgUpload" modal="true" responsive="true"
+          style="width:min(460px,96vw);">
+    <div style="padding:8px 0 16px;">
+        <h:panelGroup rendered="#{formateurGestionBean.coursUpload != null}" layout="block">
+            <!-- Info cours -->
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+                        background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:12px;">
+                <i class="ti #{formateurGestionBean.coursUpload.typeIcon}"
+                   style="font-size:18px;color:#{formateurGestionBean.coursUpload.typeCouleur};"></i>
+                <div>
+                    <div style="font-size:13px;font-weight:600;"><h:outputText value="#{formateurGestionBean.coursUpload.titre}"/></div>
+                    <div style="font-size:11px;color:#94A3B8;"><h:outputText value="#{formateurGestionBean.coursUpload.typeLabel}"/></div>
+                </div>
+            </div>
+            <!-- Contexte TP/Devoir/Examen -->
+            <!-- Contexte TP/Devoir/Examen -->
+            <h:panelGroup rendered="#{formateurGestionBean.coursUpload.travauxPratiques}" layout="block">
+                <div style="padding:8px 12px;background:#FFFBEB;border:1px solid #FDE68A;
+                            border-radius:7px;margin-bottom:12px;font-size:11px;color:#92400E;">
+                    <i class="ti ti-info-circle"></i>
+                    Ce fichier sera l&apos;<strong>enonce / support</strong> visible par les apprenants.
+                    Privilegiez le <strong>format PDF</strong>.
+                </div>
+            </h:panelGroup>
+        </h:panelGroup>
+
+        <!-- Fichier actuel -->
+        <h:panelGroup rendered="#{formateurGestionBean.coursUpload != null and not empty formateurGestionBean.coursUpload.cheminFichier}"
+                      layout="block">
+            <div style="padding:10px 14px;background:#F0FDF4;border:1px solid #BBF7D0;
+                        border-radius:8px;margin-bottom:14px;font-size:12px;color:#065F46;">
+                <i class="ti ti-check"></i>
+                <strong>Fichier actuel :</strong>
+                <h:outputText value="#{formateurGestionBean.coursUpload.nomFichierOriginal}"/>
+                (<h:outputText value="#{formateurGestionBean.coursUpload.tailleFormatee}"/>)
+            </div>
+        </h:panelGroup>
+
+        <!-- Zone upload -->
+        <p:fileUpload listener="#{formateurGestionBean.handleUpload}"
+                      mode="advanced" multiple="false" auto="false"
+                      label="Choisir un fichier" uploadLabel="Envoyer" cancelLabel="Annuler"
+                      allowTypes="/(\.|\/)(pdf|doc|docx|zip|rar|mp4|avi|mkv|mov|jpg|jpeg|png|gif)$/i"
+                      maxFileSize="104857600"
+                      update=":fGestion"
+                      oncomplete="PF('dlgUpload').hide();"/>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;padding-top:10px;border-top:1px solid #E2E8F0;">
+        <button type="button" class="btn-primary btn-gray" onclick="PF('dlgUpload').hide();">
+            <i class="ti ti-x"></i> Fermer
+        </button>
+    </div>
+</p:dialog>
+</h:form>
+
+<script>
+//<![CDATA[
+function filterCours(type, btn) {
+    document.querySelectorAll('.filter-tab').forEach(function(b){ b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    var rows = document.querySelectorAll('#cours-table-main tbody tr[data-type]');
+    rows.forEach(function(tr) {
+        tr.style.display = (type === 'ALL' || tr.getAttribute('data-type') === type) ? '' : 'none';
+    });
+}
+function updateFilterCounts() {
+    var rows = document.querySelectorAll('#cours-table-main tbody tr[data-type]');
+    var counts = {};
+    rows.forEach(function(tr) { var t=tr.getAttribute('data-type'); counts[t]=(counts[t]||0)+1; });
+    var allEl = document.getElementById('cnt-ALL');
+    if (allEl) allEl.textContent = rows.length > 0 ? rows.length : '';
+    ['VIDEO','DOCUMENT','QUIZ','LIEN','LIVE','TP','DEVOIR','EXAMEN'].forEach(function(t) {
+        var el = document.getElementById('cnt-' + t);
+        if (el) el.textContent = counts[t] ? counts[t] : '';
+    });
+}
+function clearCoursForm() {
+    var dlg = document.getElementById('fGestion:dlgCoursId');
+    if (!dlg) return;
+    dlg.querySelectorAll('input[type=text], textarea').forEach(function(el){ el.value = ''; });
+    var sel = document.getElementById('fGestion:gestionTypeSelect_input');
+    if (sel) sel.value = '';
+    var lbl = document.querySelector('[id="fGestion:gestionTypeSelect_label"]');
+    if (lbl) lbl.textContent = '— Choisir —';
+    // Masquer toutes les sections type
+    ['g-field-url','g-field-duree','g-section-live','g-section-tp','g-section-devoir','g-section-examen']
+        .forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+    var btnLabel = document.getElementById('g-btn-save-label');
+    if (btnLabel) btnLabel.textContent = ' Créer le cours';
+    var dlgTitle = document.querySelector('.ui-dialog .ui-dialog-title');
+    if (dlgTitle) dlgTitle.textContent = 'Nouveau cours';
+}
+function gestionTypeChange(val) {
+    var G_URL   = ['VIDEO','DOCUMENT','LIEN'];
+    var G_DUREE = ['VIDEO','DOCUMENT','QUIZ'];
+    var fUrl   = document.getElementById('g-field-url');
+    var fDuree = document.getElementById('g-field-duree');
+    var live   = document.getElementById('g-section-live');
+    var secTP  = document.getElementById('g-section-tp');
+    var secDev = document.getElementById('g-section-devoir');
+    var secEx  = document.getElementById('g-section-examen');
+    if (fUrl)   fUrl.style.display   = G_URL.indexOf(val)   >= 0 ? '' : 'none';
+    if (fDuree) fDuree.style.display = G_DUREE.indexOf(val) >= 0 ? '' : 'none';
+    if (live)   live.style.display   = (val === 'LIVE')   ? '' : 'none';
+    if (secTP)  secTP.style.display  = (val === 'TP')     ? '' : 'none';
+    if (secDev) secDev.style.display = (val === 'DEVOIR') ? '' : 'none';
+    if (secEx)  secEx.style.display  = (val === 'EXAMEN') ? '' : 'none';
+    var titlesMap = {VIDEO:'Nouveau cours video',DOCUMENT:'Nouveau document',QUIZ:'Nouveau quiz',
+        LIEN:'Nouveau lien',LIVE:'Nouvelle session live',
+        TP:'Nouveau TP',DEVOIR:'Nouveau devoir',EXAMEN:'Nouvel examen'};
+    var dlgTitle = document.querySelector('.ui-dialog .ui-dialog-title');
+    if (dlgTitle && val && titlesMap[val]) dlgTitle.textContent = titlesMap[val];
+    var btnLabels = {VIDEO:' Creer le cours',DOCUMENT:' Creer le document',
+        QUIZ:' Creer le quiz',LIEN:' Creer le lien',LIVE:' Creer la session',
+        TP:' Creer le TP',DEVOIR:' Creer le devoir',EXAMEN:" Creer l'examen"};
+    var btnLabel = document.getElementById('g-btn-save-label');
+    if (btnLabel && val && btnLabels[val]) btnLabel.textContent = btnLabels[val];
+    var sel = document.getElementById('fGestion:gestionTypeSelect_input');
+    if (sel && val && sel.value !== val) {
+        sel.value = val;
+        var label = document.querySelector('[id="fGestion:gestionTypeSelect_label"]');
+        var optsMap = {VIDEO:'Video',DOCUMENT:'Document',QUIZ:'Quiz',LIEN:'Lien web',
+            LIVE:'Session live',TP:'TP (Travaux Pratiques)',
+            DEVOIR:'Devoir a rendre',EXAMEN:'Examen'};
+        if (label && optsMap[val]) label.textContent = optsMap[val];
+    }
+}
+document.addEventListener('DOMContentLoaded', updateFilterCounts);
+//]]>
+</script>
+
+</h:panelGroup>
+</h:panelGroup>
+
+</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,109 @@
+
+<style>
+.nb-wrap { padding: 1rem 0; }
+.nb-search { width: 100%; box-sizing: border-box; margin-bottom: 1rem; }
+.nb-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+.nb-pill { font-size: 12px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-secondary); color: var(--color-text-secondary); cursor: pointer; }
+.nb-pill.active { background: var(--color-background-info); color: var(--color-text-info); border-color: var(--color-border-info); }
+.nb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+.nb-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; }
+.nb-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.nb-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+.nb-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
+.nb-role { font-size: 12px; color: var(--color-text-secondary); margin: 0; }
+.nb-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--color-text-secondary); padding: 3px 0; }
+.nb-row i { font-size: 14px; flex-shrink: 0; }
+.nb-row span { color: var(--color-text-primary); font-size: 12px; user-select: all; }
+.nb-pass { font-family: monospace; font-size: 12px; background: var(--color-background-secondary); padding: 2px 6px; border-radius: 4px; color: var(--color-text-primary); user-select: all; }
+.nb-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; margin-left: auto; }
+.nb-empty { text-align: center; color: var(--color-text-secondary); font-size: 14px; padding: 2rem; grid-column: 1/-1; }
+</style>
+
+<div class="nb-wrap">
+  <h2 class="sr-only">Liste des comptes de test SenExpert</h2>
+  <input class="nb-search" type="search" placeholder="Rechercher par nom, email…" id="search" oninput="filter()">
+  <div class="nb-filters" id="pills"></div>
+  <div class="nb-grid" id="grid"></div>
+</div>
+
+<script>
+const users = [
+  { prenom:"Super", nom:"Admin", email:"admin@senexpert.sn", mdp:"Admin1234!", role:"ADMIN", statut:"ACTIF", tel:"+221 33 800 00 00", inst:null },
+  { prenom:"Moussa", nom:"Niang", email:"moussa.niang@sef.sn", mdp:"Agent1234!", role:"AGENT SEF", statut:"ACTIF", tel:"+221 77 100 10 01", inst:null },
+  { prenom:"Rokhaya", nom:"Diallo", email:"rokhaya.diallo@sef.sn", mdp:"Agent1234!", role:"AGENT SEF", statut:"ACTIF", tel:"+221 77 100 10 02", inst:null },
+  { prenom:"Babacar", nom:"Sow", email:"babacar.sow@sef.sn", mdp:"Agent1234!", role:"AGENT SEF", statut:"ACTIF", tel:"+221 77 100 10 03", inst:null },
+  { prenom:"Ndeye", nom:"Fall", email:"ndeye.fall@sef.sn", mdp:"Agent1234!", role:"AGENT SEF", statut:"ACTIF", tel:"+221 77 100 10 04", inst:null },
+  { prenom:"Lamine", nom:"Diop", email:"lamine.diop@dakartech.sn", mdp:"Agent1234!", role:"AGENT INST.", statut:"ACTIF", tel:"+221 76 200 20 01", inst:"DakarTech SA" },
+  { prenom:"Aissatou", nom:"Ba", email:"a.ba@ongsenvert.sn", mdp:"Agent1234!", role:"AGENT INST.", statut:"ACTIF", tel:"+221 76 200 20 02", inst:"ONG SenVert" },
+  { prenom:"Cheikh", nom:"Traore", email:"c.traore@education.sn", mdp:"Agent1234!", role:"AGENT INST.", statut:"ACTIF", tel:"+221 76 200 20 03", inst:"Min. Éducation" },
+  { prenom:"Ibou", nom:"Sarr", email:"ibou.sarr@sonatel.sn", mdp:"Agent1234!", role:"AGENT INST.", statut:"ACTIF", tel:"+221 76 200 20 04", inst:"SONATEL" },
+  { prenom:"Mamadou", nom:"Diallo", email:"mamadou.diallo@gmail.com", mdp:"Pass1234!", role:"PARTICULIER", statut:"ACTIF", tel:"+221 77 300 30 01", inst:null },
+  { prenom:"Fatou", nom:"Seck", email:"fatou.seck@gmail.com", mdp:"Pass1234!", role:"PARTICULIER", statut:"ACTIF", tel:"+221 77 300 30 02", inst:null },
+  { prenom:"Lamine", nom:"Gueye", email:"lamine.gueye@yahoo.fr", mdp:"Pass1234!", role:"PARTICULIER", statut:"ACTIF", tel:"+221 77 300 30 03", inst:null },
+  { prenom:"Awa", nom:"Traore", email:"awa.traore@gmail.com", mdp:"Pass1234!", role:"PARTICULIER", statut:"ACTIF", tel:"+221 77 300 30 04", inst:null },
+  { prenom:"Marieme", nom:"Diop", email:"marieme.diop@gmail.com", mdp:"Pass1234!", role:"PARTICULIER", statut:"ACTIF", tel:"+221 77 300 30 05", inst:null },
+  { prenom:"Ibrahima", nom:"Ndiaye", email:"ibrahima.ndiaye@gmail.com", mdp:"Pass1234!", role:"PARTICULIER", statut:"ACTIF", tel:"+221 77 300 30 06", inst:null },
+  { prenom:"Ousmane", nom:"Fall", email:"ousmane.fall@gmail.com", mdp:"Pass1234!", role:"PARTICULIER", statut:"EN ATTENTE", tel:"+221 78 400 40 01", inst:null },
+  { prenom:"Aida", nom:"Ndiaye", email:"aida.ndiaye@gmail.com", mdp:"Pass1234!", role:"PARTICULIER", statut:"EN ATTENTE", tel:"+221 78 400 40 02", inst:null },
+  { prenom:"Test", nom:"Suspendu", email:"test.suspendu@gmail.com", mdp:"Pass1234!", role:"PARTICULIER", statut:"INACTIF", tel:"+221 70 000 00 00", inst:null },
+  { prenom:"Amadou", nom:"Diallo", email:"formateur@test.com", mdp:"Form1234!", role:"FORMATEUR", statut:"ACTIF", tel:"+221 77 000 00 00", inst:null },
+];
+
+const roleColors = {
+  "ADMIN":       { bg:"#E6F1FB", color:"#0C447C" },
+  "AGENT SEF":   { bg:"#EAF3DE", color:"#3B6D11" },
+  "AGENT INST.": { bg:"#EEEDFE", color:"#3C3489" },
+  "PARTICULIER": { bg:"#FAEEDA", color:"#854F0B" },
+  "FORMATEUR":   { bg:"#E1F5EE", color:"#0F6E56" },
+};
+const statutColors = {
+  "ACTIF":      { bg:"var(--color-background-success)", color:"var(--color-text-success)" },
+  "EN ATTENTE": { bg:"var(--color-background-warning)", color:"var(--color-text-warning)" },
+  "INACTIF":    { bg:"var(--color-background-danger)",  color:"var(--color-text-danger)"  },
+};
+
+function initials(u){ return (u.prenom[0]+u.nom[0]).toUpperCase(); }
+
+const roles = ["Tous", ...new Set(users.map(u=>u.role))];
+let activeRole = "Tous", searchVal = "";
+
+function renderPills(){
+  const c = document.getElementById("pills");
+  c.innerHTML = roles.map(r=>`<button class="nb-pill${activeRole===r?" active":""}" onclick="setRole('${r}')">${r}</button>`).join("");
+}
+
+function setRole(r){ activeRole=r; renderPills(); renderCards(); }
+function filter(){ searchVal=document.getElementById("search").value.toLowerCase(); renderCards(); }
+
+function renderCards(){
+  const grid = document.getElementById("grid");
+  const list = users.filter(u=>{
+    const matchRole = activeRole==="Tous" || u.role===activeRole;
+    const matchSearch = !searchVal || (u.prenom+" "+u.nom+" "+u.email).toLowerCase().includes(searchVal);
+    return matchRole && matchSearch;
+  });
+  if(!list.length){ grid.innerHTML='<div class="nb-empty"><i class="ti ti-search" style="font-size:24px;display:block;margin-bottom:8px"></i>Aucun résultat</div>'; return; }
+  const rc = roleColors;
+  const sc = statutColors;
+  grid.innerHTML = list.map(u=>{
+    const av = rc[u.role]||rc["PARTICULIER"];
+    const st = sc[u.statut]||sc["ACTIF"];
+    return `<div class="nb-card">
+      <div class="nb-head">
+        <div class="nb-avatar" style="background:${av.bg};color:${av.color}">${initials(u)}</div>
+        <div style="flex:1;min-width:0">
+          <p class="nb-name">${u.prenom} ${u.nom}</p>
+          <p class="nb-role">${u.role}${u.inst?" · "+u.inst:""}</p>
+        </div>
+        <span class="nb-badge" style="background:${st.bg};color:${st.color}">${u.statut}</span>
+      </div>
+      <div class="nb-row"><i class="ti ti-mail" aria-hidden="true"></i><span>${u.email}</span></div>
+      <div class="nb-row"><i class="ti ti-lock" aria-hidden="true"></i><span class="nb-pass">${u.mdp}</span></div>
+      <div class="nb-row"><i class="ti ti-phone" aria-hidden="true"></i><span>${u.tel}</span></div>
+    </div>`;
+  }).join("");
+}
+
+renderPills();
+renderCards();
+</script>

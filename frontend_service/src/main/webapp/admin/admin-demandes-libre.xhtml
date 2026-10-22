@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:fn="jakarta.tags.functions">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Formations à la carte</ui:define>
+    <ui:define name="content">
+
+<style>
+.a-actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.ui-column-filter { display:none !important; }
+.abtn-sm { padding:5px 10px !important; font-size:11px !important; font-weight:600 !important;
+    border-radius:6px !important; border:none !important; cursor:pointer !important;
+    transition:opacity .15s !important; white-space:nowrap !important; }
+.abtn-sm:hover { opacity:.85 !important; }
+.abtn-sm-ok   { background:#059669 !important; color:#fff !important; }
+.abtn-sm-ko   { background:#DC2626 !important; color:#fff !important; }
+.abtn-sm-eye  { background:#2563EB !important; color:#fff !important; }
+.abtn-sm-prop { background:#7C3AED !important; color:#fff !important; }
+.dl-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem 1.25rem; padding:1rem; }
+.dl-detail-full { grid-column:1/-1; }
+.dl-lbl { font-size:.75rem; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:.03em; margin-bottom:2px; }
+.dl-val { font-size:.875rem; color:#111827; }
+.dl-module-card { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:.6rem .9rem; margin-bottom:.5rem; }
+.dl-module-card .mod-title { font-weight:600; font-size:.85rem; color:#1e40af; }
+.dl-module-card .mod-meta  { font-size:.75rem; color:#64748B; margin-top:2px; }
+.dl-section-title { font-size:.8rem; font-weight:700; color:#374151; text-transform:uppercase;
+    letter-spacing:.05em; border-bottom:1px solid #E5E7EB; padding-bottom:4px; margin:1rem 1rem .5rem; }
+.prop-summary { background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px;
+    padding:.75rem 1rem; margin:1rem 1rem 0;
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem; }
+.prop-summary .ps-lbl { font-size:.7rem; color:#2563EB; font-weight:600; text-transform:uppercase; }
+.prop-summary .ps-val { font-size:.85rem; color:#1E3A8A; font-weight:600; }
+.mode-btn { display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+    padding:7px 14px; border-radius:8px; border:2px solid #E5E7EB;
+    font-size:.85rem; font-weight:500; background:#fff; color:#374151;
+    transition:all .15s; user-select:none; }
+.mode-btn.active { background:#EFF6FF; border-color:#2563EB; color:#1D4ED8; }
+.ui-widget-overlay { position:fixed !important; top:0 !important; left:0 !important;
+    width:100vw !important; height:100vh !important;
+    background:rgba(0,0,0,.55) !important; backdrop-filter:blur(2px) !important; z-index:1000 !important; }
+.ui-dialog { z-index:1001 !important; border-radius:12px !important;
+    box-shadow:0 20px 60px rgba(0,0,0,.3) !important; overflow:hidden !important; }
+.ui-dialog .ui-dialog-titlebar { background:#1E293B !important; color:#fff !important;
+    font-weight:600 !important; border-radius:12px 12px 0 0 !important; padding:14px 18px !important; }
+.ui-dialog .ui-dialog-titlebar .ui-dialog-title { color:#fff !important; font-size:.95rem; }
+.ui-dialog .ui-dialog-titlebar-close { color:#94A3B8 !important; }
+.ui-dialog .ui-dialog-titlebar-close:hover { color:#fff !important; }
+.ui-dialog .ui-dialog-content { padding:0 !important; background:#fff !important; }
+
+/* Proposition form inputs */
+.pf-input { width:100%; box-sizing:border-box; padding:9px 13px;
+    border:1.5px solid #E5E7EB; border-radius:8px; font-size:13.5px;
+    font-family:inherit; color:#111827; background:#fff; outline:none;
+    transition:border-color .15s, box-shadow .15s; }
+.pf-input:focus { border-color:#6366F1; box-shadow:0 0 0 3px rgba(99,102,241,.1); }
+.pf-input::placeholder { color:#9CA3AF; }
+.pf-label { font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:6px; }
+.pf-sublabel { font-size:12px; color:#9CA3AF; margin:0 0 6px; }
+.pf-field { margin-bottom:16px; }
+.pf-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+.pf-section { display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700;
+    color:#6B7280; text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px; }
+/* PrimeFaces datePicker override */
+.pf-date .ui-inputtext { width:100% !important; box-sizing:border-box !important;
+    padding:9px 13px !important; border:1.5px solid #E5E7EB !important;
+    border-radius:8px !important; font-size:13.5px !important; font-family:inherit !important;
+    color:#111827 !important; background:#fff !important; outline:none !important; }
+.pf-date .ui-inputtext:focus { border-color:#6366F1 !important;
+    box-shadow:0 0 0 3px rgba(99,102,241,.1) !important; }
+.pf-date { display:block; }
+/* info note */
+.pf-note { font-size:12px; color:#6B7280; display:flex; align-items:center;
+    gap:7px; background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px;
+    padding:9px 13px; margin-top:8px; }
+/* ref box */
+.pf-ref { background:#EFF6FF; border-radius:10px; padding:14px 16px; margin-bottom:20px; }
+.pf-ref-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px; }
+.pf-ref-lbl { font-size:10.5px; color:#2563EB; margin:0 0 2px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.pf-ref-val { font-size:14px; font-weight:700; margin:0; color:#1E3A8A; }
+/* footer */
+.pf-footer { display:flex; justify-content:flex-end; gap:10px;
+    padding:14px 24px; border-top:1.5px solid #F1F5F9; margin-top:4px; }
+.pf-btn-cancel { padding:9px 20px; border-radius:8px; border:1.5px solid #E5E7EB;
+    background:#fff; color:#374151; font-size:13.5px; font-weight:600; cursor:pointer;
+    font-family:inherit; transition:background .15s; }
+.pf-btn-cancel:hover { background:#F9FAFB; }
+.pf-btn-submit { padding:9px 22px; border-radius:8px; border:none;
+    background:#059669; color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;
+    font-family:inherit; transition:opacity .15s; display:flex; align-items:center; gap:7px; }
+.pf-btn-submit:hover { opacity:.88; }
+</style>
+
+<script>
+if (typeof PrimeFaces !== 'undefined') {
+    PrimeFaces.locales['fr'] = {
+        firstDay: 1,
+        dayNames: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],
+        dayNamesShort: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
+        dayNamesMin: ['Di','Lu','Ma','Me','Je','Ve','Sa'],
+        monthNames: ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
+        monthNamesShort: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
+        today: "Aujourd'hui",
+        clear: 'Effacer',
+        dateFormat: 'dd/mm/yy',
+        weekHeader: 'Sem'
+    };
+} else {
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof PrimeFaces !== 'undefined') {
+            PrimeFaces.locales['fr'] = {
+                firstDay: 1,
+                dayNames: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],
+                dayNamesShort: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
+                dayNamesMin: ['Di','Lu','Ma','Me','Je','Ve','Sa'],
+                monthNames: ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
+                monthNamesShort: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
+                today: "Aujourd'hui",
+                clear: 'Effacer',
+                dateFormat: 'dd/mm/yy',
+                weekHeader: 'Sem'
+            };
+        }
+    });
+}
+</script>
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div class="a-denied"><div class="icon">🚫</div><h2>Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div class="a-header">
+                <div class="a-header-left">
+                    <h1>🎓 Formations à la carte</h1>
+                    <p>Demandes sur mesure soumises par les institutions et les particuliers</p>
+                </div>
+            </div>
+
+            <div class="a-stats">
+                <div class="a-stat" style="border-top-color:#7C3AED;">
+                    <div class="sv"><h:outputText value="#{adminDashboardBean.nbDemandesLibres}"/></div>
+                    <div class="sl">Total demandes</div>
+                </div>
+                <div class="a-stat" style="border-top-color:#D97706;">
+                    <div class="sv" style="color:#D97706;"><h:outputText value="#{adminDashboardBean.nbDemandesLibresEnAttente}"/></div>
+                    <div class="sl">En attente</div>
+                </div>
+                <div class="a-stat" style="border-top-color:#059669;">
+                    <div class="sv" style="color:#059669;"><h:outputText value="#{adminDashboardBean.nbDemandesLibresValidees}"/></div>
+                    <div class="sl">Validées</div>
+                </div>
+                <div class="a-stat" style="border-top-color:#DC2626;">
+                    <div class="sv" style="color:#DC2626;"><h:outputText value="#{adminDashboardBean.nbDemandesLibresRejetees}"/></div>
+                    <div class="sl">Rejetées</div>
+                </div>
+            </div>
+
+            <div class="a-card">
+                <div class="a-card-header">
+                    <h2>Liste des demandes à la carte</h2>
+                    <span class="a-count"><h:outputText value="#{adminDashboardBean.nbDemandesLibres}"/> demande(s)</span>
+                </div>
+                <h:form id="fLibre">
+                    <p:messages id="msgsLibre" showDetail="true" closable="true" style="margin:12px;"/>
+                    <p:dataTable id="tblLibre" widgetVar="dtLibre"
+                                 value="#{adminDashboardBean.demandesLibres}"
+                                 filteredValue="#{adminDashboardBean.filteredDemandesLibres}"
+                                 var="dl" paginator="true" rows="10"
+                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                 emptyMessage="Aucune demande à la carte reçue.">
+                        <f:facet name="header">
+                            <div style="display:flex;align-items:center;gap:10px;padding:10px 14px 14px;">
+                                <i class="ti ti-search" style="color:#94A3B8;"></i>
+                                <p:inputText id="globalFilter" onkeyup="PF('dtLibre').filter()"
+                                             placeholder="Rechercher par demandeur, domaine…"
+                                             style="width:280px;padding:7px 12px;font-size:13px;border:1px solid #CBD5E1;border-radius:8px;font-family:inherit;"/>
+                                <span style="font-size:12px;color:#94A3B8;">Les EN ATTENTE apparaissent en premier</span>
+                            </div>
+                        </f:facet>
+                        <p:column headerText="#" style="width:45px;text-align:center;">
+                            <span style="font-size:12px;color:#999;">#<h:outputText value="#{dl.id}"/></span>
+                        </p:column>
+                        <p:column headerText="Demandeur" style="width:150px;" filterBy="#{dl.institutionNom}" filterMatchMode="contains">
+                            <div style="font-weight:600;color:#1a1a1a;font-size:13px;"><h:outputText value="#{dl.institutionNom}"/></div>
+                        </p:column>
+                        <p:column headerText="Domaine" style="width:130px;" filterBy="#{dl.domaine}" filterMatchMode="contains">
+                            <span class="ab ab-info"><h:outputText value="#{dl.domaine}"/></span>
+                        </p:column>
+                        <p:column headerText="Description">
+                            <span style="font-size:12px;color:#444;">
+                                <h:outputText value="#{fn:length(dl.description) gt 80 ? fn:substring(dl.description, 0, 80) += '…' : dl.description}"/>
+                            </span>
+                        </p:column>
+                        <p:column headerText="Part." style="width:55px;text-align:center;">
+                            <span style="font-size:13px;font-weight:600;color:#2563EB;">
+                                <h:outputText value="#{dl.nbParticipants != null ? dl.nbParticipants : '—'}"/>
+                            </span>
+                        </p:column>
+                        <p:column headerText="Date" style="width:95px;">
+                            <span style="font-size:12px;color:#666;"><h:outputText value="#{dl.dateDemande}"/></span>
+                        </p:column>
+                        <p:column headerText="Statut" style="width:110px;">
+                            <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}"><span class="ab ab-wait">En attente</span></h:panelGroup>
+                            <h:panelGroup rendered="#{dl.statut eq 'PROPOSITION_RECUE'}"><span class="ab" style="background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd;">📋 Proposée</span></h:panelGroup>
+                            <h:panelGroup rendered="#{dl.statut eq 'VALIDEE'}"><span class="ab ab-ok">Validée</span></h:panelGroup>
+                            <h:panelGroup rendered="#{dl.statut eq 'REJETEE'}"><span class="ab ab-ko">Rejetée</span></h:panelGroup>
+                        </p:column>
+                        <p:column headerText="Actions" style="width:230px;">
+                            <div class="a-actions">
+                                <p:commandButton value="👁 Voir" styleClass="abtn-sm abtn-sm-eye"
+                                                 action="#{adminDashboardBean.ouvrirDetailDemandeLibre(dl.id)}"
+                                                 update=":fDetailDemande" oncomplete="PF('dlgDetailDemande').show()"/>
+                                <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}" styleClass="a-actions">
+                                    <p:commandButton value="✓" title="Valider directement" styleClass="abtn-sm abtn-sm-ok"
+                                                     action="#{adminDashboardBean.validerDemandeLibre(dl.id)}"
+                                                     update=":fLibre :fLibre:msgsLibre"/>
+                                    <p:commandButton value="📋 Proposition" styleClass="abtn-sm abtn-sm-prop"
+                                                     action="#{adminDashboardBean.ouvrirFormulaireProposition(dl.id)}"
+                                                     update=":fProposition" oncomplete="PF('dlgProposition').show()"/>
+                                    <p:commandButton value="✗" title="Rejeter" styleClass="abtn-sm abtn-sm-ko"
+                                                     action="#{adminDashboardBean.rejeterDemandeLibre(dl.id)}"
+                                                     update=":fLibre :fLibre:msgsLibre"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dl.statut eq 'PROPOSITION_RECUE'}">
+                                    <p:commandButton value="✏️ Modifier" title="Modifier la proposition" styleClass="abtn-sm abtn-sm-prop"
+                                                     action="#{adminDashboardBean.ouvrirFormulaireProposition(dl.id)}"
+                                                     update=":fProposition" oncomplete="PF('dlgProposition').show()"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dl.statut eq 'VALIDEE'}">
+                                    <span style="font-size:11px;color:#16a34a;font-weight:600;">✓ Traitée</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dl.statut eq 'REJETEE'}">
+                                    <span style="font-size:11px;color:#dc2626;font-weight:600;">✗ Rejetée</span>
+                                </h:panelGroup>
+                            </div>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+            </div>
+
+            <!-- ═══ Dialog : Détail demande ═══ -->
+            <h:form id="fDetailDemande">
+            <p:dialog header="Détail de la demande" widgetVar="dlgDetailDemande"
+                      modal="true" resizable="false" width="700" styleClass="a-dialog">
+                <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee != null}">
+                    <div class="dl-section-title">Informations générales</div>
+                    <div class="dl-detail-grid">
+                        <div>
+                            <div class="dl-lbl">Demandeur</div>
+                            <div class="dl-val" style="font-weight:700;"><h:outputText value="#{adminDashboardBean.demandeLibreSelectee.institutionNom}"/></div>
+                        </div>
+                        <div>
+                            <div class="dl-lbl">Statut</div>
+                            <div class="dl-val">
+                                <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee.statut eq 'EN_ATTENTE'}"><span class="ab ab-wait">En attente</span></h:panelGroup>
+                                <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee.statut eq 'PROPOSITION_RECUE'}"><span class="ab" style="background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd;">📋 Proposition envoyée</span></h:panelGroup>
+                                <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee.statut eq 'VALIDEE'}"><span class="ab ab-ok">Validée</span></h:panelGroup>
+                                <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee.statut eq 'REJETEE'}"><span class="ab ab-ko">Rejetée</span></h:panelGroup>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="dl-lbl">Domaine / Thème</div>
+                            <div class="dl-val"><span class="ab ab-info"><h:outputText value="#{adminDashboardBean.demandeLibreSelectee.domaine}"/></span></div>
+                        </div>
+                        <div>
+                            <div class="dl-lbl">Nombre de participants</div>
+                            <div class="dl-val" style="font-weight:600;color:#2563EB;">
+                                <h:outputText value="#{adminDashboardBean.demandeLibreSelectee.nbParticipants != null ? adminDashboardBean.demandeLibreSelectee.nbParticipants : '—'}"/>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="dl-lbl">Période souhaitée — Début</div>
+                            <div class="dl-val"><h:outputText value="#{adminDashboardBean.demandeLibreSelectee.periodeDebut != null ? adminDashboardBean.demandeLibreSelectee.periodeDebut : '—'}"/></div>
+                        </div>
+                        <div>
+                            <div class="dl-lbl">Période souhaitée — Fin</div>
+                            <div class="dl-val"><h:outputText value="#{adminDashboardBean.demandeLibreSelectee.periodeFin != null ? adminDashboardBean.demandeLibreSelectee.periodeFin : '—'}"/></div>
+                        </div>
+                        <div>
+                            <div class="dl-lbl">Date de soumission</div>
+                            <div class="dl-val"><h:outputText value="#{adminDashboardBean.demandeLibreSelectee.dateDemande}"/></div>
+                        </div>
+                        <div class="dl-detail-full">
+                            <div class="dl-lbl">Description du besoin</div>
+                            <div class="dl-val" style="white-space:pre-line;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:.6rem .9rem;margin-top:4px;">
+                                <h:outputText value="#{adminDashboardBean.demandeLibreSelectee.description}"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dl-section-title">
+                        Modules souhaités
+                        <span style="font-weight:400;font-size:.75rem;color:#94A3B8;margin-left:6px;">
+                            (<h:outputText value="#{fn:length(adminDashboardBean.demandeLibreSelectee.formationsSouhaitees)}"/> module(s))
+                        </span>
+                    </div>
+                    <h:panelGroup rendered="#{fn:length(adminDashboardBean.demandeLibreSelectee.formationsSouhaitees) eq 0}"
+                                  style="display:block;padding:0 1rem .5rem;">
+                        <span style="font-size:.8rem;color:#94A3B8;font-style:italic;">Aucun module spécifié par le demandeur.</span>
+                    </h:panelGroup>
+                    <div style="padding:0 1rem .75rem;">
+                        <ui:repeat value="#{adminDashboardBean.demandeLibreSelectee.formationsSouhaitees}" var="fsItem">
+                            <div class="dl-module-card">
+                                <div class="mod-title">📚 <h:outputText value="#{fsItem.thematique}"/></div>
+                                <div class="mod-meta">
+                                    <h:panelGroup rendered="#{fsItem.duree != null}">⏱ <h:outputText value="#{fsItem.duree}"/> h</h:panelGroup>
+                                    <h:panelGroup rendered="#{fsItem.nbParticipants != null}">&#160;·&#160;👥 <h:outputText value="#{fsItem.nbParticipants}"/> participants</h:panelGroup>
+                                    <h:panelGroup rendered="#{fsItem.niveauRequis != null and fn:length(fsItem.niveauRequis) gt 0}">&#160;·&#160;🎯 <h:outputText value="#{fsItem.niveauRequis}"/></h:panelGroup>
+                                </div>
+                                <h:panelGroup rendered="#{fsItem.objectifs != null and fn:length(fsItem.objectifs) gt 0}" style="display:block;margin-top:4px;">
+                                    <span style="font-size:.75rem;color:#374151;"><strong>Objectifs :</strong> <h:outputText value="#{fsItem.objectifs}"/></span>
+                                </h:panelGroup>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:.75rem;padding:.5rem 1rem 1rem;border-top:1px solid #F1F5F9;margin-top:.5rem;">
+                        <p:commandButton value="Fermer" type="button" styleClass="abtn-sm"
+                                         style="background:#e5e7eb;color:#374151;" onclick="PF('dlgDetailDemande').hide()"/>
+                        <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee.statut eq 'PROPOSITION_RECUE'}">
+                            <p:commandButton value="📋 Modifier la proposition" styleClass="abtn-sm abtn-sm-prop"
+                                             action="#{adminDashboardBean.ouvrirFormulaireProposition(adminDashboardBean.demandeLibreSelectee.id)}"
+                                             update=":fProposition"
+                                             oncomplete="PF('dlgDetailDemande').hide(); PF('dlgProposition').show()"/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee.statut eq 'EN_ATTENTE'}" styleClass="a-actions">
+                            <p:commandButton value="✓ Valider" styleClass="abtn-sm abtn-sm-ok"
+                                             action="#{adminDashboardBean.validerDemandeLibre(adminDashboardBean.demandeLibreSelectee.id)}"
+                                             update=":fLibre :fLibre:msgsLibre" oncomplete="PF('dlgDetailDemande').hide()"/>
+                            <p:commandButton value="📋 Créer une proposition" styleClass="abtn-sm abtn-sm-prop"
+                                             action="#{adminDashboardBean.ouvrirFormulaireProposition(adminDashboardBean.demandeLibreSelectee.id)}"
+                                             update=":fProposition"
+                                             oncomplete="PF('dlgDetailDemande').hide(); PF('dlgProposition').show()"/>
+                            <p:commandButton value="✗ Rejeter" styleClass="abtn-sm abtn-sm-ko"
+                                             action="#{adminDashboardBean.rejeterDemandeLibre(adminDashboardBean.demandeLibreSelectee.id)}"
+                                             update=":fLibre :fLibre:msgsLibre" oncomplete="PF('dlgDetailDemande').hide()"/>
+                        </h:panelGroup>
+                    </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee == null}"
+                              style="display:block;padding:2rem;text-align:center;color:#94A3B8;">Chargement…</h:panelGroup>
+            </p:dialog>
+            </h:form>
+
+            <!-- ═══ Dialog : Proposition de formation ═══ -->
+            <p:dialog header="Proposition de formation" widgetVar="dlgProposition"
+                      modal="true" resizable="false" width="620" styleClass="a-dialog"
+                      contentStyle="padding:0;max-height:82vh;overflow-y:auto;">
+                <h:form id="fProposition">
+                    <p:messages id="msgsProposition" showDetail="true" closable="true"
+                                style="margin:12px 24px 0;"/>
+                    <div style="padding:20px 24px 0;">
+
+                    <!-- ── Demande de référence ── -->
+                    <h:panelGroup rendered="#{adminDashboardBean.demandeLibreSelectee != null}"
+                                  style="display:block;">
+                        <div class="pf-section">📄 Demande de référence</div>
+                        <div class="pf-ref">
+                            <div class="pf-ref-grid">
+                                <div>
+                                    <p class="pf-ref-lbl">Demandeur</p>
+                                    <p class="pf-ref-val"><h:outputText value="#{adminDashboardBean.demandeLibreSelectee.institutionNom}"/></p>
+                                </div>
+                                <div>
+                                    <p class="pf-ref-lbl">Domaine</p>
+                                    <p class="pf-ref-val"><h:outputText value="#{adminDashboardBean.demandeLibreSelectee.domaine}"/></p>
+                                </div>
+                                <div>
+                                    <p class="pf-ref-lbl">Participants</p>
+                                    <p class="pf-ref-val"><h:outputText value="#{adminDashboardBean.demandeLibreSelectee.nbParticipants != null ? adminDashboardBean.demandeLibreSelectee.nbParticipants : '—'}"/></p>
+                                </div>
+                            </div>
+                            <p class="pf-ref-lbl">Besoin exprimé</p>
+                            <p style="font-size:13px;margin:0;color:#1E3A8A;line-height:1.45;">
+                                <h:outputText value="#{fn:length(adminDashboardBean.demandeLibreSelectee.description) gt 180 ? fn:substring(adminDashboardBean.demandeLibreSelectee.description, 0, 180) += '…' : adminDashboardBean.demandeLibreSelectee.description}"/>
+                            </p>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- ── Votre proposition ── -->
+                    <div class="pf-section">✏️ Votre proposition</div>
+
+                    <!-- Dates -->
+                    <div class="pf-grid2">
+                        <div>
+                            <label class="pf-label">Date de début</label>
+                            <p:datePicker value="#{adminDashboardBean.propDateDebut}"
+                                          pattern="dd/MM/yyyy" showButtonBar="true"
+                                          placeholder="jj/mm/aaaa" locale="fr"
+                                          appendTo="@(body)"
+                                          styleClass="pf-date"
+                                          style="width:100%;display:block;"
+                                          inputStyle="width:100%;box-sizing:border-box;padding:9px 13px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13.5px;font-family:inherit;"/>
+                        </div>
+                        <div>
+                            <label class="pf-label">Date de fin</label>
+                            <p:datePicker value="#{adminDashboardBean.propDateFin}"
+                                          pattern="dd/MM/yyyy" showButtonBar="true"
+                                          placeholder="jj/mm/aaaa" locale="fr"
+                                          appendTo="@(body)"
+                                          styleClass="pf-date"
+                                          style="width:100%;display:block;"
+                                          inputStyle="width:100%;box-sizing:border-box;padding:9px 13px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13.5px;font-family:inherit;"/>
+                        </div>
+                    </div>
+
+                    <!-- Montant -->
+                    <div class="pf-field">
+                        <label class="pf-label">Montant (FCFA) <span style="color:#ef4444;">*</span></label>
+                        <h:inputText value="#{adminDashboardBean.propMontant}"
+                                     placeholder="ex : 500 000"
+                                     styleClass="pf-input"/>
+                    </div>
+
+                    <!-- Programme -->
+                    <div class="pf-field">
+                        <label class="pf-label">Programme / Contenu global</label>
+                        <p class="pf-sublabel">Méthode pédagogique, calendrier, conditions</p>
+                        <h:inputTextarea value="#{adminDashboardBean.propProgramme}"
+                                         placeholder="Décrivez le déroulement, la méthode pédagogique, le planning…"
+                                         styleClass="pf-input"
+                                         style="min-height:90px;resize:vertical;"/>
+                    </div>
+
+                    <!-- Note -->
+                    <div class="pf-field">
+                        <label class="pf-label">Note pour l'institution</label>
+                        <p class="pf-sublabel">Message libre, visible par le demandeur</p>
+                        <h:inputTextarea value="#{adminDashboardBean.propNoteAdmin}"
+                                         placeholder="Ex : précisions, conditions particulières, disponibilités…"
+                                         styleClass="pf-input"
+                                         style="min-height:75px;resize:vertical;"/>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="pf-note">
+                        ℹ️ Formateur et modules pourront être précisés après validation
+                    </div>
+
+                    <h:inputHidden id="hiddenMode" value="#{adminDashboardBean.propMode}"/>
+                    </div><!-- /scrollable -->
+
+                    <!-- Footer sticky -->
+                    <div class="pf-footer" style="position:sticky;bottom:0;background:#fff;z-index:10;border-top:1.5px solid #F1F5F9;margin-top:8px;">
+                        <p:commandButton value="Annuler" type="button"
+                                         styleClass="pf-btn-cancel"
+                                         onclick="PF('dlgProposition').hide()"/>
+                        <p:commandButton value="✉ Envoyer la proposition"
+                                         styleClass="pf-btn-submit"
+                                         action="#{adminDashboardBean.soumettreProposition}"
+                                         update=":fProposition :fLibre :fLibre:msgsLibre"
+                                         oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlgProposition').hide()"/>
+                    </div>
+                </h:form>
+            </p:dialog>
+
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>

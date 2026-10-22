@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Mon profil</ui:define>
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.connecte}">
+            <div style="text-align:center;padding:80px 20px;">
+                <p style="color:#64748B;font-size:13px;margin-bottom:16px;">Connexion requise.</p>
+                <h:link outcome="/login"
+                        style="padding:9px 20px;background:#4F46E5;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;">
+                    Se connecter
+                </h:link>
+            </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.connecte}">
+            <div style="margin-bottom:24px;">
+                <h1 class="page-title">Mon profil</h1>
+                <p class="page-subtitle">Vos informations personnelles</p>
+            </div>
+
+            <div style="max-width:560px;">
+                <div class="card">
+                    <div class="card-body" style="text-align:center;padding:28px 20px 20px;">
+                        <div style="width:60px;height:60px;background:#4F46E5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.3rem;font-weight:700;color:#fff;">
+                            #{sessionBean.email != null ? sessionBean.email.substring(0,1).toUpperCase() : 'U'}
+                        </div>
+                        <div style="font-weight:600;color:#0F172A;font-size:15px;margin-bottom:4px;">#{sessionBean.email}</div>
+                        <span class="badge #{sessionBean.role eq 'ADMIN' ? 'badge-ko' : 'badge-info'}">#{sessionBean.role}</span>
+                    </div>
+                    <div style="border-top:1px solid #F1F5F9;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid #F1F5F9;">
+                            <span style="font-size:12px;font-weight:600;color:#64748B;">Email</span>
+                            <span style="font-size:13px;color:#0F172A;">#{sessionBean.email}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid #F1F5F9;">
+                            <span style="font-size:12px;font-weight:600;color:#64748B;">Rôle</span>
+                            <span class="badge #{sessionBean.role eq 'ADMIN' ? 'badge-ko' : 'badge-info'}">#{sessionBean.role}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;">
+                            <span style="font-size:12px;font-weight:600;color:#64748B;">Statut</span>
+                            <span class="badge badge-ok">Actif</span>
+                        </div>
+                    </div>
+                    <div style="padding:16px 20px;border-top:1px solid #F1F5F9;display:flex;gap:10px;">
+                        <h:link outcome="/catalogue"
+                                style="flex:1;text-align:center;padding:9px;background:#4F46E5;color:#fff;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;">
+                            Voir les offres
+                        </h:link>
+                        <h:link outcome="/mes-demandes"
+                                style="flex:1;text-align:center;padding:9px;background:#F1F5F9;color:#475569;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;">
+                            Mes demandes
+                        </h:link>
+                    </div>
+                </div>
+            </div>
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

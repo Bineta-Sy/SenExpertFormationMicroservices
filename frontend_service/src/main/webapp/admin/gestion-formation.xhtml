@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+<ui:define name="title">Gestion de la formation</ui:define>
+
+<ui:define name="pageStyle">
+/* ─── Layout ─── */
+.gf-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-3);
+         text-decoration:none;padding:6px 12px;border-radius:6px;background:var(--bg-muted);
+         border:1px solid var(--border);margin-bottom:20px;transition:.15s;}
+.gf-back:hover{background:var(--border);}
+
+/* Hero formation */
+.gf-hero{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:20px;}
+.gf-hero-title{font-size:20px;font-weight:700;color:var(--text-1);margin:0 0 6px;}
+.gf-hero-sub{font-size:13px;color:var(--text-3);}
+.gf-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;
+          padding:3px 10px;border-radius:20px;border:1px solid transparent;}
+.gf-badge-blue{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe;}
+.gf-badge-green{background:#dcfce7;color:#16a34a;border-color:#bbf7d0;}
+.gf-badge-orange{background:#fef3c7;color:#b45309;border-color:#fde68a;}
+.gf-badge-red{background:#fee2e2;color:#dc2626;border-color:#fecaca;}
+
+/* KPIs */
+.gf-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+@media(max-width:900px){.gf-kpis{grid-template-columns:repeat(2,1fr);}}
+.gf-kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 20px;
+        display:flex;align-items:center;gap:14px;}
+.gf-kpi-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;
+             justify-content:center;font-size:20px;flex-shrink:0;}
+.gf-kpi-num{font-size:24px;font-weight:700;color:var(--text-1);line-height:1;}
+.gf-kpi-lbl{font-size:11px;color:var(--text-3);margin-top:2px;}
+
+/* Sections */
+.gf-section{background:#fff;border:1px solid var(--border);border-radius:14px;
+            padding:20px 24px;margin-bottom:20px;}
+.gf-section-header{display:flex;align-items:center;justify-content:space-between;
+                    margin-bottom:16px;gap:12px;}
+.gf-section-title{font-size:15px;font-weight:700;color:var(--text-1);margin:0;}
+
+/* Tableau modules */
+.gf-table{width:100%;border-collapse:collapse;font-size:13px;}
+.gf-table th{background:#f8fafc;font-size:10.5px;font-weight:700;text-transform:uppercase;
+             letter-spacing:.04em;color:var(--text-3);padding:10px 14px;
+             border-bottom:1px solid var(--border);text-align:left;}
+.gf-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text-1);}
+.gf-table tr:last-child td{border-bottom:none;}
+.gf-table tr:hover td{background:#f8fafc;}
+
+/* Module card dans emploi du temps */
+.gf-module-tag{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;
+               border:1px solid #bfdbfe;color:#1d4ed8;border-radius:5px;
+               padding:2px 8px;font-size:11px;font-weight:600;}
+.gf-formateur-chip{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;
+                   border-radius:20px;padding:3px 10px 3px 4px;font-size:12px;}
+.gf-formateur-avatar{width:22px;height:22px;border-radius:50%;background:#3b82f6;color:#fff;
+                      font-size:10px;font-weight:700;display:inline-flex;align-items:center;
+                      justify-content:center;flex-shrink:0;}
+.gf-empty{text-align:center;padding:40px 20px;color:var(--text-3);}
+.gf-empty-icon{font-size:40px;display:block;margin-bottom:10px;}
+
+/* Formulaires */
+.gf-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.gf-form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:680px){.gf-form-grid,.gf-form-grid-3{grid-template-columns:1fr;}}
+.gf-field{display:flex;flex-direction:column;gap:5px;}
+.gf-field label{font-size:11.5px;font-weight:700;color:var(--text-2);}
+.gf-field input,.gf-field textarea,.gf-field select{
+  width:100%;border:1px solid var(--border);border-radius:7px;
+  padding:8px 11px;font-size:13px;color:var(--text-1);background:#fff;
+  font-family:inherit;transition:border-color .15s;}
+.gf-field input:focus,.gf-field textarea:focus,.gf-field select:focus{
+  outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12);}
+.gf-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;
+        border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;
+        border:none;transition:.15s;}
+.gf-btn-primary{background:#16233f;color:#fff;}
+.gf-btn-primary:hover{background:#1e3461;}
+.gf-btn-secondary{background:#f1f5f9;color:var(--text-2);border:1px solid var(--border);}
+.gf-btn-secondary:hover{background:var(--border);}
+.gf-btn-danger{background:#fee2e2;color:#dc2626;border:1px solid #fecaca;}
+.gf-btn-danger:hover{background:#fecaca;}
+.gf-btn-sm{padding:5px 12px;font-size:12px;}
+.gf-btn-outline{background:#fff;color:#3b82f6;border:1px solid #bfdbfe;}
+.gf-btn-outline:hover{background:#eff6ff;}
+
+/* Emploi du temps */
+.gf-edt-day{margin-bottom:18px;}
+.gf-edt-date{font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;
+             letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.gf-edt-date::after{content:'';flex:1;height:1px;background:var(--border);}
+.gf-seance-card{background:#f8fafc;border:1px solid var(--border);border-radius:10px;
+                padding:12px 16px;display:flex;align-items:center;gap:14px;
+                margin-bottom:8px;transition:.15s;}
+.gf-seance-card:hover{border-color:#bfdbfe;background:#f0f7ff;}
+.gf-seance-time{min-width:90px;font-size:13px;font-weight:700;color:var(--text-1);}
+.gf-seance-info{flex:1;}
+.gf-seance-module{font-size:12px;font-weight:600;color:#3b82f6;}
+.gf-seance-lieu{font-size:12px;color:var(--text-3);margin-top:2px;}
+.gf-seance-actions{display:flex;gap:6px;flex-shrink:0;}
+
+/* Dialog — fond blanc + backdrop flou */
+.gf-dlg-body{padding:4px 0;}
+#dlgModule .ui-dialog-content,
+#dlgSeance .ui-dialog-content { background:#fff !important; }
+#dlgModule .ui-dialog,
+#dlgSeance .ui-dialog { background:#fff !important; border-radius:12px !important; box-shadow:0 20px 60px rgba(0,0,0,.18) !important; }
+.ui-widget-overlay { backdrop-filter:blur(4px) !important; -webkit-backdrop-filter:blur(4px) !important; background:rgba(15,23,42,.45) !important; }
+</ui:define>
+
+<ui:define name="metadata">
+  <f:viewParam name="offreId" value="#{adminFormationBean.offreIdParam}"/>
+  <f:viewAction action="#{adminFormationBean.charger}"/>
+</ui:define>
+
+<ui:define name="content">
+
+  <!-- Bouton retour -->
+  <a href="/frontend_service/admin/admin-offres.xhtml" class="gf-back">
+    ← Retour aux formations
+  </a>
+
+  <h:form id="fGestion">
+    <p:messages id="msgs" showDetail="true" closable="true"/>
+
+    <!-- ── Hero ── -->
+    <h:panelGroup id="panelMain" rendered="#{adminFormationBean.offreSelectionnee != null}" layout="block">
+      <div class="gf-hero">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <h2 class="gf-hero-title"><h:outputText value="#{adminFormationBean.offreSelectionnee.titre}"/></h2>
+            <p class="gf-hero-sub">
+              <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.domaine != null}">
+                <h:outputText value="#{adminFormationBean.offreSelectionnee.domaine.libelle}"/> ·
+              </h:panelGroup>
+              <h:outputText value="#{adminFormationBean.offreSelectionnee.type}"/>
+              <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.dateDebut != null}">
+                · <h:outputText value="#{adminFormationBean.offreSelectionnee.dateDebut}"/>
+                <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee.dateFin != null}">
+                  → <h:outputText value="#{adminFormationBean.offreSelectionnee.dateFin}"/>
+                </h:panelGroup>
+              </h:panelGroup>
+            </p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <span class="gf-badge gf-badge-blue"><h:outputText value="#{adminFormationBean.getDureeTotale()} h au total"/></span>
+            <h:panelGroup rendered="#{adminFormationBean.getNbModulesSansFormateur() gt 0}">
+              <span class="gf-badge gf-badge-orange">
+                <h:outputText value="#{adminFormationBean.getNbModulesSansFormateur()} module(s) sans formateur"/>
+              </span>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{adminFormationBean.getNbModulesSansSeance() gt 0}">
+              <span class="gf-badge gf-badge-red">
+                <h:outputText value="#{adminFormationBean.getNbModulesSansSeance()} module(s) non planifié(s)"/>
+              </span>
+            </h:panelGroup>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── KPIs ── -->
+      <div class="gf-kpis">
+        <div class="gf-kpi">
+          <div class="gf-kpi-icon" style="background:#eff6ff;">📦</div>
+          <div><div class="gf-kpi-num"><h:outputText value="#{adminFormationBean.nbModules}"/></div>
+               <div class="gf-kpi-lbl">Modules</div></div>
+        </div>
+        <div class="gf-kpi">
+          <div class="gf-kpi-icon" style="background:#f0fdf4;">📅</div>
+          <div><div class="gf-kpi-num"><h:outputText value="#{adminFormationBean.nbSeances}"/></div>
+               <div class="gf-kpi-lbl">Séances planifiées</div></div>
+        </div>
+        <div class="gf-kpi">
+          <div class="gf-kpi-icon" style="background:#fef3c7;">👨‍🏫</div>
+          <div><div class="gf-kpi-num"><h:outputText value="#{adminFormationBean.nbFormateurs}"/></div>
+               <div class="gf-kpi-lbl">Formateurs disponibles</div></div>
+        </div>
+        <div class="gf-kpi">
+          <div class="gf-kpi-icon" style="background:#fce7f3;">⏱</div>
+          <div><div class="gf-kpi-num"><h:outputText value="#{adminFormationBean.dureeTotale}"/><span style="font-size:14px;font-weight:500;color:var(--text-3);"> h</span></div>
+               <div class="gf-kpi-lbl">Durée totale</div></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           SECTION 1 : MODULES
+      ══════════════════════════════════════════════════════ -->
+      <div class="gf-section">
+        <div class="gf-section-header">
+          <h3 class="gf-section-title">📦 Modules de la formation</h3>
+          <p:commandButton value="+ Ajouter un module" styleClass="gf-btn gf-btn-primary gf-btn-sm"
+                           actionListener="#{adminFormationBean.preparerNouveauModule()}"
+                           update=":dlgModule"
+                           oncomplete="PF('wvModule').show()"
+                           process="@none"/>
+        </div>
+
+        <!-- Tableau modules — id englobant pour Ajax update -->
+        <h:panelGroup id="panelModules" layout="block">
+          <h:panelGroup rendered="#{adminFormationBean.nbModules gt 0}">
+            <table class="gf-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Titre du module</th>
+                  <th>Durée</th>
+                  <th>Formateur assigné</th>
+                  <th>Séances</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ui:repeat value="#{adminFormationBean.modules}" var="modu">
+                  <tr>
+                    <td style="color:var(--text-3);font-size:12px;"><h:outputText value="#{modu.ordre}"/></td>
+                    <td>
+                      <div style="font-weight:600;"><h:outputText value="#{modu.titre}"/></div>
+                      <h:panelGroup rendered="#{not empty modu.description}">
+                        <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;">
+                          <h:outputText value="#{modu.description.length() gt 80 ? modu.description.substring(0,80).concat('…') : modu.description}"/>
+                        </div>
+                      </h:panelGroup>
+                    </td>
+                    <td>
+                      <h:panelGroup rendered="#{modu.dureeHeures != null}">
+                        <span class="gf-badge gf-badge-blue"><h:outputText value="#{modu.dureeHeures} h"/></span>
+                      </h:panelGroup>
+                      <h:panelGroup rendered="#{modu.dureeHeures == null}">
+                        <span style="color:var(--text-3);font-style:italic;font-size:12px;">—</span>
+                      </h:panelGroup>
+                    </td>
+                    <td>
+                      <h:panelGroup rendered="#{modu.formateur != null}">
+                        <span class="gf-formateur-chip">
+                          <span class="gf-formateur-avatar">
+                            <h:outputText value="#{not empty modu.formateur.nom ? modu.formateur.nom.substring(0,1).toUpperCase() : '?'}"/>
+                          </span>
+                          <h:outputText value="#{modu.formateur.prenom} #{modu.formateur.nom}"/>
+                        </span>
+                      </h:panelGroup>
+                      <h:panelGroup rendered="#{modu.formateur == null}">
+                        <span class="gf-badge gf-badge-orange">Non assigné</span>
+                      </h:panelGroup>
+                    </td>
+                    <td>
+                      <p:commandButton value="+ Séance" styleClass="gf-btn gf-btn-outline gf-btn-sm"
+                                       actionListener="#{adminFormationBean.preparerNouvelleSeance(modu)}"
+                                       update=":dlgSeance"
+                                       oncomplete="PF('wvSeance').show()"
+                                       process="@none"/>
+                    </td>
+                    <td>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <p:commandButton value="✏️ Éditer" styleClass="gf-btn gf-btn-secondary gf-btn-sm"
+                                         actionListener="#{adminFormationBean.preparerEditionModule(modu)}"
+                                         update=":dlgModule"
+                                         oncomplete="PF('wvModule').show()"
+                                         process="@none"/>
+                        <p:commandButton value="🗑" styleClass="gf-btn gf-btn-danger gf-btn-sm"
+                                         actionListener="#{adminFormationBean.supprimerModule(modu.id)}"
+                                         update=":fGestion:msgs :fGestion:panelModules :fGestion:panelSeances"
+                                         onclick="return confirm('Supprimer ce module et toutes ses séances ?')"/>
+                      </div>
+                    </td>
+                  </tr>
+                </ui:repeat>
+              </tbody>
+            </table>
+          </h:panelGroup>
+
+          <h:panelGroup rendered="#{adminFormationBean.nbModules == 0}" layout="block">
+            <div class="gf-empty">
+              <span class="gf-empty-icon">📦</span>
+              Aucun module pour cette formation. Commencez par en ajouter un.
+            </div>
+          </h:panelGroup>
+        </h:panelGroup>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           SECTION 2 : EMPLOI DU TEMPS
+      ══════════════════════════════════════════════════════ -->
+      <div class="gf-section">
+        <div class="gf-section-header">
+          <h3 class="gf-section-title">📅 Emploi du temps</h3>
+          <p:commandButton value="+ Ajouter une séance" styleClass="gf-btn gf-btn-primary gf-btn-sm"
+                           actionListener="#{adminFormationBean.preparerNouvelleSeance(null)}"
+                           update=":dlgSeance"
+                           oncomplete="PF('wvSeance').show()"
+                           process="@none"/>
+        </div>
+
+        <h:panelGroup id="panelSeances" layout="block">
+          <h:panelGroup rendered="#{adminFormationBean.nbSeances == 0}" layout="block">
+            <div class="gf-empty">
+              <span class="gf-empty-icon">📅</span>
+              Aucune séance planifiée. Sélectionnez un module et ajoutez des créneaux.
+            </div>
+          </h:panelGroup>
+
+          <h:panelGroup rendered="#{adminFormationBean.nbSeances gt 0}" layout="block">
+            <ui:repeat value="#{adminFormationBean.seances}" var="seance">
+              <div class="gf-seance-card">
+                <!-- Heure -->
+                <div class="gf-seance-time">
+                  <h:outputText value="#{seance.heureDebut}"/>
+                  <h:panelGroup rendered="#{not empty seance.heureFin}">
+                    <br/><span style="font-weight:400;color:var(--text-3);font-size:11px;">→ <h:outputText value="#{seance.heureFin}"/></span>
+                  </h:panelGroup>
+                </div>
+                <!-- Infos -->
+                <div class="gf-seance-info">
+                  <div class="gf-seance-module">
+                    📅 <h:outputText value="#{seance.date}"/>
+                  </div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text-1);margin-top:3px;">
+                    <h:outputText value="#{seance.moduleTitre}"/>
+                  </div>
+                  <div class="gf-seance-lieu">
+                    <h:panelGroup rendered="#{not empty seance.salle}">
+                      🏛 <h:outputText value="#{seance.salle}"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{not empty seance.lienVisio}">
+                      🔗 <a href="#{seance.lienVisio}" target="_blank" style="color:#3b82f6;">
+                           <h:outputText value="Lien visio"/>
+                         </a>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{empty seance.salle and empty seance.lienVisio}">
+                      <span style="font-style:italic;color:var(--text-3);">Lieu non précisé</span>
+                    </h:panelGroup>
+                  </div>
+                  <h:panelGroup rendered="#{not empty seance.notes}">
+                    <div style="font-size:11.5px;color:var(--text-3);margin-top:3px;font-style:italic;">
+                      <h:outputText value="#{seance.notes}"/>
+                    </div>
+                  </h:panelGroup>
+                </div>
+                <!-- Actions -->
+                <div class="gf-seance-actions">
+                  <p:commandButton value="✏️" styleClass="gf-btn gf-btn-secondary gf-btn-sm"
+                                   title="Modifier"
+                                   actionListener="#{adminFormationBean.preparerEditionSeance(seance)}"
+                                   update=":dlgSeance"
+                                   oncomplete="PF('wvSeance').show()"
+                                   process="@none"/>
+                  <p:commandButton value="🗑" styleClass="gf-btn gf-btn-danger gf-btn-sm"
+                                   title="Supprimer"
+                                   actionListener="#{adminFormationBean.supprimerSeance(seance.id)}"
+                                   update=":fGestion:msgs :fGestion:panelSeances"
+                                   onclick="return confirm('Supprimer cette séance ?')"/>
+                </div>
+              </div>
+            </ui:repeat>
+          </h:panelGroup>
+        </h:panelGroup>
+      </div>
+    </h:panelGroup>
+
+    <!-- Pas d'offre sélectionnée -->
+    <h:panelGroup rendered="#{adminFormationBean.offreSelectionnee == null}" layout="block">
+      <div class="gf-section">
+        <div class="gf-empty">
+          <span class="gf-empty-icon">⚠️</span>
+          Aucune formation sélectionnée. Passez par la liste des formations.
+        </div>
+      </div>
+    </h:panelGroup>
+
+  </h:form>
+
+  <!-- ══════════════════════════════════════════════════════
+       DIALOG MODULE — hors de fGestion (JSF interdit les forms imbriquées)
+  ══════════════════════════════════════════════════════ -->
+  <p:dialog id="dlgModule" widgetVar="wvModule" modal="true" width="580"
+            closable="true" closeOnEscape="true" appendTo="@(body)"
+            style="font-size:13px;" contentStyle="background:#fff;" dynamic="true">
+    <f:facet name="header">
+      <span style="font-weight:700;color:#16233f;">
+        <h:outputText value="#{adminFormationBean.moduleId == null ? 'Nouveau module' : 'Modifier le module'}"/>
+      </span>
+    </f:facet>
+
+    <h:form id="fModule">
+      <div class="gf-dlg-body">
+        <div class="gf-field" style="margin-bottom:14px;">
+          <label>Titre du module *</label>
+          <p:inputText value="#{adminFormationBean.moduleTitre}" required="true" style="width:100%;"/>
+        </div>
+        <div class="gf-field" style="margin-bottom:14px;">
+          <label>Description</label>
+          <p:inputTextarea value="#{adminFormationBean.moduleDescription}" rows="3" style="width:100%;resize:vertical;"/>
+        </div>
+        <div class="gf-form-grid" style="margin-bottom:14px;">
+          <div class="gf-field">
+            <label>Durée (heures)</label>
+            <p:inputNumber value="#{adminFormationBean.moduleDureeHeures}" minValue="1" style="width:100%;"/>
+          </div>
+          <div class="gf-field">
+            <label>Ordre d'affichage</label>
+            <p:inputNumber value="#{adminFormationBean.moduleOrdre}" minValue="1" style="width:100%;"/>
+          </div>
+        </div>
+        <div class="gf-field" style="margin-bottom:14px;">
+          <label>Formateur assigné</label>
+          <p:selectOneMenu value="#{adminFormationBean.moduleFormateurId}" style="width:100%;">
+            <f:selectItem itemLabel="— Aucun formateur —" itemValue="#{null}"/>
+            <f:selectItems value="#{adminFormationBean.tousFormateurs}" var="fmt"
+                           itemValue="#{fmt.id}"
+                           itemLabel="#{fmt.prenom} #{fmt.nom} (#{fmt.specialite})"/>
+          </p:selectOneMenu>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+          <p:commandButton value="Annuler" styleClass="gf-btn gf-btn-secondary" type="button"
+                           onclick="PF('wvModule').hide();"/>
+          <p:commandButton value="#{adminFormationBean.moduleId == null ? 'Créer le module' : 'Enregistrer'}"
+                           styleClass="gf-btn gf-btn-primary"
+                           action="#{adminFormationBean.sauvegarderModule()}"
+                           update=":fGestion:msgs :fGestion:panelMain"
+                           oncomplete="if(!args.validationFailed) PF('wvModule').hide();"/>
+        </div>
+      </div>
+    </h:form>
+  </p:dialog>
+
+  <!-- ══════════════════════════════════════════════════════
+       DIALOG SÉANCE — hors de fGestion
+  ══════════════════════════════════════════════════════ -->
+  <p:dialog id="dlgSeance" widgetVar="wvSeance" modal="true" width="560"
+            closable="true" closeOnEscape="true" appendTo="@(body)"
+            style="font-size:13px;" contentStyle="background:#fff;" dynamic="true">
+    <f:facet name="header">
+      <span style="font-weight:700;color:#16233f;">
+        <h:outputText value="#{adminFormationBean.seanceId == null ? 'Nouvelle séance' : 'Modifier la séance'}"/>
+      </span>
+    </f:facet>
+
+    <h:form id="fSeance">
+      <div class="gf-dlg-body">
+        <div class="gf-field" style="margin-bottom:14px;">
+          <label>Module *</label>
+          <p:selectOneMenu value="#{adminFormationBean.seanceModuleId}" style="width:100%;" required="true">
+            <f:selectItem itemLabel="— Choisir un module —" itemValue="#{null}" noSelectionOption="true"/>
+            <f:selectItems value="#{adminFormationBean.modules}" var="modu"
+                           itemValue="#{modu.id}"
+                           itemLabel="#{modu.ordre}. #{modu.titre}"/>
+          </p:selectOneMenu>
+        </div>
+        <div class="gf-form-grid-3" style="margin-bottom:14px;">
+          <div class="gf-field">
+            <label>Date *</label>
+            <p:inputText value="#{adminFormationBean.seanceDate}" placeholder="YYYY-MM-DD" style="width:100%;"/>
+          </div>
+          <div class="gf-field">
+            <label>Début</label>
+            <p:inputText value="#{adminFormationBean.seanceHeureDebut}" placeholder="09:00" style="width:100%;"/>
+          </div>
+          <div class="gf-field">
+            <label>Fin</label>
+            <p:inputText value="#{adminFormationBean.seanceHeureFin}" placeholder="12:00" style="width:100%;"/>
+          </div>
+        </div>
+        <div class="gf-form-grid" style="margin-bottom:14px;">
+          <div class="gf-field">
+            <label>Salle / Lieu</label>
+            <p:inputText value="#{adminFormationBean.seanceSalle}" placeholder="Salle A, Centre DAKAR..." style="width:100%;"/>
+          </div>
+          <div class="gf-field">
+            <label>Lien visio (optionnel)</label>
+            <p:inputText value="#{adminFormationBean.seanceLienVisio}" placeholder="https://meet.google.com/..." style="width:100%;"/>
+          </div>
+        </div>
+        <div class="gf-field" style="margin-bottom:14px;">
+          <label>Notes / Informations complémentaires</label>
+          <p:inputTextarea value="#{adminFormationBean.seanceNotes}" rows="2" style="width:100%;resize:vertical;"
+                           placeholder="Matériel requis, accès..."/>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+          <p:commandButton value="Annuler" styleClass="gf-btn gf-btn-secondary" type="button"
+                           onclick="PF('wvSeance').hide();"/>
+          <p:commandButton value="#{adminFormationBean.seanceId == null ? 'Ajouter la séance' : 'Enregistrer'}"
+                           styleClass="gf-btn gf-btn-primary"
+                           action="#{adminFormationBean.sauvegarderSeance()}"
+                           update=":fGestion:msgs :fGestion:panelMain"
+                           oncomplete="if(!args.validationFailed) PF('wvSeance').hide();"/>
+        </div>
+      </div>
+    </h:form>
+  </p:dialog>
+
+</ui:define>
+</ui:composition>
+</html>

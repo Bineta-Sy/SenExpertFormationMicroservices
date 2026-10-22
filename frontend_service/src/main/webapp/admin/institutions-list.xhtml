@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/admin-layout.xhtml">
+    <ui:define name="title">Gestion des Institutions</ui:define>
+    <ui:define name="pageStyle">
+.inst-act { display:flex; gap:5px; align-items:center; justify-content:center; flex-wrap:nowrap; }
+.ibtn { display:inline-flex !important; align-items:center !important; justify-content:center !important; padding:4px 10px !important; font-size:11px !important; font-weight:600 !important; border-radius:6px !important; border:none !important; cursor:pointer !important; white-space:nowrap !important; font-family:inherit !important; line-height:1.4 !important; }
+.ibtn-green  { background:#059669 !important; color:#fff !important; }
+.ibtn-green:hover  { background:#047857 !important; }
+.ibtn-orange { background:#D97706 !important; color:#fff !important; }
+.ibtn-orange:hover { background:#B45309 !important; }
+.ibtn-red    { background:#DC2626 !important; color:#fff !important; }
+.ibtn-red:hover    { background:#B91C1C !important; }
+.ui-button-text { display:inline !important; font-family:inherit !important; }
+</ui:define>
+<ui:define name="content">
+
+        <h:panelGroup rendered="#{!sessionBean.admin}">
+            <div style="text-align:center;padding:60px;"><div style="font-size:4rem;">🚫</div>
+                <h2 style="color:var(--text-1);">Accès refusé</h2></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{sessionBean.admin}">
+
+            <div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                    <h1 class="page-title">🏢 Gestion des Institutions</h1>
+                    <p class="page-subtitle">Validez les institutions enregistrées sur la plateforme</p>
+                </div>
+                <h:link outcome="/admin/dashboard"
+                        style="padding:9px 18px;background:rgba(255,255,255,0.15);color:var(--text-1);border-radius:8px;text-decoration:none;font-size:0.88rem;">
+                    ← Dashboard
+                </h:link>
+            </div>
+
+            <div class="glass-card">
+                <div class="glass-card-body" style="padding:0;">
+                    <h:form id="formInst">
+                        <p:messages id="msgs" showDetail="true" closable="true" style="margin:12px;border-radius:8px;"/>
+                        <p:dataTable value="#{adminBean.institutions}" var="inst"
+                                     emptyMessage="Aucune institution enregistrée."
+                                     paginator="true" rows="10">
+
+                            <p:column headerText="Institution">
+                                <div style="font-weight:700;color:#1e3a5f;font-size:0.95rem;">#{inst.nom}</div>
+                                <div style="font-size:0.78rem;color:#888;margin-top:2px;">📍 #{inst.adresse}</div>
+                            </p:column>
+
+                            <p:column headerText="Type" style="width:150px;">
+                                <span class="badge badge-custom">#{inst.type}</span>
+                            </p:column>
+
+                            <p:column headerText="Statut" style="width:140px;">
+                                <h:panelGroup rendered="#{inst.statut eq 'EN_ATTENTE'}">
+                                    <span class="badge badge-wait">⏳ En attente</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{inst.statut eq 'ACTIF'}">
+                                    <span class="badge badge-ok">✅ Active</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{inst.statut eq 'INACTIF'}">
+                                    <span class="badge badge-ko">Inactive</span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="width:180px;">
+                                <h:panelGroup styleClass="inst-act">
+                                    <p:commandButton value="✔ Valider"
+                                                     rendered="#{inst.statut eq 'EN_ATTENTE'}"
+                                                     action="#{adminBean.validerInstitution(inst.id)}"
+                                                     update="@form"
+                                                     styleClass="ibtn ibtn-green"/>
+                                    <p:commandButton value="⊘ Désactiver"
+                                                     rendered="#{inst.statut eq 'ACTIF'}"
+                                                     action="#{adminBean.desactiverInstitution(inst.id)}"
+                                                     update="@form"
+                                                     styleClass="ibtn ibtn-orange"/>
+                                    <p:commandButton value="↺ Réactiver"
+                                                     rendered="#{inst.statut eq 'INACTIF'}"
+                                                     action="#{adminBean.reactiverInstitution(inst.id)}"
+                                                     update="@form"
+                                                     styleClass="ibtn ibtn-green"/>
+                                    <p:commandButton value="✕ Suppr"
+                                                     action="#{adminBean.supprimerInstitution(inst.id)}"
+                                                     update="@form"
+                                                     onclick="return confirm('Supprimer cette institution ?');"
+                                                     styleClass="ibtn ibtn-red"/>
+                                </h:panelGroup>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>
+                </div>
+            </div>
+
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
+</html>

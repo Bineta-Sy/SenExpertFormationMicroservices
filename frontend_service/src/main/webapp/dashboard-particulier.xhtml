@@ -1,0 +1,2634 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+<ui:define name="title">Mon espace — SenExpertFormation</ui:define>
+<ui:define name="content">
+
+<style>
+/* ── Escape du page-wrapper pour occuper toute la largeur ── */
+.page-wrapper{padding:0!important;max-width:100%!important}
+/* ── Masquer la navbar globale du template sur cette page ── */
+.topbar{display:none!important}
+/* ── Bloquer le scroll body — seul dp-main scrolle ── */
+html,body{overflow:hidden!important;height:100%!important;}
+/* ── Le shell occupe toute la hauteur viewport ── */
+.dp-shell{height:100vh!important;overflow:hidden!important;}
+
+.dp-shell{
+    --dp-bg:#fff;--dp-bg2:#F9FAFB;--dp-border:#E5E7EB;
+    --dp-txt:#111827;--dp-txt2:#6B7280;
+    --dp-accent:#BA7517;--dp-acc-hov:#854F0B;--dp-acc-light:#FAEEDA;--dp-acc-txt:#633806;
+    --dp-r-sm:6px;--dp-r-md:8px;--dp-r-lg:12px;
+    font-family:'Inter',system-ui,sans-serif;font-size:13px;color:var(--dp-txt);
+    background:var(--dp-bg);
+    display:flex;flex-direction:column;
+}
+.dp-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--dp-border);background:#fff;flex-shrink:0;z-index:10;}
+.dp-av{width:36px;height:36px;border-radius:50%;background:var(--dp-acc-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--dp-acc-txt);flex-shrink:0}
+.dp-av-lg{width:54px;height:54px;font-size:20px;font-weight:600;border-radius:50%;background:var(--dp-acc-light);display:flex;align-items:center;justify-content:center;color:var(--dp-acc-txt)}
+.dp-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--dp-acc-light);color:var(--dp-acc-txt);font-weight:500}
+.dp-notif-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--dp-border);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--dp-bg);position:relative;color:var(--dp-txt2);font-size:15px}
+.dp-notif-dot{width:7px;height:7px;border-radius:50%;background:#E24B4A;position:absolute;top:5px;right:5px}
+.dp-layout{display:flex;flex:1;min-height:0;overflow:hidden;}
+.dp-sidebar{width:200px;flex-shrink:0;border-right:1px solid var(--dp-border);padding:16px 0;background:var(--dp-bg2);display:flex;flex-direction:column;gap:2px;height:100%;overflow-y:auto;}
+.dp-nav{display:flex;align-items:center;gap:10px;padding:10px 18px;font-size:13px;color:var(--dp-txt2);cursor:pointer;transition:background .1s;border-right:2px solid transparent;user-select:none}
+.dp-nav:hover{background:var(--dp-bg);color:var(--dp-txt)}
+.dp-nav.active{background:var(--dp-bg);color:var(--dp-txt);font-weight:500;border-right-color:var(--dp-accent)}
+.dp-sep{height:1px;background:var(--dp-border);margin:8px 18px}
+.dp-main{flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:18px;overflow-y:auto;background:var(--dp-bg)}
+.dp-page{display:none;flex-direction:column;gap:16px}
+.dp-page.active{display:flex}
+.dp-sec-lbl{font-size:12px;font-weight:500;color:var(--dp-txt2);margin-bottom:6px}
+.dp-alert{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:var(--dp-r-md);font-size:12px;line-height:1.6}
+.dp-alert-warn{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
+.dp-alert-info{background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE}
+.dp-alert-success{background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0}
+.dp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.dp-stat{background:var(--dp-bg2);border-radius:var(--dp-r-md);padding:12px 14px;border:1px solid var(--dp-border)}
+.dp-stat-v{font-size:22px;font-weight:600;color:var(--dp-txt)}
+.dp-stat-l{font-size:11px;color:var(--dp-txt2);margin-top:2px}
+.dp-pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;margin-top:4px}
+.dp-p-warn{background:#FEF3C7;color:#92400E}
+.dp-p-ok{background:#D1FAE5;color:#065F46}
+.dp-p-info{background:#DBEAFE;color:#1E40AF}
+.dp-p-gray{background:#F3F4F6;color:#6B7280}
+.dp-card{border:1px solid var(--dp-border);border-radius:var(--dp-r-lg);padding:14px 16px;background:var(--dp-bg)}
+.dp-tl{display:flex;flex-direction:column;gap:0}
+.dp-tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative}
+.dp-tl-item:not(:last-child)::before{content:'';position:absolute;left:11px;top:24px;bottom:0;width:1px;background:var(--dp-border)}
+.dp-tl-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+.dp-dot-warn{background:#FEF3C7;color:#92400E}
+.dp-dot-ok{background:#D1FAE5;color:#065F46;font-weight:600}
+.dp-dot-info{background:#DBEAFE;color:#1E40AF}
+.dp-tl-title{font-size:13px;font-weight:500;color:var(--dp-txt)}
+.dp-tl-sub{font-size:11px;color:var(--dp-txt2);margin-top:2px}
+.dp-og{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dp-oc{border:1px solid var(--dp-border);border-radius:var(--dp-r-md);padding:12px 14px;display:flex;flex-direction:column;gap:6px;background:var(--dp-bg);transition:border-color .15s}
+.dp-oc:hover{border-color:#9CA3AF}
+.dp-ot{font-size:13px;font-weight:500;color:var(--dp-txt)}
+.dp-om{font-size:11px;color:var(--dp-txt2)}
+.dp-of{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.dp-tag{font-size:10px;padding:2px 9px;border-radius:20px;align-self:flex-start;font-weight:500;background:#F3F4F6;color:#4B5563}
+.dp-btn{font-size:12px;padding:5px 12px;border:1px solid var(--dp-border);border-radius:var(--dp-r-md);background:transparent;color:var(--dp-txt);cursor:pointer;transition:background .1s}
+.dp-btn:hover{background:var(--dp-bg2)}
+.dp-btn-p{background:var(--dp-accent);color:#fff;border-color:var(--dp-accent)}
+.dp-btn-p:hover{background:var(--dp-acc-hov);border-color:var(--dp-acc-hov)}
+.dp-tbl-wrap{border:1px solid var(--dp-border);border-radius:var(--dp-r-md);overflow:hidden}
+.dp-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.dp-tbl th{background:var(--dp-bg2);padding:8px 12px;text-align:left;font-weight:500;color:var(--dp-txt2);border-bottom:1px solid var(--dp-border)}
+.dp-tbl td{padding:8px 12px;border-bottom:1px solid var(--dp-border);color:var(--dp-txt)}
+.dp-tbl tr:last-child td{border-bottom:none}
+.dp-tbl tr:hover td{background:var(--dp-bg2)}
+.dp-fr{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.dp-fr label{font-size:12px;color:var(--dp-txt2)}
+.dp-fr input,.dp-fr select,.dp-fr textarea{font-size:13px;border:1px solid var(--dp-border);border-radius:var(--dp-r-md);padding:8px 10px;background:var(--dp-bg);color:var(--dp-txt);width:100%}
+.dp-fr textarea{resize:vertical;min-height:80px}
+.dp-fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dp-ph{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--dp-border);margin-bottom:14px}
+.dp-pi{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F3F4F6}
+.dp-pi:last-child{border-bottom:none}
+.dp-pi-k{font-size:12px;font-weight:500;color:var(--dp-txt2)}
+.dp-pi-v{font-size:13px;color:var(--dp-txt)}
+/* override PrimeFaces button dans dp-shell */
+.dp-shell .ui-button{font-size:12px;padding:5px 12px;border:1px solid var(--dp-border);border-radius:var(--dp-r-md);background:transparent;color:var(--dp-txt);box-shadow:none}
+.dp-shell .ui-button:hover{background:var(--dp-bg2)}
+.dp-shell .ui-button.dp-btn-p{background:var(--dp-accent);color:#fff;border-color:var(--dp-accent)}
+.dp-shell .ui-button.dp-btn-p:hover{background:var(--dp-acc-hov)}
+/* ── Barres de progression ── */
+.dp-prog-wrap{height:6px;border-radius:3px;background:#E5E7EB;overflow:hidden;margin-top:4px}
+.dp-prog-bar{height:100%;border-radius:3px;background:var(--dp-accent);transition:width .4s}
+.dp-prog-bar.full{background:#059669}
+.dp-prog-bar.low{background:#F59E0B}
+/* ── Cards formation ── */
+.dp-form-card{border:1px solid var(--dp-border);border-radius:var(--dp-r-lg);padding:14px 16px;background:var(--dp-bg);display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s}
+.dp-form-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.dp-form-initiale{width:38px;height:38px;border-radius:var(--dp-r-md);background:var(--dp-acc-light);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--dp-acc-txt);flex-shrink:0}
+.dp-score-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500}
+.dp-score-ok{background:#D1FAE5;color:#065F46}
+.dp-score-warn{background:#FEF3C7;color:#92400E}
+.dp-score-neutral{background:#F3F4F6;color:#6B7280}
+
+/* ══════════════════════════════════════════
+   NOUVEAU DESIGN ACCUEIL — classes dpn-*
+   Accent: #5C4EE5 (indigo-violet)
+   Fond warm beige: #F7F6F2
+   ══════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;display=swap');
+
+/* Wrapper principal */
+#dp-accueil{background:#F7F6F2;border-radius:10px;padding:24px;gap:20px!important}
+
+/* En-tête */
+.dpn-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dpn-greeting{font-family:'DM Serif Display',Georgia,serif;font-size:22px;color:#1a1a2e;line-height:1.2}
+.dpn-sub{font-size:12px;color:#6B7280;margin-top:3px}
+.dpn-date-box{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:8px 14px;text-align:right;font-size:11px;color:#6B7280;white-space:nowrap}
+.dpn-date-box strong{display:block;font-size:13px;color:#1a1a2e;font-weight:600}
+
+/* KPI Cards */
+.dpn-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dpn-kpi{background:#fff;border-radius:10px;padding:14px 16px;border:1px solid #E5E7EB;position:relative;overflow:hidden;transition:box-shadow .15s}
+.dpn-kpi:hover{box-shadow:0 4px 14px rgba(0,0,0,.09)}
+.dpn-kpi::before{content:'';display:block;height:3px;background:var(--k-accent,#5C4EE5);border-radius:3px 3px 0 0;position:absolute;top:0;left:0;right:0}
+.dpn-kpi-n{font-size:26px;font-weight:700;color:#1a1a2e;line-height:1}
+.dpn-kpi-l{font-size:11px;color:#6B7280;margin-top:4px}
+.dpn-kpi-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:22px;opacity:.18}
+
+/* 2-col layout */
+.dpn-row{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+.dpn-col-wide{display:flex;flex-direction:column;gap:14px}
+.dpn-col-narrow{display:flex;flex-direction:column;gap:14px}
+
+/* Section cards */
+.dpn-section{background:#fff;border-radius:10px;border:1px solid #E5E7EB;overflow:hidden}
+.dpn-sec-hdr{font-size:13px;font-weight:600;color:#1a1a2e;padding:12px 16px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between}
+.dpn-sec-hdr a{font-size:11px;font-weight:400;color:#5C4EE5;text-decoration:none;cursor:pointer}
+.dpn-sec-body{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.dpn-empty{padding:24px 16px;text-align:center;color:#9CA3AF;font-size:12px}
+
+/* Carte formation en cours */
+.dpn-fc{display:flex;flex-direction:column;gap:6px}
+.dpn-fc-top{display:flex;align-items:center;gap:10px}
+.dpn-fc-ico{width:36px;height:36px;border-radius:8px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.dpn-fc-info{flex:1;min-width:0}
+.dpn-fc-titre{font-size:13px;font-weight:500;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dpn-fc-meta{font-size:11px;color:#6B7280;margin-top:1px}
+.dpn-prog{height:5px;border-radius:3px;background:#EDE9FE;overflow:hidden;margin-top:2px}
+.dpn-prog-fill{height:100%;border-radius:3px;background:#5C4EE5}
+.dpn-prog-done{background:#10B981}
+.dpn-fc-footer{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#6B7280}
+.dpn-fc-sep{height:1px;background:#F3F4F6}
+.dpn-fc-lien{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#5C4EE5;background:#EDE9FE;padding:3px 9px;border-radius:20px;text-decoration:none;border:1px solid #C4B5FD}
+.dpn-fc-pay{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#fff;background:#5C4EE5;padding:3px 9px;border-radius:20px;text-decoration:none;border:none;cursor:pointer}
+
+/* Candidatures */
+.dpn-cand{display:flex;align-items:flex-start;gap:10px;padding:8px 0}
+.dpn-cand:not(:last-child){border-bottom:1px solid #F3F4F6}
+.dpn-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.dpn-dot-att{background:#F59E0B}
+.dpn-dot-ok{background:#10B981}
+.dpn-dot-rej{background:#EF4444}
+.dpn-cand-titre{font-size:13px;font-weight:500;color:#1a1a2e}
+.dpn-cand-meta{font-size:11px;color:#6B7280;margin-top:2px}
+.dpn-stat-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;flex-shrink:0;margin-left:auto}
+.dpn-sb-att{background:#FEF3C7;color:#92400E}
+.dpn-sb-ok{background:#D1FAE5;color:#065F46}
+.dpn-sb-rej{background:#FEE2E2;color:#991B1B}
+
+/* Mini calendrier */
+.dpn-cal{padding:10px 16px 14px}
+.dpn-cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.dpn-cal-day-hdr{font-size:10px;color:#9CA3AF;font-weight:500;padding:4px 0}
+.dpn-cal-day{font-size:12px;font-weight:500;padding:7px 4px;border-radius:7px;color:#374151;cursor:default;position:relative}
+.dpn-cal-day.today{background:#5C4EE5;color:#fff}
+.dpn-cal-day.has-event::after{content:'';display:block;width:4px;height:4px;border-radius:50%;background:#5C4EE5;margin:2px auto 0}
+.dpn-cal-day.today.has-event::after{background:#fff}
+.dpn-cal-events{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.dpn-cal-ev{font-size:11px;color:#374151;background:#F7F6F2;border-left:3px solid #5C4EE5;border-radius:0 5px 5px 0;padding:4px 8px}
+.dpn-cal-ev-time{font-size:10px;color:#9CA3AF}
+
+/* Offres recommandées (narrow) */
+.dpn-offre{display:flex;flex-direction:column;gap:4px;padding:8px 0}
+.dpn-offre:not(:last-child){border-bottom:1px solid #F3F4F6}
+.dpn-offre-titre{font-size:12px;font-weight:500;color:#1a1a2e}
+.dpn-offre-tag{font-size:10px;padding:1px 7px;border-radius:20px;background:#F3F4F6;color:#4B5563;display:inline-block;margin-bottom:2px}
+.dpn-offre-meta{font-size:11px;color:#6B7280;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.dpn-offre-btn{font-size:11px;color:#5C4EE5;background:#EDE9FE;border:1px solid #C4B5FD;border-radius:20px;padding:2px 9px;text-decoration:none;cursor:pointer;font-weight:500}
+
+/* ── Nouveau sidebar (mockup) ── */
+.dp-sidebar{width:220px;flex-shrink:0;border-right:1px solid #E5E7EB;background:#fff;display:flex;flex-direction:column;min-height:calc(100vh - 58px)}
+.dp-sidebar-inner{flex:1;padding:20px 12px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.dp-nav-section{font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:.07em;padding:12px 8px 4px;text-transform:uppercase}
+.dp-nav{display:flex;align-items:center;gap:9px;padding:9px 10px;font-size:13px;color:#374151;cursor:pointer;border-radius:8px;transition:background .1s;user-select:none;border:none;background:transparent}
+.dp-nav:hover{background:#F3F4F6;color:#111827}
+.dp-nav.active{background:#EDE9FE;color:#5C4EE5;font-weight:600}
+.dp-nav-badge{margin-left:auto;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;line-height:1.6}
+.dp-nav-badge-amber{background:#FEF3C7;color:#92400E}
+.dp-nav-badge-purple{background:#EDE9FE;color:#5C4EE5}
+.dp-nav-badge-red{background:#FEE2E2;color:#DC2626}
+.dp-user-card{border-top:1px solid #E5E7EB;padding:14px 16px;display:flex;align-items:center;gap:10px;background:#fff}
+.dp-user-av{width:32px;height:32px;border-radius:50%;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#5C4EE5;flex-shrink:0}
+.dp-user-name{font-size:13px;font-weight:600;color:#111827;line-height:1.2}
+.dp-user-role{font-size:11px;color:#6B7280}
+
+/* ── Nouveau accueil : layout 60/40 ── */
+.dpn-row{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start}
+.dpn-col-wide{display:flex;flex-direction:column;gap:14px}
+.dpn-col-narrow{display:flex;flex-direction:column;gap:14px}
+
+/* ── Greeting header ── */
+.dpn-date-label{font-size:11px;font-weight:500;color:#9CA3AF;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.dpn-greeting{font-size:26px;font-weight:700;color:#111827;line-height:1.2}
+.dpn-greeting span{color:#5C4EE5}
+.dpn-sub{font-size:12px;color:#9CA3AF;margin-top:2px}
+
+/* ── Alert doc manquant ── */
+.dpn-alert-doc{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;font-size:12px;color:#92400E}
+.dpn-alert-doc a{color:#5C4EE5;font-weight:600;text-decoration:underline;margin-left:4px}
+
+/* ── KPI Cards ── */
+.dpn-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dpn-kpi{background:#fff;border-radius:10px;padding:16px;border:1px solid #E5E7EB;position:relative;overflow:hidden;transition:box-shadow .15s}
+.dpn-kpi:hover{box-shadow:0 4px 14px rgba(0,0,0,.07)}
+.dpn-kpi::before{content:'';display:block;height:3px;background:var(--k-accent,#5C4EE5);border-radius:3px 3px 0 0;position:absolute;top:0;left:0;right:0}
+.dpn-kpi-label{font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.dpn-kpi-n{font-size:28px;font-weight:700;color:#111827;line-height:1}
+.dpn-kpi-sub{font-size:11px;color:#9CA3AF;margin-top:6px}
+
+/* ── Section card ── */
+.dpn-section{background:#fff;border-radius:10px;border:1px solid #E5E7EB;overflow:hidden}
+.dpn-sec-hdr{font-size:13px;font-weight:600;color:#111827;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between}
+.dpn-sec-voir{font-size:11px;font-weight:500;color:#5C4EE5;cursor:pointer;text-decoration:none}
+.dpn-sec-body{padding:0 16px 12px;display:flex;flex-direction:column}
+.dpn-empty{padding:20px 16px;text-align:center;color:#9CA3AF;font-size:12px}
+
+/* ── Carte formation en cours ── */
+.dpn-fc{padding:12px 0;display:flex;flex-direction:column;gap:6px}
+.dpn-fc:not(:last-child){border-bottom:1px solid #F9FAFB}
+.dpn-fc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.dpn-fc-titre{font-size:13px;font-weight:600;color:#111827}
+.dpn-fc-meta{font-size:11px;color:#9CA3AF;margin-top:2px}
+.dpn-fc-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;white-space:nowrap;flex-shrink:0}
+.dpn-fc-badge-en-ligne{background:#DBEAFE;color:#1E40AF}
+.dpn-fc-badge-presentiel{background:#D1FAE5;color:#065F46}
+.dpn-fc-badge-done{background:#F3F4F6;color:#6B7280}
+.dpn-fc-prog-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
+.dpn-fc-prog-wrap{flex:1;height:5px;border-radius:3px;background:#F3F4F6;overflow:hidden}
+.dpn-fc-prog-fill{height:100%;border-radius:3px;background:#5C4EE5;transition:width .5s}
+.dpn-fc-prog-fill.done{background:#10B981}
+.dpn-fc-prog-pct{font-size:11px;font-weight:600;color:#5C4EE5;white-space:nowrap}
+.dpn-fc-prog-pct.done{color:#10B981}
+.dpn-fc-actions{display:flex;gap:6px;margin-top:4px}
+.dpn-fc-lien{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#5C4EE5;background:#EDE9FE;padding:3px 10px;border-radius:20px;text-decoration:none;border:1px solid #C4B5FD}
+.dpn-fc-pay{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;color:#fff;background:#5C4EE5;padding:3px 10px;border-radius:20px;border:none;cursor:pointer}
+
+/* ── Candidatures ── */
+.dpn-cand{display:flex;align-items:flex-start;gap:10px;padding:10px 0}
+.dpn-cand:not(:last-child){border-bottom:1px solid #F9FAFB}
+.dpn-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.dpn-dot-att{background:#F59E0B}
+.dpn-dot-ok{background:#10B981}
+.dpn-dot-rej{background:#EF4444}
+.dpn-cand-info{flex:1;min-width:0}
+.dpn-cand-titre{font-size:13px;font-weight:500;color:#111827}
+.dpn-cand-meta{font-size:11px;color:#9CA3AF;margin-top:2px}
+.dpn-cand-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.dpn-stat-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.dpn-sb-att{background:#FEF3C7;color:#92400E}
+.dpn-sb-ok{background:#D1FAE5;color:#065F46}
+.dpn-sb-rej{background:#FEE2E2;color:#991B1B}
+
+/* ── Calendrier semaine complet ── */
+.dpn-cal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px}
+.dpn-cal-month{font-size:12px;font-weight:600;color:#9CA3AF;background:#F3F4F6;padding:2px 10px;border-radius:20px}
+.dpn-cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 16px;text-align:center}
+.dpn-cal-day-col{display:flex;flex-direction:column;align-items:center;gap:3px}
+.dpn-cal-day-hdr{font-size:10px;color:#9CA3AF;font-weight:600;padding:2px 0}
+.dpn-cal-day{font-size:12px;font-weight:600;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#374151;position:relative}
+.dpn-cal-day.today{background:#5C4EE5;color:#fff}
+.dpn-cal-day .dot{width:4px;height:4px;border-radius:50%;background:#5C4EE5;position:absolute;bottom:3px}
+.dpn-cal-day.today .dot{background:#fff}
+.dpn-cal-events{display:flex;flex-direction:column;gap:6px;padding:10px 16px 14px}
+.dpn-cal-ev{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:7px;background:#F9FAFB;border-left:3px solid #5C4EE5}
+.dpn-cal-ev.orange{border-left-color:#F59E0B;background:#FFFBEB}
+.dpn-cal-ev-time{font-size:11px;font-weight:600;color:#9CA3AF;white-space:nowrap;padding-top:1px}
+.dpn-cal-ev-label{font-size:12px;color:#111827;font-weight:500}
+
+/* ── Résultats ── */
+.dpn-result{display:flex;align-items:center;gap:10px;padding:10px 0}
+.dpn-result:not(:last-child){border-bottom:1px solid #F9FAFB}
+.dpn-result-ico{width:34px;height:34px;border-radius:8px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.dpn-result-info{flex:1;min-width:0}
+.dpn-result-titre{font-size:12px;font-weight:600;color:#111827}
+.dpn-result-meta{font-size:11px;color:#9CA3AF;margin-top:1px}
+.dpn-result-score{font-size:15px;font-weight:700}
+.dpn-score-green{color:#10B981}
+.dpn-score-amber{color:#F59E0B}
+.dpn-score-red{color:#EF4444}
+
+/* ── Paiements ── */
+.dpn-pay{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0}
+.dpn-pay:not(:last-child){border-bottom:1px solid #F9FAFB}
+.dpn-pay-info{flex:1;min-width:0}
+.dpn-pay-titre{font-size:12px;font-weight:600;color:#111827}
+.dpn-pay-date{font-size:11px;color:#9CA3AF;margin-top:1px}
+.dpn-pay-amount{font-size:13px;font-weight:700;white-space:nowrap}
+.dpn-pay-debit{color:#EF4444}
+.dpn-pay-credit{color:#10B981}
+
+/* ── Sidebar logo header ── */
+.dp-sidebar-logo{padding:20px 20px 12px;border-bottom:1px solid #F3F4F6}
+.dp-sidebar-logo-title{font-size:15px;font-weight:700;color:#5C4EE5;letter-spacing:-.01em}
+.dp-sidebar-logo-sub{font-size:11px;color:#9CA3AF;margin-top:1px}
+
+/* ── Sidebar logout button ── */
+.dp-logout-form{padding:6px 12px 4px;margin:0}
+.dp-logout-form .ui-button,.dp-logout-btn{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:6px;
+    padding:8px 12px;border-radius:8px;border:1px solid #FEE2E2;
+    background:#FEF2F2;color:#DC2626;font-size:12px;font-weight:500;
+    cursor:pointer;transition:background .15s;box-shadow:none;
+}
+.dp-logout-form .ui-button:hover,.dp-logout-btn:hover{background:#FEE2E2}
+.dp-logout-form .ui-button::before{content:'→ '}
+
+/* ══════════════════════════════════════════
+   SIDEBAR NAVY — design unifié v3
+   ══════════════════════════════════════════ */
+.dp-sidebar{
+    background:linear-gradient(180deg,#0A1E3D 0%,#0F2D5C 50%,#0A1E3D 100%)!important;
+    border-right:none!important;
+    width:240px!important;
+    box-shadow:4px 0 24px rgba(0,0,0,.22)!important;
+    height:100%!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+    position:relative;
+}
+/* Accent line */
+.dp-sidebar::after{content:'';position:absolute;right:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,rgba(200,146,42,.3),transparent)}
+
+/* Logo */
+.dp-sidebar-logo{
+    border-bottom:1px solid rgba(255,255,255,.07)!important;
+    padding:22px 18px 16px!important;
+    background:rgba(0,0,0,.15)!important;
+    flex-shrink:0;
+}
+.dp-sidebar-logo-wrap{display:flex;align-items:center;gap:12px}
+.dp-sidebar-logo-icon{
+    width:38px;height:38px;border-radius:10px;
+    background:linear-gradient(135deg,#C8922A,#E8B04A);
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:800;color:#fff;flex-shrink:0;
+    box-shadow:0 2px 10px rgba(200,146,42,.5);letter-spacing:-.5px;
+}
+.dp-sidebar-logo-title{font-size:14px;font-weight:700;color:#fff!important;line-height:1.2;letter-spacing:-.01em}
+.dp-sidebar-logo-sub{font-size:9.5px;color:rgba(255,255,255,.3)!important;letter-spacing:1px;text-transform:uppercase;margin-top:2px!important}
+
+/* User card (juste après logo, en haut) */
+.dp-user-card{
+    background:rgba(0,0,0,.12)!important;
+    border-top:none!important;
+    border-bottom:1px solid rgba(255,255,255,.06)!important;
+    padding:13px 16px!important;
+    flex-shrink:0;
+}
+.dp-user-av{
+    background:linear-gradient(135deg,#C8922A,#E8B04A)!important;
+    color:#fff!important;
+    box-shadow:0 2px 6px rgba(200,146,42,.4)!important;
+    position:relative;
+}
+.dp-user-name{color:#fff!important;font-size:12.5px!important;font-weight:600!important}
+.dp-user-role{color:rgba(255,255,255,.38)!important;font-size:11px!important}
+
+/* Sidebar inner : scroll */
+.dp-sidebar-inner{
+    flex:1!important;
+    padding:14px 10px 8px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+}
+.dp-sidebar-inner::-webkit-scrollbar{width:3px}
+.dp-sidebar-inner::-webkit-scrollbar-track{background:transparent}
+.dp-sidebar-inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+
+/* Section labels */
+.dp-nav-section{
+    color:rgba(255,255,255,.2)!important;
+    padding:14px 10px 5px!important;
+    font-size:9px!important;
+    letter-spacing:1.1px!important;
+    display:flex;align-items:center;gap:6px;
+}
+.dp-nav-section::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
+
+/* Nav items */
+.dp-nav{
+    color:rgba(255,255,255,.55)!important;
+    border-right:none!important;
+    border-left:2.5px solid transparent!important;
+    border-radius:9px!important;
+    padding:9px 10px 9px 12px!important;
+    margin:1px 0!important;
+    font-size:12.5px!important;
+    font-weight:500!important;
+    transition:all .18s ease!important;
+    position:relative;
+    display:flex;align-items:center;gap:9px;
+}
+.dp-nav svg{opacity:.65;flex-shrink:0;transition:opacity .18s}
+.dp-nav:hover{
+    background:rgba(255,255,255,.08)!important;
+    color:rgba(255,255,255,.9)!important;
+}
+.dp-nav:hover svg{opacity:1}
+.dp-nav.active{
+    background:linear-gradient(90deg,rgba(200,146,42,.25),rgba(200,146,42,.1))!important;
+    color:#F5D08A!important;
+    font-weight:600!important;
+    border-left-color:#C8922A!important;
+    padding-left:9.5px!important;
+    box-shadow:none!important;
+}
+.dp-nav.active svg{opacity:1}
+
+/* Badges */
+.dp-nav-badge,.dp-nav-badge-amber,.dp-nav-badge-red{
+    margin-left:auto;font-size:10px;font-weight:700;
+    padding:1px 7px;border-radius:20px;line-height:1.7;
+}
+.dp-nav-badge-amber{background:rgba(200,146,42,.28)!important;color:#F5D08A!important}
+.dp-nav-badge-purple{background:rgba(255,255,255,.14)!important;color:rgba(255,255,255,.8)!important}
+.dp-nav-badge-red{
+    background:rgba(220,38,38,.28)!important;color:#FCA5A5!important;
+    box-shadow:0 0 0 1px rgba(220,38,38,.18)!important;
+}
+
+/* Separator */
+.dp-sep{background:rgba(255,255,255,.06)!important;margin:6px 10px!important}
+
+/* Logout */
+.dp-logout-form{padding:8px 10px 10px!important;flex-shrink:0;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.1)}
+.dp-logout-form .ui-button,.dp-logout-btn{
+    width:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;
+    padding:8px 12px!important;border-radius:8px!important;
+    background:rgba(255,255,255,.04)!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+    color:rgba(255,255,255,.4)!important;
+    font-size:12px!important;font-weight:500!important;
+    cursor:pointer!important;transition:all .15s!important;box-shadow:none!important;
+}
+.dp-logout-form .ui-button:hover,.dp-logout-btn:hover{
+    background:rgba(220,38,38,.16)!important;
+    border-color:rgba(220,38,38,.28)!important;
+    color:#FCA5A5!important;
+}
+
+/* Main bg */
+.dp-main{background:#F4F6FB!important}
+#dp-accueil{background:transparent!important;padding:0!important}
+
+/* ── Stats cards nouvelle génération ── */
+.dpn-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.dpn-sc{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px 16px;display:flex;align-items:flex-start;gap:12px;transition:box-shadow .15s}
+.dpn-sc:hover{box-shadow:0 2px 12px rgba(15,45,92,.08)}
+.dpn-sc-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dpn-sc-ico-navy{background:#E8EEF7}
+.dpn-sc-ico-green{background:#E6F4ED}
+.dpn-sc-ico-gold{background:#FDF3E0}
+.dpn-sc-ico-orange{background:#FEF0E6}
+.dpn-sc-val{font-size:26px;font-weight:700;color:#111827;line-height:1}
+.dpn-sc-lbl{font-size:12px;color:#6B7280;margin-top:4px}
+.dpn-sc-trend{font-size:11px;font-weight:500;margin-top:5px}
+.dpn-sc-trend-ok{color:#1A7A4A}
+.dpn-sc-trend-warn{color:#D45B0A}
+.dpn-sc-trend-info{color:#0F2D5C}
+
+/* ── Carte demande en cours ── */
+.dpn-dmd-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:22px 24px}
+.dpn-dmd-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:22px}
+.dpn-dmd-tag{display:inline-block;background:#E8EEF7;color:#0F2D5C;font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;margin-bottom:5px}
+.dpn-dmd-title{font-size:15px;font-weight:700;color:#111827}
+.dpn-dmd-meta{font-size:11px;color:#6B7280;margin-top:3px}
+.dpn-dmd-status{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;flex-shrink:0}
+.dpn-dmd-status-pending{background:#FEF0E6;color:#D45B0A}
+.dpn-dmd-status-ok{background:#E6F4ED;color:#1A7A4A}
+.dpn-dmd-status-info{background:#E8EEF7;color:#0F2D5C}
+.dpn-dmd-dot{width:7px;height:7px;border-radius:50%}
+
+/* Stepper */
+.dpn-stepper{display:flex;align-items:flex-start}
+.dpn-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.dpn-step-line{position:absolute;top:16px;left:50%;right:-50%;height:2px;z-index:0}
+.dpn-step-line-done{background:#0F2D5C}
+.dpn-step-line-pending{background:#E5E7EB}
+.dpn-step:last-child .dpn-step-line{display:none}
+.dpn-step-c{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;position:relative;z-index:1;flex-shrink:0}
+.dpn-step-c-done{background:#0F2D5C;color:#fff}
+.dpn-step-c-active{background:#C8922A;color:#fff;box-shadow:0 0 0 4px #FDF3E0}
+.dpn-step-c-up{background:#F3F4F6;color:#9CA3AF;border:2px solid #E5E7EB}
+.dpn-step-lbl{font-size:10px;font-weight:600;color:#9CA3AF;margin-top:6px;text-align:center}
+.dpn-step-lbl-done{color:#0F2D5C!important}
+.dpn-step-lbl-active{color:#C8922A!important}
+.dpn-step-date{font-size:10px;color:#9CA3AF;text-align:center;margin-top:1px}
+
+/* ── Nouvelle grille 2 colonnes ── */
+.dpn-g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.dpn-g2-l{display:flex;flex-direction:column;gap:14px}
+.dpn-g2-r{display:flex;flex-direction:column;gap:14px}
+.dpn-sec2{background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden}
+.dpn-sec2-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #F3F4F6}
+.dpn-sec2-title{font-size:13px;font-weight:600;color:#111827}
+.dpn-sec2-link{font-size:11px;font-weight:500;color:#0F2D5C;cursor:pointer;text-decoration:none}
+.dpn-sec2-link:hover{text-decoration:underline}
+.dpn-sec2-body{padding:10px 16px 14px;display:flex;flex-direction:column;gap:10px}
+
+/* Offre recommandée */
+.dpn-orec{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.dpn-orec:hover{border-color:#0F2D5C;box-shadow:0 2px 10px rgba(15,45,92,.08)}
+.dpn-orec-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.dpn-orec-name{font-size:13px;font-weight:600;color:#111827}
+.dpn-orec-dom{font-size:11px;color:#6B7280;margin-top:2px}
+.dpn-orec-tags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.dpn-orec-tag{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.dpn-orec-tag-mode{background:#E8EEF7;color:#0F2D5C}
+.dpn-orec-tag-dur{background:#F3F4F6;color:#6B7280}
+.dpn-orec-price{font-size:13px;font-weight:700;color:#0F2D5C;text-align:right;white-space:nowrap;margin-left:auto;flex-shrink:0}
+.dpn-orec-price span{display:block;font-size:10px;font-weight:400;color:#9CA3AF}
+
+/* Notification items */
+.dpn-notif{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.dpn-notif.unread{border-left:3px solid #0F2D5C}
+.dpn-notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.dpn-notif-dot-navy{background:#0F2D5C}
+.dpn-notif-dot-gray{background:#E5E7EB}
+.dpn-notif-txt{font-size:12px;color:#111827;line-height:1.45}
+.dpn-notif-time{font-size:10px;color:#9CA3AF;margin-top:3px}
+
+/* Profil card compact */
+.dpn-profil{background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden}
+.dpn-profil-top{display:flex;align-items:center;gap:14px;padding:18px}
+.dpn-profil-av{width:48px;height:48px;background:#0F2D5C;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#C8922A;flex-shrink:0}
+.dpn-profil-name{font-size:14px;font-weight:700;color:#111827}
+.dpn-profil-type{font-size:11px;color:#6B7280}
+.dpn-profil-valid{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#1A7A4A;background:#E6F4ED;padding:2px 7px;border-radius:20px;margin-top:3px}
+.dpn-profil-row{display:flex;justify-content:space-between;align-items:center;padding:9px 18px;border-top:1px solid #F3F4F6}
+.dpn-profil-k{font-size:11px;color:#6B7280}
+.dpn-profil-v{font-size:12px;font-weight:500;color:#111827}
+
+/* ── Notification dropdown (réutilise les classes prt-notif-*) ── */
+.prt-notif-panel{position:absolute;top:calc(100% + 8px);right:0;width:310px;background:#fff;border:1px solid #E5E7EB;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:9999;overflow:hidden;display:none;animation:prt-fade-in .15s ease}
+.prt-notif-panel.open{display:block}
+@keyframes prt-fade-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.prt-notif-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;border-bottom:1px solid #F3F4F6}
+.prt-notif-hdr-title{font-size:13px;font-weight:700;color:#111827}
+.prt-notif-hdr-count{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:#FEE2E2;color:#DC2626}
+.prt-notif-hdr-count.zero{background:#F3F4F6;color:#9CA3AF}
+.prt-notif-list{max-height:220px;overflow-y:auto}
+.prt-notif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid #F9FAFB;transition:background .1s}
+.prt-notif-item:hover{background:#F9FAFB}
+.prt-notif-item:last-child{border-bottom:none}
+.prt-notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.prt-notif-dot-ok{background:#10B981}
+.prt-notif-dot-rej{background:#EF4444}
+.prt-notif-dot-wait{background:#F59E0B}
+.prt-notif-dot-conf{background:#3B82F6}
+.prt-notif-info{flex:1;min-width:0}
+.prt-notif-titre{font-size:12px;font-weight:600;color:#111827;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prt-notif-meta{font-size:10.5px;color:#9CA3AF;margin-top:2px;display:flex;align-items:center;gap:4px}
+.prt-notif-statut{font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px}
+.prt-notif-statut-ok{background:#D1FAE5;color:#065F46}
+.prt-notif-statut-rej{background:#FEE2E2;color:#991B1B}
+.prt-notif-statut-wait{background:#FEF3C7;color:#92400E}
+.prt-notif-statut-conf{background:#DBEAFE;color:#1E40AF}
+.prt-notif-empty{padding:20px;text-align:center;color:#9CA3AF;font-size:12px}
+.prt-notif-footer{display:flex;align-items:center;justify-content:center;padding:9px 14px;border-top:1px solid #F3F4F6;font-size:11.5px;font-weight:600;color:#0F2D5C;text-decoration:none;transition:background .1s}
+.prt-notif-footer:hover{background:#F7F8FA}
+
+/* ── Dialog Détail Offre ── */
+/* Overlay flou sur l'arrière-plan */
+.ui-dialog-mask {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    background: rgba(15, 23, 42, 0.45) !important;
+}
+/* Dialog solide, pas transparent */
+#dlgDetailForm .ui-dialog {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.25) !important;
+    border: 1px solid #E2E8F0 !important;
+    overflow: hidden !important;
+}
+#dlgDetailForm .ui-dialog .ui-dialog-titlebar {
+    background: #0F2D5C !important;
+    color: #ffffff !important;
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: 0 !important;
+}
+#dlgDetailForm .ui-dialog .ui-dialog-titlebar .ui-dialog-titlebar-icon {
+    color: rgba(255,255,255,0.7) !important;
+}
+#dlgDetailForm .ui-dialog .ui-dialog-titlebar .ui-dialog-titlebar-icon:hover {
+    color: #ffffff !important;
+    background: rgba(255,255,255,0.15) !important;
+    border-radius: 50% !important;
+}
+#dlgDetailForm .ui-dialog .ui-dialog-content {
+    background: #ffffff !important;
+    padding: 20px 24px !important;
+}
+</style>
+
+<!-- ═══════════════ NON CONNECTÉ ═══════════════ -->
+<h:panelGroup layout="block" rendered="#{!sessionBean.connecte}"
+              style="text-align:center;padding:80px 20px;">
+    <p style="margin-bottom:16px;color:#6B7280;">Connexion requise.</p>
+    <h:link outcome="/login"
+            style="padding:9px 22px;background:#BA7517;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;">
+        Se connecter
+    </h:link>
+</h:panelGroup>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<h:panelGroup layout="block" rendered="#{sessionBean.connecte}" styleClass="dp-shell">
+
+    <!-- TOPBAR -->
+    <div class="dp-topbar">
+        <!-- Gauche : salutation + date -->
+        <div>
+            <div style="font-size:19px;font-weight:700;color:#111827;line-height:1.2;">
+                Bonjour, <h:outputText value="#{sessionBean.prenom}"/> 👋
+            </div>
+            <div id="dp-topbar-date" style="font-size:12px;color:#6B7280;margin-top:2px;">—</div>
+        </div>
+
+        <!-- Droite : actions -->
+        <div style="display:flex;align-items:center;gap:8px;">
+
+            <!-- Dossier chip -->
+            <h:panelGroup rendered="#{offreBean.nbDemandesEnAttente gt 0}" layout="block" style="display:contents">
+                <div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:#FEF3C7;border:1px solid #FDE68A;font-size:11px;font-weight:600;color:#92400E;cursor:default;white-space:nowrap;"
+                     title="Dossiers en attente de traitement">
+                    <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <h:outputText value="#{offreBean.nbDemandesEnAttente}"/> en attente
+                </div>
+            </h:panelGroup>
+
+            <!-- Langue -->
+            <div style="display:flex;align-items:center;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;height:32px;">
+                <button id="dp-langFR" onclick="dpSetLang('FR')" type="button"
+                        style="padding:0 9px;font-size:11px;font-weight:600;background:#0F2D5C;color:#fff;border:none;cursor:pointer;height:100%;">FR</button>
+                <div style="width:1px;height:100%;background:#E5E7EB;"/>
+                <button id="dp-langEN" onclick="dpSetLang('EN')" type="button"
+                        style="padding:0 9px;font-size:11px;font-weight:600;background:#fff;color:#9CA3AF;border:none;cursor:pointer;height:100%;transition:all .15s;">EN</button>
+            </div>
+
+            <!-- Thème -->
+            <button id="dp-themeBtn" onclick="dpToggleTheme()" type="button" title="Thème clair / sombre"
+                    style="width:32px;height:32px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7280;transition:all .15s;flex-shrink:0;">
+                <svg id="dp-moon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg id="dp-sun"  width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
+
+            <!-- Aide -->
+            <a href="#{request.contextPath}/accueil.xhtml" title="Aide et support"
+               style="width:32px;height:32px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7280;text-decoration:none;font-size:13px;font-weight:700;flex-shrink:0;">?</a>
+
+            <div style="width:1px;height:22px;background:#E5E7EB;margin:0 2px;"/>
+
+            <!-- Cloche + dropdown -->
+            <div style="position:relative;flex-shrink:0;">
+                <button id="dp-notifBtn" onclick="dpToggleNotifs(event)" type="button" title="Notifications"
+                        style="width:32px;height:32px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6B7280;transition:all .15s;position:relative;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <h:panelGroup rendered="#{notifBean.nbNonLues gt 0}" layout="block" style="display:contents">
+                        <span style="position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:20px;background:#DC2626;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;">
+                            <h:outputText value="#{notifBean.nbNonLues}"/>
+                        </span>
+                    </h:panelGroup>
+                </button>
+
+                <!-- Dropdown panel -->
+                <div class="prt-notif-panel" id="dp-notifPanel">
+                    <div class="prt-notif-hdr">
+                        <span class="prt-notif-hdr-title">Notifications</span>
+                        <h:panelGroup rendered="#{notifBean.nbNonLues gt 0}">
+                            <span class="prt-notif-hdr-count"><h:outputText value="#{notifBean.nbNonLues}"/> nouvelle(s)</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{notifBean.nbNonLues eq 0}">
+                            <span class="prt-notif-hdr-count zero">À jour</span>
+                        </h:panelGroup>
+                    </div>
+                    <div class="prt-notif-list">
+                        <h:panelGroup rendered="#{empty offreBean.demandesNotifs}" layout="block">
+                            <div class="prt-notif-empty">🎉 Aucune notification</div>
+                        </h:panelGroup>
+                        <ui:repeat value="#{offreBean.demandesNotifs}" var="dn">
+                            <div class="prt-notif-item">
+                                <div class="prt-notif-dot #{dn.statut eq 'CONFIRMEE' ? 'prt-notif-dot-conf' : dn.statut eq 'VALIDEE' ? 'prt-notif-dot-ok' : dn.statut eq 'REJETEE' ? 'prt-notif-dot-rej' : 'prt-notif-dot-wait'}"/>
+                                <div class="prt-notif-info">
+                                    <div class="prt-notif-titre"><h:outputText value="#{dn.offre.titre}"/></div>
+                                    <div class="prt-notif-meta">
+                                        <span class="prt-notif-statut #{dn.statut eq 'CONFIRMEE' ? 'prt-notif-statut-conf' : dn.statut eq 'VALIDEE' ? 'prt-notif-statut-ok' : dn.statut eq 'REJETEE' ? 'prt-notif-statut-rej' : 'prt-notif-statut-wait'}">
+                                            <h:outputText value="#{dn.statut eq 'CONFIRMEE' ? '✓ Confirmée' : dn.statut eq 'VALIDEE' ? '✓ Validée' : dn.statut eq 'REJETEE' ? '✗ Rejetée' : '⏳ En attente'}"/>
+                                        </span>
+                                        · <h:outputText value="#{dn.dateDemande}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                    <a class="prt-notif-footer" onclick="dpShow('demandes',document.getElementById('nav-demandes'))" style="cursor:pointer;">
+                        Voir toutes mes demandes →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bouton nouvelle demande -->
+            <button onclick="dpShow('explorer',document.getElementById('nav-explorer'))"
+                    style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#0F2D5C;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nouvelle demande
+            </button>
+
+        </div>
+    </div>
+    <script>
+    (function(){
+        var jours=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+        var mois=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+        var now=new Date();
+        var lbl=document.getElementById('dp-topbar-date');
+        if(lbl) lbl.textContent=jours[now.getDay()]+' '+now.getDate()+' '+mois[now.getMonth()]+' '+now.getFullYear()+' · Dakar, Sénégal';
+    })();
+
+    /* ── Navigation entre sections ── */
+    function dpShow(name, navEl) {
+        document.querySelectorAll('.dp-page').forEach(function(p){ p.classList.remove('active'); });
+        document.querySelectorAll('.dp-nav').forEach(function(n){ n.classList.remove('active'); });
+        var page = document.getElementById('dp-' + name);
+        if (page) page.classList.add('active');
+        if (navEl) navEl.classList.add('active');
+    }
+
+    function dpShowFormations(navEl) {
+        dpShow('formations', navEl);
+    }
+
+    /* ── Notification dropdown ── */
+    function dpToggleNotifs(e) {
+        e.stopPropagation();
+        var panel = document.getElementById('dp-notifPanel');
+        if (panel) panel.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        var panel = document.getElementById('dp-notifPanel');
+        if (!panel) return;
+        if (!panel.classList.contains('open')) return;
+        var btn = document.getElementById('dp-notifBtn');
+        if (btn) { if (btn.contains(e.target)) return; }
+        if (panel.contains(e.target)) return;
+        panel.classList.remove('open');
+    });
+
+    /* ── Thème ── */
+    (function(){
+        if (localStorage.getItem('prt-theme') === 'dark') dpApplyDark(true);
+    })();
+    function dpToggleTheme() {
+        var dark = document.documentElement.classList.contains('dark');
+        dpApplyDark(!dark);
+        localStorage.setItem('prt-theme', dark ? 'light' : 'dark');
+    }
+    function dpApplyDark(dark) {
+        document.documentElement.classList.toggle('dark', dark);
+        var moon = document.getElementById('dp-moon');
+        var sun  = document.getElementById('dp-sun');
+        var btn  = document.getElementById('dp-themeBtn');
+        if (moon) moon.style.display = dark ? 'none' : '';
+        if (sun)  sun.style.display  = dark ? '' : 'none';
+        if (btn)  { btn.style.background = dark ? '#1A1F2E' : '#fff'; btn.style.borderColor = dark ? '#374151' : '#E5E7EB'; btn.style.color = dark ? '#94A3B8' : '#6B7280'; }
+    }
+
+    /* ── Langue ── */
+    (function(){
+        var lang = localStorage.getItem('prt-lang') || 'FR';
+        dpApplyLang(lang);
+    })();
+    function dpSetLang(lang) {
+        dpApplyLang(lang);
+        localStorage.setItem('prt-lang', lang);
+    }
+    function dpApplyLang(lang) {
+        var fr = document.getElementById('dp-langFR');
+        var en = document.getElementById('dp-langEN');
+        if (fr) { fr.style.background = lang==='FR' ? '#0F2D5C' : '#fff'; fr.style.color = lang==='FR' ? '#fff' : '#9CA3AF'; }
+        if (en) { en.style.background = lang==='EN' ? '#0F2D5C' : '#fff'; en.style.color = lang==='EN' ? '#fff' : '#9CA3AF'; }
+    }
+
+    /* ── Navigation via URL ?nav=xxx ── */
+    (function(){
+        var params = new URLSearchParams(window.location.search);
+        var nav = params.get('nav');
+        if (nav) {
+            window.addEventListener('DOMContentLoaded', function(){
+                var navEl = document.getElementById('nav-' + nav);
+                dpShow(nav, navEl);
+            });
+        }
+    })();
+    </script>
+
+    <!-- LAYOUT -->
+    <div class="dp-layout">
+
+        <!-- SIDEBAR -->
+        <div class="dp-sidebar">
+
+            <!-- Logo -->
+            <div class="dp-sidebar-logo">
+                <div class="dp-sidebar-logo-wrap">
+                    <div class="dp-sidebar-logo-icon">SE</div>
+                    <div>
+                        <div class="dp-sidebar-logo-title">SenExpert</div>
+                        <div class="dp-sidebar-logo-sub">Formation</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User card (haut, juste sous le logo) -->
+            <div class="dp-user-card">
+                <div class="dp-user-av"><h:outputText value="#{sessionBean.initiale}"/></div>
+                <div style="flex:1;min-width:0;">
+                    <div class="dp-user-name"><h:outputText value="#{sessionBean.nomComplet}"/></div>
+                    <div class="dp-user-role" style="display:flex;align-items:center;gap:4px;margin-top:2px;">
+                        Particulier ·
+                        <h:panelGroup rendered="#{sessionBean.enAttente}">
+                            <span style="color:#FCD34D;font-size:10.5px;">En attente</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{!sessionBean.enAttente}">
+                            <span style="color:#6EE7B7;font-size:10.5px;">Validé</span>
+                        </h:panelGroup>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <div class="dp-sidebar-inner">
+
+                <div class="dp-nav-section">Principal</div>
+
+                <div class="dp-nav active" id="nav-accueil" onclick="dpShow('accueil',this)">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                    Tableau de bord
+                </div>
+
+                <div class="dp-nav" id="nav-explorer" onclick="dpShow('explorer',this)">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    Offres de formation
+                </div>
+
+                <div class="dp-nav" id="nav-demandes" onclick="dpShow('demandes',this)">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    Mes demandes
+                    <h:panelGroup rendered="#{offreBean.nbDemandesEnAttente gt 0}">
+                        <span class="dp-nav-badge dp-nav-badge-red">
+                            <h:outputText value="#{offreBean.nbDemandesEnAttente}"/>
+                        </span>
+                    </h:panelGroup>
+                </div>
+
+                <a class="dp-nav" href="#{request.contextPath}/mes-formations.xhtml" style="text-decoration:none;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    Mes formations
+                </a>
+
+                <div class="dp-nav-section" style="margin-top:8px;">Compte</div>
+
+                <div class="dp-nav" id="nav-profil" onclick="dpShow('profil',this)">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                    Mon profil
+                </div>
+
+                <div class="dp-nav" id="nav-parametres" onclick="dpShow('parametres',this)">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M2 12h2M20 12h2"/></svg>
+                    Paramètres
+                </div>
+
+                <!-- cibles JS cachées -->
+                <div id="nav-carte"         style="display:none;"/>
+                <div id="nav-calendrier"    style="display:none;"/>
+                <div id="nav-messagerie"    style="display:none;"/>
+                <div id="nav-notifs"        style="display:none;"/>
+                <div id="nav-paiements"     style="display:none;"/>
+                <div id="nav-evaluation"    style="display:none;"/>
+                <div id="nav-resultats"     style="display:none;"/>
+                <div id="nav-mesFormations" style="display:none;"/>
+
+            </div><!-- /dp-sidebar-inner -->
+
+            <!-- Logout (bas) -->
+            <h:form styleClass="dp-logout-form">
+                <h:commandButton action="#{authBean.logout}"
+                                 styleClass="dp-logout-btn"
+                                 value="Se déconnecter"/>
+            </h:form>
+
+        </div>
+
+        <!-- MAIN -->
+        <div class="dp-main">
+
+            <!-- ══ ACCUEIL ══ -->
+            <div class="dp-page active" id="dp-accueil">
+
+                <!-- ── Alertes ───────────────────────────────────────────── -->
+                <h:panelGroup rendered="#{sessionBean.enAttente}">
+                    <div class="dpn-alert-doc">
+                        ⚠️ <span>Votre compte est <strong>en attente de validation</strong> par l'administrateur. Certaines fonctionnalités peuvent être limitées.</span>
+                    </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{paiementBean.paiementEffectue}">
+                    <div class="dp-alert dp-alert-success" style="border-radius:10px;">
+                        ✅ <div>
+                            <strong>Paiement confirmé</strong> — Candidature à
+                            <em><h:outputText value="#{paiementBean.offreTitre}"/></em> soumise.
+                            <h:panelGroup rendered="#{paiementBean.montant gt 0}">
+                                <h:outputText value="#{paiementBean.montantFormate}"/> payés ·
+                            </h:panelGroup>
+                            Réf. <strong><h:outputText value="#{paiementBean.referenceTransaction}"/></strong>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <!-- ── Stats Cards ─────────────────────────────────────── -->
+                <div class="dpn-stat-grid">
+                    <!-- Demandes soumises -->
+                    <div class="dpn-sc">
+                        <div class="dpn-sc-ico dpn-sc-ico-navy">
+                            <svg width="20" height="20" fill="none" stroke="#0F2D5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="dpn-sc-val"><h:outputText value="#{offreBean.nbDemandes}"/></div>
+                            <div class="dpn-sc-lbl">Demandes soumises</div>
+                            <div class="dpn-sc-trend dpn-sc-trend-warn">
+                                <h:outputText value="#{offreBean.nbDemandesEnAttente}"/> en cours
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Formations validées -->
+                    <div class="dpn-sc">
+                        <div class="dpn-sc-ico dpn-sc-ico-green">
+                            <svg width="20" height="20" fill="none" stroke="#1A7A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="dpn-sc-val"><h:outputText value="#{offreBean.nbDemandesValidees}"/></div>
+                            <div class="dpn-sc-lbl">Formations validées</div>
+                            <div class="dpn-sc-trend dpn-sc-trend-ok">✓ Acceptée(s)</div>
+                        </div>
+                    </div>
+                    <!-- Délai réponse -->
+                    <div class="dpn-sc">
+                        <div class="dpn-sc-ico dpn-sc-ico-gold">
+                            <svg width="20" height="20" fill="none" stroke="#C8922A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="dpn-sc-val">48h</div>
+                            <div class="dpn-sc-lbl">Délai moyen réponse</div>
+                            <div class="dpn-sc-trend dpn-sc-trend-warn">En traitement</div>
+                        </div>
+                    </div>
+                    <!-- Offres disponibles -->
+                    <div class="dpn-sc">
+                        <div class="dpn-sc-ico dpn-sc-ico-navy">
+                            <svg width="20" height="20" fill="none" stroke="#0F2D5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="dpn-sc-val"><h:outputText value="#{offreBean.nbOffres}"/></div>
+                            <div class="dpn-sc-lbl">Offres disponibles</div>
+                            <div class="dpn-sc-trend dpn-sc-trend-info">Explorer →</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Demande en cours (stepper) ─────────────────────── -->
+                <h:panelGroup layout="block" rendered="#{not empty offreBean.demandesEnCours}">
+                    <!-- Header hors carte -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                        <span style="font-size:15px;font-weight:600;color:#111827;">Demande en cours de traitement</span>
+                        <span class="dpn-sec2-link" onclick="dpShow('demandes',document.getElementById('nav-demandes'))">Voir toutes mes demandes →</span>
+                    </div>
+                    <ui:repeat value="#{offreBean.demandesEnCours}" var="dmd" begin="0" end="0">
+                        <div class="dpn-dmd-card">
+                            <div class="dpn-dmd-hdr">
+                                <div>
+                                    <div class="dpn-dmd-tag">
+                                        <h:outputText value="#{dmd.offre.domaine != null ? dmd.offre.domaine.libelle : 'Formation'}"/>
+                                    </div>
+                                    <div class="dpn-dmd-title"><h:outputText value="#{dmd.offre.titre}"/></div>
+                                    <div class="dpn-dmd-meta">
+                                        Demande soumise le <h:outputText value="#{dmd.dateDemande}"/>
+                                        <h:panelGroup rendered="#{dmd.offre.type != null}">
+                                            · <h:outputText value="#{dmd.offre.type}"/>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                                <h:panelGroup rendered="#{dmd.statut eq 'EN_ATTENTE'}">
+                                    <div class="dpn-dmd-status dpn-dmd-status-pending">
+                                        <div class="dpn-dmd-dot" style="background:#D45B0A;"></div>
+                                        En validation
+                                    </div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dmd.statut eq 'VALIDEE'}">
+                                    <div class="dpn-dmd-status dpn-dmd-status-ok">
+                                        <div class="dpn-dmd-dot" style="background:#1A7A4A;"></div>
+                                        Confirmée
+                                    </div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dmd.statut eq 'REJETEE'}">
+                                    <div class="dpn-dmd-status" style="background:#FEE2E2;color:#991B1B;">
+                                        <div class="dpn-dmd-dot" style="background:#991B1B;"></div>
+                                        Refusée
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                            <!-- Stepper -->
+                            <div class="dpn-stepper">
+                                <!-- Step 1 : Demande soumise (toujours fait) -->
+                                <div class="dpn-step">
+                                    <div class="dpn-step-line #{dmd.statut eq 'REJETEE' ? 'dpn-step-line-pending' : 'dpn-step-line-done'}"></div>
+                                    <div class="dpn-step-c dpn-step-c-done">✓</div>
+                                    <div class="dpn-step-lbl dpn-step-lbl-done">Demande soumise</div>
+                                </div>
+                                <!-- Step 2 : Validation admin -->
+                                <h:panelGroup rendered="#{dmd.statut eq 'EN_ATTENTE'}" layout="block" styleClass="dpn-step">
+                                    <div class="dpn-step-line dpn-step-line-pending"></div>
+                                    <div class="dpn-step-c dpn-step-c-active">2</div>
+                                    <div class="dpn-step-lbl dpn-step-lbl-active">En cours de validation</div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dmd.statut eq 'REJETEE'}" layout="block" styleClass="dpn-step">
+                                    <div class="dpn-step-line dpn-step-line-pending"></div>
+                                    <div class="dpn-step-c" style="background:#FEE2E2;color:#991B1B;border:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;">✕</div>
+                                    <div class="dpn-step-lbl" style="color:#991B1B;">Refusée</div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{dmd.statut eq 'VALIDEE' or dmd.statut eq 'CONFIRMEE'}" layout="block" styleClass="dpn-step">
+                                    <div class="dpn-step-line dpn-step-line-done"></div>
+                                    <div class="dpn-step-c dpn-step-c-done">✓</div>
+                                    <div class="dpn-step-lbl dpn-step-lbl-done">Demande validée</div>
+                                </h:panelGroup>
+                                <!-- Step 3 : Paiement (masqué si REJETEE) -->
+                                <h:panelGroup rendered="#{dmd.statut ne 'REJETEE'}" layout="block" styleClass="dpn-step">
+                                    <div class="dpn-step-line #{dmd.statut eq 'CONFIRMEE' ? 'dpn-step-line-done' : 'dpn-step-line-pending'}"></div>
+                                    <h:panelGroup rendered="#{dmd.statut eq 'CONFIRMEE'}" layout="block">
+                                        <div class="dpn-step-c dpn-step-c-done">✓</div>
+                                        <div class="dpn-step-lbl dpn-step-lbl-done">Paiement effectué</div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{dmd.statut ne 'CONFIRMEE'}" layout="block">
+                                        <div class="dpn-step-c dpn-step-c-up">3</div>
+                                        <div class="dpn-step-lbl">Paiement</div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Step 4 : Confirmée (masqué si REJETEE) -->
+                                <h:panelGroup rendered="#{dmd.statut ne 'REJETEE'}" layout="block" styleClass="dpn-step">
+                                    <h:panelGroup rendered="#{dmd.statut eq 'CONFIRMEE'}" layout="block">
+                                        <div class="dpn-step-c dpn-step-c-done">✓</div>
+                                        <div class="dpn-step-lbl dpn-step-lbl-done">Confirmée</div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{dmd.statut ne 'CONFIRMEE'}" layout="block">
+                                        <div class="dpn-step-c dpn-step-c-up">4</div>
+                                        <div class="dpn-step-lbl">Confirmée</div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
+
+                <!-- ── Grille 2 colonnes ──────────────────────────────────── -->
+                <div class="dpn-g2">
+
+                    <!-- ═══ Colonne gauche : Offres recommandées ═══ -->
+                    <div class="dpn-g2-l">
+                        <div class="dpn-sec2-hdr" style="background:#fff;border:1px solid #E5E7EB;border-radius:12px 12px 0 0;border-bottom:1px solid #F3F4F6;">
+                            <span class="dpn-sec2-title">Offres recommandées</span>
+                            <span class="dpn-sec2-link" onclick="dpShow('explorer',document.getElementById('nav-explorer'))">Explorer →</span>
+                        </div>
+                        <h:panelGroup layout="block" rendered="#{empty offreBean.offresTop}">
+                            <div style="background:#fff;border:1px solid #E5E7EB;border-top:none;border-radius:0 0 12px 12px;padding:24px;text-align:center;color:#9CA3AF;font-size:12px;">
+                                Aucune offre disponible pour le moment.
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{not empty offreBean.offresTop}">
+                            <div style="display:flex;flex-direction:column;gap:10px;background:#fff;border:1px solid #E5E7EB;border-top:none;border-radius:0 0 12px 12px;padding:14px 16px;">
+                                <ui:repeat value="#{offreBean.offresTop}" var="ro">
+                                    <div class="dpn-orec">
+                                        <div class="dpn-orec-ico" style="background:#E8EEF7;">📚</div>
+                                        <div style="flex:1;min-width:0;">
+                                            <div class="dpn-orec-name"><h:outputText value="#{ro.titre}"/></div>
+                                            <div class="dpn-orec-dom">
+                                                <h:outputText value="#{ro.domaine != null ? ro.domaine.libelle : 'Formation'}"/>
+                                            </div>
+                                            <div class="dpn-orec-tags">
+                                                <h:panelGroup rendered="#{ro.type != null}">
+                                                    <span class="dpn-orec-tag dpn-orec-tag-mode">
+                                                        <h:outputText value="#{ro.type}"/>
+                                                    </span>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{ro.duree != null}">
+                                                    <span class="dpn-orec-tag dpn-orec-tag-dur">
+                                                        <h:outputText value="#{ro.duree}"/> j
+                                                    </span>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h:panelGroup rendered="#{ro.payante}">
+                                                <div class="dpn-orec-price">
+                                                    <h:outputText value="#{ro.coutFormate}"/>
+                                                    <span>FCFA</span>
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{!ro.payante}">
+                                                <div class="dpn-orec-price" style="color:#1A7A4A;">Gratuit<span>&#160;</span></div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{offreBean.postulesMap[ro.id]}" layout="block">
+                                                <span style="margin-top:6px;display:block;text-align:center;font-size:11px;padding:3px 10px;background:#E6F4ED;color:#1A7A4A;border:1px solid #A7D7BC;border-radius:20px;font-weight:600;">
+                                                    ✓ Déjà postulé
+                                                </span>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not offreBean.postulesMap[ro.id] and sessionBean.permissionsMap['5014']}" layout="block">
+                                                <h:button value="Postuler" outcome="/postuler"
+                                                          style="margin-top:6px;font-size:11px;padding:3px 10px;background:#0F2D5C;color:#fff;border:none;border-radius:20px;cursor:pointer;display:block;text-align:center;"
+                                                          disabled="#{ro.placesDisponibles le 0}">
+                                                    <f:param name="offreId" value="#{ro.id}"/>
+                                                </h:button>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not offreBean.postulesMap[ro.id] and not sessionBean.permissionsMap['5014']}" layout="block">
+                                                <span style="margin-top:6px;display:block;text-align:center;font-size:11px;padding:3px 10px;background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;border-radius:20px;font-weight:600;">
+                                                    🔒 Non autorisé
+                                                </span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </ui:repeat>
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Formations en cours -->
+                        <h:panelGroup layout="block" rendered="#{not empty offreBean.demandesRecentes}">
+                            <div class="dpn-sec2">
+                                <div class="dpn-sec2-hdr">
+                                    <span class="dpn-sec2-title">Formations en cours</span>
+                                    <span class="dpn-sec2-link" onclick="dpShowFormations(document.getElementById('nav-formations'))">Voir tout</span>
+                                </div>
+                                <div class="dpn-sec2-body">
+                                    <ui:repeat value="#{offreBean.demandesRecentes}" var="dem">
+                                        <h:panelGroup layout="block" rendered="#{dem.statut eq 'VALIDEE'}">
+                                            <div class="dpn-cand">
+                                                <div class="dpn-dot dpn-dot-ok"></div>
+                                                <div class="dpn-cand-info">
+                                                    <div class="dpn-cand-titre"><h:outputText value="#{dem.offre.titre}"/></div>
+                                                    <div class="dpn-cand-meta">
+                                                        <h:outputText value="#{dem.dateDemande}"/>
+                                                        <h:panelGroup rendered="#{!dem.offre.payante}">
+                                                            · <a href="#{request.contextPath}/mes-cours.xhtml?offreId=#{dem.offre.id}" style="color:#0F2D5C;font-size:11px;">Accéder →</a>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                </div>
+                                                <span class="dpn-stat-badge dpn-sb-ok">Validée</span>
+                                            </div>
+                                        </h:panelGroup>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+
+                    <!-- ═══ Colonne droite : Notifications + Profil ═══ -->
+                    <div class="dpn-g2-r">
+
+                        <!-- Notifications -->
+                        <div class="dpn-sec2">
+                            <div class="dpn-sec2-hdr">
+                                <span class="dpn-sec2-title">Notifications récentes</span>
+                                <span class="dpn-sec2-link" onclick="dpShow('notifs',null)">Tout voir →</span>
+                            </div>
+                            <div class="dpn-sec2-body" style="gap:8px;">
+                                <!-- Notification paiement confirmé -->
+                                <h:panelGroup rendered="#{paiementBean.paiementEffectue}">
+                                    <div class="dpn-notif unread">
+                                        <div class="dpn-notif-dot dpn-notif-dot-navy"></div>
+                                        <div>
+                                            <div class="dpn-notif-txt">Paiement confirmé pour <strong><h:outputText value="#{paiementBean.offreTitre}"/></strong>. Réf. <h:outputText value="#{paiementBean.referenceTransaction}"/>.</div>
+                                            <div class="dpn-notif-time">Récemment</div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                <!-- Notification compte en attente -->
+                                <h:panelGroup rendered="#{sessionBean.enAttente}">
+                                    <div class="dpn-notif unread">
+                                        <div class="dpn-notif-dot dpn-notif-dot-navy"></div>
+                                        <div>
+                                            <div class="dpn-notif-txt">Votre compte est <strong>en attente de validation</strong> par l'administrateur.</div>
+                                            <div class="dpn-notif-time">En cours</div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                <!-- Notification demande soumise -->
+                                <h:panelGroup layout="block" rendered="#{not empty offreBean.demandesRecentes}">
+                                    <ui:repeat value="#{offreBean.demandesRecentes}" var="dn" begin="0" end="0">
+                                        <div class="dpn-notif unread">
+                                            <div class="dpn-notif-dot dpn-notif-dot-navy"></div>
+                                            <div>
+                                                <div class="dpn-notif-txt">Votre demande pour <strong><h:outputText value="#{dn.offre.titre}"/></strong> est
+                                                    <h:panelGroup rendered="#{dn.statut eq 'EN_ATTENTE'}"> en cours d'examen.</h:panelGroup>
+                                                    <h:panelGroup rendered="#{dn.statut eq 'VALIDEE'}"> acceptée ✓</h:panelGroup>
+                                                    <h:panelGroup rendered="#{dn.statut eq 'REJETEE'}"> refusée.</h:panelGroup>
+                                                </div>
+                                                <div class="dpn-notif-time">Soumise le <h:outputText value="#{dn.dateDemande}"/></div>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                                <!-- Notification bienvenue -->
+                                <div class="dpn-notif">
+                                    <div class="dpn-notif-dot dpn-notif-dot-gray"></div>
+                                    <div>
+                                        <div class="dpn-notif-txt">Bienvenue sur SenExpertFormation ! Votre compte <strong><h:outputText value="#{sessionBean.nomComplet}"/></strong> a bien été créé.</div>
+                                        <div class="dpn-notif-time">À la création du compte</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mon profil compact -->
+                        <div class="dpn-profil">
+                            <div class="dpn-profil-top">
+                                <div class="dpn-profil-av"><h:outputText value="#{sessionBean.initiale}"/></div>
+                                <div>
+                                    <div class="dpn-profil-name"><h:outputText value="#{sessionBean.nomComplet}"/></div>
+                                    <div class="dpn-profil-type">Particulier</div>
+                                    <h:panelGroup rendered="#{!sessionBean.enAttente}">
+                                        <div class="dpn-profil-valid">✓ Compte validé</div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{sessionBean.enAttente}">
+                                        <div class="dpn-profil-valid" style="background:#FEF0E6;color:#D45B0A;">⏳ En attente</div>
+                                    </h:panelGroup>
+                                </div>
+                                <span class="dpn-sec2-link" style="margin-left:auto;" onclick="dpShow('profil',document.getElementById('nav-profil'))">Modifier →</span>
+                            </div>
+                            <div class="dpn-profil-row">
+                                <span class="dpn-profil-k">Email</span>
+                                <span class="dpn-profil-v"><h:outputText value="#{sessionBean.email}"/></span>
+                            </div>
+                            <div class="dpn-profil-row">
+                                <span class="dpn-profil-k">Candidatures</span>
+                                <span class="dpn-profil-v"><h:outputText value="#{offreBean.nbDemandes}"/> soumise(s)</span>
+                            </div>
+                            <div class="dpn-profil-row">
+                                <span class="dpn-profil-k">Formations validées</span>
+                                <span class="dpn-profil-v"><h:outputText value="#{offreBean.nbDemandesValidees}"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Paiements récents -->
+                        <h:panelGroup layout="block" rendered="#{paiementBean.paiementEffectue}">
+                            <div class="dpn-sec2">
+                                <div class="dpn-sec2-hdr">
+                                    <span class="dpn-sec2-title">Dernier paiement</span>
+                                </div>
+                                <div class="dpn-sec2-body">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+                                        <div>
+                                            <div style="font-size:12px;font-weight:600;color:#111827;"><h:outputText value="#{paiementBean.offreTitre}"/></div>
+                                            <div style="font-size:11px;color:#9CA3AF;">Réf. <h:outputText value="#{paiementBean.referenceTransaction}"/></div>
+                                        </div>
+                                        <div style="font-size:13px;font-weight:700;color:#D45B0A;">-<h:outputText value="#{paiementBean.montantFormate}"/></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                    </div><!-- /col-droite -->
+
+                </div><!-- /dpn-g2 -->
+
+                <!-- ── Script calendrier semaine ─────────────────────────── -->
+                <script>
+                window.addEventListener('DOMContentLoaded',function(){
+                    var jours=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+                    var mois=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+                    var hdrs=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+                    var now=new Date();
+                    var wkDay=now.getDay();
+                    var monday=new Date(now);
+                    monday.setDate(now.getDate()-(wkDay===0?6:wkDay-1));
+                    // Date label en haut
+                    var lbl=document.getElementById('dpn-date-label');
+                    if(lbl) lbl.textContent=jours[wkDay].toUpperCase()+' '+now.getDate()+' '+mois[now.getMonth()].toUpperCase()+' '+now.getFullYear();
+                    // Mois badge calendrier
+                    var mb=document.getElementById('dpn-cal-month');
+                    if(mb) mb.textContent=mois[now.getMonth()].charAt(0).toUpperCase()+mois[now.getMonth()].slice(1)+' '+now.getFullYear();
+                    // Grille semaine
+                    var grid=document.getElementById('dpn-week-days');
+                    if(!grid) return;
+                    hdrs.forEach(function(h){
+                        var col=document.createElement('div'); col.className='dpn-cal-day-col';
+                        var hdr=document.createElement('div'); hdr.className='dpn-cal-day-hdr'; hdr.textContent=h.substring(0,3);
+                        var d2=new Date(monday); d2.setDate(monday.getDate()+hdrs.indexOf(h));
+                        var day=document.createElement('div');
+                        day.className='dpn-cal-day'+(d2.toDateString()===now.toDateString()?' today':'');
+                        day.textContent=d2.getDate();
+                        col.appendChild(hdr); col.appendChild(day); grid.appendChild(col);
+                    });
+                    [0,1,2,3,4,5,6].forEach(function(i){
+                        var d2=new Date(monday); d2.setDate(monday.getDate()+i);
+                        var isToday=d2.toDateString()===now.toDateString();
+                        var dayEl=grid.children[i] ? grid.children[i].querySelector('.dpn-cal-day') : null;
+                        if(!dayEl) return;
+                        dayEl.textContent=d2.getDate();
+                        if(isToday) dayEl.classList.add('today');
+                    });
+                });
+                </script>
+
+            </div><!-- /ACCUEIL -->
+
+            <!-- ══ EXPLORER ══ -->
+            <div class="dp-page" id="dp-explorer">
+                <h:form id="explorerForm">
+                    <div style="display:flex;gap:8px;margin-bottom:12px;">
+                        <input type="text" style="flex:1;font-size:13px;padding:8px 12px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#111;"
+                               placeholder="Rechercher une formation…" oninput="dpSearch(this.value)"/>
+                        <p:selectOneMenu value="#{offreBean.domaineFiltre}"
+                                         style="padding:8px;border:1px solid #E5E7EB;border-radius:8px;font-size:12px;background:#fff;color:#111;">
+                            <f:selectItem itemValue="#{null}" itemLabel="Tous les domaines"/>
+                            <f:selectItems value="#{offreBean.domaines}" var="d" itemValue="#{d.id}" itemLabel="#{d.libelle}"/>
+                        </p:selectOneMenu>
+                        <p:commandButton value="Filtrer" styleClass="dp-btn dp-btn-p"
+                                         action="#{offreBean.filtrerParDomaine}" update="explorerForm"
+                                         style="white-space:nowrap;"/>
+                    </div>
+                    <p:messages showDetail="true" closable="true" style="font-size:12px;"/>
+                    <div class="dp-og" id="dp-og-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+                        <ui:repeat value="#{offreBean.offres}" var="offre">
+                            <div class="dp-oc" data-title="#{offre.titre}"
+                                 style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s;">
+
+                                <!-- Stripe colorée selon niveau -->
+                                <div style="height:4px;background:#{offre.niveau eq 'Avance' ? 'linear-gradient(90deg,#7C3AED,#4F46E5)' : offre.niveau eq 'Intermediaire' ? 'linear-gradient(90deg,#3B82F6,#06B6D4)' : 'linear-gradient(90deg,#10B981,#059669)'};"></div>
+
+                                <div style="padding:14px 14px 10px;flex:1;">
+                                    <!-- Chips domaine + niveau + type -->
+                                    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+                                        <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:#EFF6FF;color:#1D4ED8;">
+                                            <h:outputText value="#{offre.domaine != null ? offre.domaine.libelle : 'Formation'}"/>
+                                        </span>
+                                        <h:panelGroup rendered="#{not empty offre.niveau}">
+                                            <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:#{offre.niveau eq 'Avance' ? '#EDE9FE' : offre.niveau eq 'Intermediaire' ? '#DBEAFE' : '#D1FAE5'};color:#{offre.niveau eq 'Avance' ? '#5B21B6' : offre.niveau eq 'Intermediaire' ? '#1E40AF' : '#065F46'};">
+                                                <h:outputText value="#{offre.niveau}"/>
+                                            </span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not empty offre.type}">
+                                            <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:#F1F5F9;color:#475569;">
+                                                <h:outputText value="#{offre.type}"/>
+                                            </span>
+                                        </h:panelGroup>
+                                    </div>
+
+                                    <!-- Titre -->
+                                    <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.3;margin-bottom:6px;">
+                                        <h:outputText value="#{offre.titre}"/>
+                                    </div>
+
+                                    <!-- Description courte -->
+                                    <h:panelGroup rendered="#{not empty offre.description}" layout="block">
+                                        <div style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                                            <h:outputText value="#{offre.description}"/>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <!-- Prix -->
+                                    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#{offre.payante ? '#BA7517' : '#059669'};">
+                                        <h:outputText value="#{offre.payante ? ' ' : ' '}"/>
+                                        <h:outputText value="#{offre.coutFormate}"/>
+                                    </div>
+
+                                    <!-- Méta : durée + dates + places -->
+                                    <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:#6B7280;margin-bottom:6px;">
+                                        <h:panelGroup rendered="#{not empty offre.duree}">
+                                            <span>⏱ <h:outputText value="#{offre.duree}"/></span>
+                                        </h:panelGroup>
+                                        <span>📅 <h:outputText value="#{offre.dateDebut}"/>
+                                            <h:panelGroup rendered="#{not empty offre.dateFin}"> → <h:outputText value="#{offre.dateFin}"/></h:panelGroup>
+                                        </span>
+                                    </div>
+
+                                    <!-- Formateurs -->
+                                    <h:panelGroup rendered="#{not empty offre.formateurs}" layout="block">
+                                        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+                                            <ui:repeat value="#{offre.formateurs}" var="fmt">
+                                                <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:20px;padding:2px 7px;color:#374151;">
+                                                    <span style="width:14px;height:14px;border-radius:50%;background:#E0E7FF;color:#3730A3;font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                                        <h:outputText value="#{not empty fmt.prenom ? fmt.prenom.substring(0,1) : '?'}"/>
+                                                    </span>
+                                                    <h:outputText value="#{fmt.prenom} #{fmt.nom}"/>
+                                                </span>
+                                            </ui:repeat>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Footer -->
+                                <div style="padding:10px 14px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                                    <span style="font-size:11px;color:#{offre.placesDisponibles gt 0 ? '#059669' : '#DC2626'};font-weight:600;">
+                                        👥 <h:outputText value="#{offre.placesDisponibles}"/> place(s)
+                                    </span>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <!-- Bouton Voir détail -->
+                                        <p:commandButton value="🔍 Voir détail"
+                                                         action="#{offreBean.ouvrirDetail(offre)}"
+                                                         update=":dlgDetailForm"
+                                                         oncomplete="PF('dlgDetail').show()"
+                                                         process="@this"
+                                                         style="white-space:nowrap;font-size:11px;padding:6px 12px;background:#F1F5F9;color:#1E40AF;border:1px solid #BFDBFE;border-radius:8px;cursor:pointer;font-weight:600;"/>
+                                        <!-- Déjà postulé -->
+                                        <h:panelGroup rendered="#{offreBean.postulesMap[offre.id]}" layout="block">
+                                            <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#E6F4ED;color:#1A7A4A;border:1px solid #A7D7BC;border-radius:8px;font-size:11px;font-weight:600;">
+                                                ✓ Déjà postulé
+                                            </span>
+                                        </h:panelGroup>
+                                        <!-- Pas encore postulé — visible seulement si permission 5014 -->
+                                        <h:panelGroup rendered="#{not offreBean.postulesMap[offre.id] and sessionBean.permissionsMap['5014']}" layout="block">
+                                            <h:button value="📝 Postuler"
+                                                      outcome="/postuler"
+                                                      styleClass="dp-btn"
+                                                      disabled="#{offre.placesDisponibles le 0}"
+                                                      style="white-space:nowrap;font-size:11px;padding:6px 12px;">
+                                                <f:param name="offreId" value="#{offre.id}"/>
+                                            </h:button>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not offreBean.postulesMap[offre.id] and not sessionBean.permissionsMap['5014']}" layout="block">
+                                            <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;border-radius:8px;font-size:11px;font-weight:600;">
+                                                🔒 Non autorisé
+                                            </span>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                    <h:panelGroup layout="block" rendered="#{empty offreBean.offres}"
+                                  style="text-align:center;padding:40px;color:#9CA3AF;">
+                        <i class="ti ti-inbox" style="font-size:36px;display:block;margin-bottom:10px;color:#CBD5E1;"></i>
+                        Aucune offre disponible.
+                    </h:panelGroup>
+
+                </h:form>
+            </div><!-- /EXPLORER -->
+
+            <!-- ═══ Dialog DÉTAIL OFFRE ═══ -->
+            <h:form id="dlgDetailForm">
+                <p:dialog widgetVar="dlgDetail" modal="true" closable="true" closeOnEscape="true"
+                          header="#{offreBean.offreSelectionnee != null ? offreBean.offreSelectionnee.titre : 'Détail de la formation'}"
+                          width="620" style="border-radius:14px;overflow:hidden;">
+                    <h:panelGroup layout="block" style="padding:8px 4px 16px;">
+
+                        <!-- Chargement initial vide -->
+                        <h:panelGroup rendered="#{offreBean.offreSelectionnee == null}" layout="block"
+                                      style="text-align:center;padding:30px;color:#94A3B8;">
+                            Chargement...
+                        </h:panelGroup>
+
+                        <!-- Contenu réel -->
+                        <h:panelGroup rendered="#{offreBean.offreSelectionnee != null}" layout="block">
+
+                            <!-- Bandeau domaine + type + niveau -->
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+                                <h:panelGroup rendered="#{offreBean.offreSelectionnee.domaine != null}">
+                                    <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#E0F2FE;color:#0369A1;">
+                                        <h:outputText value="#{offreBean.offreSelectionnee.domaine.libelle}"/>
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not empty offreBean.offreSelectionnee.niveau}">
+                                    <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#EDE9FE;color:#5B21B6;">
+                                        <h:outputText value="#{offreBean.offreSelectionnee.niveau}"/>
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not empty offreBean.offreSelectionnee.type}">
+                                    <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#F1F5F9;color:#475569;">
+                                        <h:outputText value="#{offreBean.offreSelectionnee.type}"/>
+                                    </span>
+                                </h:panelGroup>
+                            </div>
+
+                            <!-- Titre -->
+                            <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:8px;">
+                                <h:outputText value="#{offreBean.offreSelectionnee.titre}"/>
+                            </div>
+
+                            <!-- Description -->
+                            <h:panelGroup rendered="#{not empty offreBean.offreSelectionnee.description}" layout="block">
+                                <div style="font-size:13px;color:#4B5563;line-height:1.6;margin-bottom:14px;padding:12px;background:#F8FAFC;border-radius:8px;border-left:3px solid #3B82F6;">
+                                    <h:outputText value="#{offreBean.offreSelectionnee.description}"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Infos clés en grille -->
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px;">
+                                    <div style="font-size:10px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:3px;">Prix</div>
+                                    <div style="font-size:15px;font-weight:700;color:#{offreBean.offreSelectionnee.payante ? '#B45309' : '#059669'};">
+                                        <h:outputText value="#{offreBean.offreSelectionnee.coutFormate}"/>
+                                    </div>
+                                </div>
+                                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px;">
+                                    <div style="font-size:10px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:3px;">Places disponibles</div>
+                                    <div style="font-size:15px;font-weight:700;color:#{offreBean.offreSelectionnee.placesDisponibles gt 0 ? '#059669' : '#DC2626'};">
+                                        👥 <h:outputText value="#{offreBean.offreSelectionnee.placesDisponibles}"/> / <h:outputText value="#{offreBean.offreSelectionnee.places}"/>
+                                    </div>
+                                </div>
+                                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px;">
+                                    <div style="font-size:10px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:3px;">Durée</div>
+                                    <div style="font-size:13px;font-weight:600;color:#374151;">
+                                        ⏱ <h:outputText value="#{not empty offreBean.offreSelectionnee.duree ? offreBean.offreSelectionnee.duree.concat(' jours') : 'N/A'}"/>
+                                    </div>
+                                </div>
+                                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px;">
+                                    <div style="font-size:10px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:3px;">Lieu</div>
+                                    <div style="font-size:13px;font-weight:600;color:#374151;">
+                                        📍 <h:outputText value="#{not empty offreBean.offreSelectionnee.lieu ? offreBean.offreSelectionnee.lieu : 'En ligne'}"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dates -->
+                            <div style="display:flex;gap:12px;margin-bottom:10px;">
+                                <div style="flex:1;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px;">
+                                    <div style="font-size:10px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:3px;">Début</div>
+                                    <div style="font-size:13px;font-weight:600;color:#15803D;">
+                                        📅 <h:outputText value="#{offreBean.offreSelectionnee.dateDebut}"/>
+                                    </div>
+                                </div>
+                                <div style="flex:1;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:10px;">
+                                    <div style="font-size:10px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:3px;">Fin</div>
+                                    <div style="font-size:13px;font-weight:600;color:#C2410C;">
+                                        🏁 <h:outputText value="#{offreBean.offreSelectionnee.dateFin}"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Date limite de candidature -->
+                            <h:panelGroup rendered="#{not empty offreBean.offreSelectionnee.dateLimiteCandidature}" layout="block">
+                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:#FFF1F2;border:1px solid #FECDD3;border-radius:8px;">
+                                    <span style="font-size:18px;">⏳</span>
+                                    <div>
+                                        <div style="font-size:10px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:2px;">Date limite de candidature</div>
+                                        <div style="font-size:13px;font-weight:700;color:#BE123C;">
+                                            <h:outputText value="#{offreBean.offreSelectionnee.dateLimiteCandidature}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Formateurs -->
+                            <h:panelGroup rendered="#{not empty offreBean.offreSelectionnee.formateurs}" layout="block">
+                                <div style="margin-bottom:14px;">
+                                    <div style="font-size:11px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:6px;">Formateur(s)</div>
+                                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                                        <ui:repeat value="#{offreBean.offreSelectionnee.formateurs}" var="fmt">
+                                            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:20px;padding:4px 10px;color:#374151;font-weight:500;">
+                                                <span style="width:20px;height:20px;border-radius:50%;background:#3730A3;color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;">
+                                                    <h:outputText value="#{not empty fmt.prenom ? fmt.prenom.substring(0,1) : '?'}"/>
+                                                </span>
+                                                <h:outputText value="#{fmt.prenom} #{fmt.nom}"/>
+                                            </span>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Documents requis -->
+                            <h:panelGroup rendered="#{offreBean.offreSelectionnee.nbDocumentsRequis gt 0}" layout="block">
+                                <div style="margin-bottom:14px;">
+                                    <div style="font-size:11px;color:#94A3B8;font-weight:600;text-transform:uppercase;margin-bottom:6px;">
+                                        Documents requis (<h:outputText value="#{offreBean.offreSelectionnee.nbDocumentsRequis}"/>)
+                                    </div>
+                                    <ul style="margin:0;padding-left:18px;font-size:12px;color:#374151;">
+                                        <ui:repeat value="#{offreBean.offreSelectionnee.documentsRequis}" var="doc">
+                                            <li style="margin-bottom:3px;"><h:outputText value="#{doc}"/></li>
+                                        </ui:repeat>
+                                    </ul>
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Actions -->
+                            <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid #F3F4F6;">
+                                <p:commandButton value="Fermer"
+                                                 onclick="PF('dlgDetail').hide(); return false;"
+                                                 style="font-size:12px;padding:7px 16px;background:#F1F5F9;color:#374151;border:1px solid #E2E8F0;border-radius:8px;cursor:pointer;"/>
+                                <h:panelGroup rendered="#{not offreBean.postulesMap[offreBean.offreSelectionnee.id] and sessionBean.permissionsMap['5014']}" layout="block">
+                                    <h:button value="📝 Postuler"
+                                              outcome="/postuler"
+                                              style="font-size:12px;padding:7px 16px;background:#0F2D5C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
+                                        <f:param name="offreId" value="#{offreBean.offreSelectionnee.id}"/>
+                                    </h:button>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{offreBean.postulesMap[offreBean.offreSelectionnee.id]}" layout="block">
+                                    <span style="display:inline-flex;align-items:center;padding:7px 16px;background:#E6F4ED;color:#1A7A4A;border:1px solid #A7D7BC;border-radius:8px;font-size:12px;font-weight:600;">
+                                        ✓ Déjà postulé
+                                    </span>
+                                </h:panelGroup>
+                            </div>
+
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+                </p:dialog>
+            </h:form>
+            <!-- ═══ Fin Dialog DÉTAIL OFFRE ═══ -->
+
+            <!-- Dialog de candidature (hors explorerForm pour éviter l'imbrication de naming containers) -->
+            <h:form id="dlgPostulerDashForm">
+                <p:dialog widgetVar="dlgPostulerDash" modal="true" closable="true" closeOnEscape="true"
+                          header="Candidater à la formation" width="500"
+                          style="border-radius:14px;overflow:hidden;">
+                    <h:panelGroup rendered="#{offreBean.offreSelectionnee != null}" layout="block"
+                                  style="padding:4px 0 16px;">
+                        <div style="font-size:14px;font-weight:700;color:#0F172A;margin-bottom:4px;">
+                            <h:outputText value="#{offreBean.offreSelectionnee.titre}"/>
+                        </div>
+                        <div style="font-size:12px;color:#64748B;margin-bottom:10px;">
+                            Déposez les documents demandés par le prestataire. Votre dossier sera examiné après soumission.
+                        </div>
+
+                        <!-- Documents requis par le prestataire -->
+                        <h:panelGroup rendered="#{not empty offreBean.offreSelectionnee.documentsRequis}" layout="block">
+                            <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 12px;margin-bottom:12px;">
+                                <div style="font-size:11px;font-weight:700;color:#1D4ED8;margin-bottom:5px;">
+                                    📋 Documents requis :
+                                </div>
+                                <ui:repeat value="#{offreBean.offreSelectionnee.documentsRequis}" var="doc">
+                                    <div style="font-size:11px;color:#1E40AF;padding:1px 0;">
+                                        <i class="ti ti-point-filled" style="font-size:8px;margin-right:4px;"></i>
+                                        <h:outputText value="#{doc}"/>
+                                    </div>
+                                </ui:repeat>
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{empty offreBean.offreSelectionnee.documentsRequis}" layout="block">
+                            <div style="background:#FEF9C3;border:1px solid #FDE68A;border-radius:8px;padding:6px 10px;margin-bottom:10px;font-size:11px;color:#92400E;">
+                                ℹ️ Aucune liste définie — joignez a minima un CV.
+                            </div>
+                        </h:panelGroup>
+
+                        <div style="background:#F8FAFC;border:2px dashed #CBD5E1;border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;">
+                            <i class="ti ti-cloud-upload" style="font-size:26px;color:#94A3B8;display:block;margin-bottom:6px;"></i>
+                            <p:fileUpload listener="#{offreBean.handleDocumentUpload}"
+                                          multiple="true" auto="true"
+                                          allowTypes="/(\.|\/)(pdf|doc|docx|jpg|jpeg|png)$/"
+                                          maxFileSize="5000000"
+                                          label="Choisir des fichiers"
+                                          update="dlgPostulerDashForm"
+                                          style="font-size:12px;"/>
+                            <div style="font-size:10px;color:#94A3B8;margin-top:5px;">PDF, Word, image — 5 Mo max</div>
+                        </div>
+                        <h:panelGroup rendered="#{offreBean.nbDocuments gt 0}" layout="block" style="margin-bottom:12px;">
+                            <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;">
+                                Documents joints (<h:outputText value="#{offreBean.nbDocuments}"/>) :
+                            </div>
+                            <ui:repeat value="#{offreBean.nomDocuments}" var="nom" varStatus="vs">
+                                <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:#EFF6FF;border-radius:6px;margin-bottom:3px;font-size:11px;color:#1D4ED8;">
+                                    <i class="ti ti-file"></i>
+                                    <span style="flex:1;"><h:outputText value="#{nom}"/></span>
+                                    <p:commandLink actionListener="#{offreBean.supprimerDocument(vs.index)}"
+                                                   update="dlgPostulerDashForm" process="@none"
+                                                   style="color:#DC2626;">
+                                        <i class="ti ti-x"></i>
+                                    </p:commandLink>
+                                </div>
+                            </ui:repeat>
+                        </h:panelGroup>
+                        <p:messages showDetail="true" style="font-size:12px;margin-bottom:8px;"/>
+                        <div style="display:flex;gap:10px;justify-content:flex-end;">
+                            <p:commandButton value="Annuler"
+                                             onclick="PF('dlgPostulerDash').hide(); return false;"
+                                             styleClass="dp-btn" style="background:#F1F5F9;color:#475569;border-color:#E2E8F0;"/>
+                            <p:commandButton value="Soumettre ma candidature"
+                                             action="#{offreBean.postuler}"
+                                             update="dlgPostulerDashForm :explorerForm"
+                                             oncomplete="if(!args.validationFailed) PF('dlgPostulerDash').hide();"
+                                             styleClass="dp-btn dp-btn-p">
+                                <i class="ti ti-send" style="font-size:11px;margin-right:3px;"></i>
+                            </p:commandButton>
+                        </div>
+                    </h:panelGroup>
+                </p:dialog>
+            </h:form>
+
+            <!-- ══ MES DEMANDES ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-demandes">
+
+                <!-- En-tête section -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <div>
+                        <div style="font-size:17px;font-weight:700;color:#111827;">Mes demandes</div>
+                        <div style="font-size:12px;color:#6B7280;margin-top:2px;">Historique de vos candidatures aux formations</div>
+                    </div>
+                    <button onclick="dpShow('explorer',document.getElementById('nav-explorer'))"
+                            style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:#0F2D5C;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Nouvelle candidature
+                    </button>
+                </div>
+
+                <!-- Liste vide -->
+                <h:panelGroup rendered="#{empty offreBean.mesDemandes}">
+                    <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:48px;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:12px;">📭</div>
+                        <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:6px;">Aucune candidature soumise</div>
+                        <div style="font-size:12px;color:#9CA3AF;">Explorez les offres de formation et postulez pour commencer.</div>
+                    </div>
+                </h:panelGroup>
+
+                <!-- Tableau modernisé -->
+                <h:panelGroup rendered="#{not empty offreBean.mesDemandes}">
+                    <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
+                        <!-- En-tête tableau -->
+                        <div style="display:grid;grid-template-columns:2fr 1fr 100px 130px 110px 120px;gap:0;background:#F8FAFC;border-bottom:1px solid #E5E7EB;padding:10px 20px;">
+                            <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;">Formation</div>
+                            <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;">Domaine</div>
+                            <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;">Date</div>
+                            <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;">Coût</div>
+                            <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;">Statut</div>
+                            <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;">Action</div>
+                        </div>
+                        <!-- Lignes -->
+                        <ui:repeat value="#{offreBean.mesDemandes}" var="d">
+                            <div style="display:grid;grid-template-columns:2fr 1fr 100px 130px 110px 120px;gap:0;padding:14px 20px;border-bottom:1px solid #F3F4F6;align-items:center;transition:background .1s;"
+                                 onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+
+                                <!-- Formation -->
+                                <div>
+                                    <div style="font-size:13px;font-weight:600;color:#111827;"><h:outputText value="#{d.offre.titre}"/></div>
+                                    <div style="font-size:11px;color:#9CA3AF;margin-top:2px;">
+                                        <h:panelGroup rendered="#{d.offre.type != null}">
+                                            <h:outputText value="#{d.offre.type}"/>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                                <!-- Domaine -->
+                                <div>
+                                    <h:panelGroup rendered="#{d.offre.domaine != null}">
+                                        <span style="display:inline-block;font-size:11px;font-weight:500;background:#E8EEF7;color:#0F2D5C;padding:3px 9px;border-radius:20px;">
+                                            <h:outputText value="#{d.offre.domaine.libelle}"/>
+                                        </span>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Date -->
+                                <div style="font-size:12px;color:#6B7280;"><h:outputText value="#{d.dateDemande}"/></div>
+
+                                <!-- Coût -->
+                                <div>
+                                    <h:panelGroup rendered="#{d.offre.cout != null and d.offre.cout gt 0}">
+                                        <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;background:#FDF3E0;color:#C8922A;border:1px solid #F5D08A;padding:3px 10px;border-radius:20px;">
+                                            💰 <h:outputText value="#{d.offre.coutFormate}"/>
+                                        </span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{d.offre.cout == null or d.offre.cout le 0}">
+                                        <span style="display:inline-block;font-size:12px;font-weight:600;background:#E6F4ED;color:#1A7A4A;padding:3px 10px;border-radius:20px;">Gratuit</span>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Statut -->
+                                <div>
+                                    <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}">
+                                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;background:#FEF0E6;color:#D45B0A;padding:4px 10px;border-radius:20px;">
+                                            <span style="width:6px;height:6px;border-radius:50%;background:#D45B0A;display:inline-block;"></span>
+                                            En attente
+                                        </span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{d.statut eq 'VALIDEE'}">
+                                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;background:#E6F4ED;color:#1A7A4A;padding:4px 10px;border-radius:20px;">
+                                            <span style="width:6px;height:6px;border-radius:50%;background:#1A7A4A;display:inline-block;"></span>
+                                            Validée
+                                        </span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{d.statut eq 'CONFIRMEE'}">
+                                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;background:#EEF2FF;color:#3730A3;padding:4px 10px;border-radius:20px;">
+                                            <span style="width:6px;height:6px;border-radius:50%;background:#3730A3;display:inline-block;"></span>
+                                            Confirmée
+                                        </span>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{d.statut eq 'REJETEE'}">
+                                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;background:#FEE2E2;color:#991B1B;padding:4px 10px;border-radius:20px;">
+                                            <span style="width:6px;height:6px;border-radius:50%;background:#991B1B;display:inline-block;"></span>
+                                            Refusée
+                                        </span>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Action -->
+                                <div>
+                                    <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}">
+                                        <h:form style="margin:0">
+                                            <p:commandButton value="✕ Annuler"
+                                                             style="font-size:11px;font-weight:600;padding:5px 12px;background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:8px;cursor:pointer;"
+                                                             action="#{offreBean.annulerDemande(d.id)}"
+                                                             update="dp-demandes"
+                                                             oncomplete="document.getElementById('dp-demandes').classList.add('active');"
+                                                             onclick="return confirm('Annuler cette demande ?');"/>
+                                        </h:form>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{d.statut eq 'VALIDEE' and d.offre != null}">
+                                        <h:panelGroup rendered="#{d.offre.payante}">
+                                            <h:form style="margin:0;">
+                                                <p:commandButton value="💳 Payer pour accéder"
+                                                                 action="#{paiementBean.initierPaiementDemande(d)}"
+                                                                 style="font-size:11px;font-weight:600;color:#fff;background:#0F2D5C;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;white-space:nowrap;"/>
+                                            </h:form>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{!d.offre.payante}">
+                                            <a href="#{request.contextPath}/mes-cours.xhtml?offreId=#{d.offre.id}&amp;titre=#{d.offre.titre}"
+                                               style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#fff;background:#0F2D5C;padding:6px 12px;border-radius:8px;text-decoration:none;white-space:nowrap;">
+                                                📂 Accéder
+                                            </a>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{d.statut eq 'CONFIRMEE' and d.offre != null}">
+                                        <a href="#{request.contextPath}/mes-cours.xhtml?offreId=#{d.offre.id}&amp;titre=#{d.offre.titre}"
+                                           style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#fff;background:#3730A3;padding:6px 12px;border-radius:8px;text-decoration:none;white-space:nowrap;">
+                                            📂 Accéder
+                                        </a>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{d.statut eq 'REJETEE'}">
+                                        <span style="font-size:11px;color:#9CA3AF;font-style:italic;">—</span>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </h:panelGroup>
+
+            </h:panelGroup><!-- /DEMANDES -->
+
+            <!-- ══ FORMATION À LA CARTE ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-carte">
+                <div class="dp-sec-lbl">Demander une formation sur mesure</div>
+
+                <!-- Formulaire -->
+                <h:panelGroup layout="block" id="dp-carte-content">
+                    <div class="dp-card" style="margin-bottom:16px;">
+                        <h:form id="formLibre">
+                            <p:messages id="msgLibre" showDetail="true" closable="true" style="margin-bottom:10px;font-size:12px;"/>
+                            <div class="dp-fg">
+                                <div class="dp-fr">
+                                    <label>Domaine souhaité *</label>
+                                    <p:inputText value="#{offreBean.libreDomaine}"
+                                                 style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"
+                                                 placeholder="ex : Management, Informatique, Finance…"/>
+                                </div>
+                                <div class="dp-fr">
+                                    <label>Mode souhaité</label>
+                                    <p:selectOneMenu value="#{offreBean.libreMode}"
+                                                     style="width:100%;padding:8px 10px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;background:#fff;">
+                                        <f:selectItem itemValue="EN_LIGNE"   itemLabel="En ligne"/>
+                                        <f:selectItem itemValue="PRESENTIEL" itemLabel="Présentiel"/>
+                                        <f:selectItem itemValue="HYBRIDE"    itemLabel="Hybride"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                            <div class="dp-fr">
+                                <label>Intitulé de la formation souhaitée</label>
+                                <p:inputText value="#{offreBean.libreIntitule}"
+                                             style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"
+                                             placeholder="ex : Python pour la data science niveau débutant"/>
+                            </div>
+                            <div class="dp-fr">
+                                <label>Description des besoins * (objectifs, niveau, contraintes…)</label>
+                                <p:inputTextarea value="#{offreBean.libreDescription}" rows="4"
+                                                 style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;resize:vertical;"
+                                                 placeholder="Décrivez précisément vos besoins…"/>
+                            </div>
+                            <div class="dp-fg">
+                                <div class="dp-fr">
+                                    <label>Nombre de participants</label>
+                                    <p:inputText value="#{offreBean.libreNbParticipants}"
+                                                 style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"
+                                                 placeholder="ex : 1"/>
+                                </div>
+                                <div class="dp-fr">
+                                    <label>Période souhaitée (début)</label>
+                                    <p:inputText value="#{offreBean.librePeriodeDebut}"
+                                                 style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"
+                                                 placeholder="yyyy-MM-dd"/>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:8px;margin-top:8px;">
+                                <h:panelGroup rendered="#{sessionBean.permissionsMap['5015']}">
+                                    <p:commandButton value="📩 Soumettre la demande"
+                                                     styleClass="dp-btn dp-btn-p"
+                                                     action="#{offreBean.soumettreDemandeLibre}"
+                                                     update="formLibre dp-carte-content msgLibre"
+                                                     oncomplete="document.getElementById('dp-carte').classList.add('active');"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not sessionBean.permissionsMap['5015']}">
+                                    <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;border-radius:8px;font-size:13px;font-weight:600;">
+                                        🔒 Soumission non autorisée
+                                    </span>
+                                </h:panelGroup>
+                            </div>
+                        </h:form>
+                    </div>
+
+                    <!-- Historique des demandes à la carte -->
+                    <h:panelGroup rendered="#{not empty offreBean.mesDemandesLibres}">
+                        <div class="dp-sec-lbl">Mes demandes à la carte (<h:outputText value="#{offreBean.nbDemandesLibres}"/>)</div>
+                        <div class="dp-tbl-wrap">
+                            <table class="dp-tbl">
+                                <tr>
+                                    <th style="width:18%">Domaine</th>
+                                    <th style="width:35%">Description</th>
+                                    <th style="width:12%">Mode</th>
+                                    <th style="width:13%">Période</th>
+                                    <th style="width:11%">Statut</th>
+                                    <th style="width:11%">Action</th>
+                                </tr>
+                                <ui:repeat value="#{offreBean.mesDemandesLibres}" var="dl">
+                                    <tr>
+                                        <td><span class="dp-tag"><h:outputText value="#{dl.domaine}"/></span></td>
+                                        <td style="font-size:11px;color:#6B7280;">
+                                            <h:outputText value="#{dl.description.length() gt 70 ? dl.description.substring(0,70).concat('...') : dl.description}"/>
+                                        </td>
+                                        <td style="font-size:11px;">
+                                            <h:outputText value="#{dl.institutionNom}"/>
+                                        </td>
+                                        <td style="font-size:11px;color:#6B7280;">
+                                            <h:outputText value="#{dl.periodeDebut != null ? dl.periodeDebut : ''}"/>
+                                        </td>
+                                        <td>
+                                            <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}"><span class="dp-pill dp-p-warn">Attente</span></h:panelGroup>
+                                            <h:panelGroup rendered="#{dl.statut eq 'VALIDEE'}"><span class="dp-pill dp-p-ok">Validée</span></h:panelGroup>
+                                            <h:panelGroup rendered="#{dl.statut eq 'REJETEE'}"><span class="dp-pill" style="background:#FCEBEB;color:#A32D2D;">Rejetée</span></h:panelGroup>
+                                        </td>
+                                        <td>
+                                            <h:panelGroup rendered="#{dl.statut eq 'EN_ATTENTE'}">
+                                                <h:form style="margin:0">
+                                                    <p:commandButton value="✕"
+                                                                     styleClass="dp-btn"
+                                                                     style="font-size:11px;padding:2px 8px;background:#FEE2E2;color:#991B1B;border-color:#FECACA;"
+                                                                     action="#{offreBean.annulerDemandeLibre(dl.id)}"
+                                                                     update="dp-carte-content"
+                                                                     oncomplete="document.getElementById('dp-carte').classList.add('active');"
+                                                                     onclick="return confirm('Annuler ?');"/>
+                                                </h:form>
+                                            </h:panelGroup>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </table>
+                        </div>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{empty offreBean.mesDemandesLibres}">
+                        <div class="dp-alert dp-alert-info">⭐ Aucune demande à la carte pour le moment.</div>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+            </h:panelGroup><!-- /CARTE -->
+
+            <!-- ══ MON PROFIL ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-profil">
+                <div class="dp-card">
+                    <!-- En-tête -->
+                    <div class="dp-ph">
+                        <div class="dp-av-lg">
+                            <h:outputText value="#{not empty sessionBean.nomComplet ? sessionBean.nomComplet.substring(0,1).toUpperCase() : sessionBean.email.substring(0,1).toUpperCase()}"/>
+                        </div>
+                        <div style="flex:1">
+                            <div style="font-size:15px;font-weight:500;color:#111827;">
+                                <h:outputText value="#{not empty sessionBean.nomComplet ? sessionBean.nomComplet : sessionBean.email}"/>
+                            </div>
+                            <div style="font-size:12px;color:#6B7280;margin-top:2px;"><h:outputText value="#{sessionBean.email}"/></div>
+                            <div style="display:flex;gap:6px;margin-top:6px;">
+                                <span class="dp-pill dp-p-info"><h:outputText value="#{not empty sessionBean.role ? sessionBean.role : 'PARTICULIER'}"/></span>
+                                <span class="dp-pill #{sessionBean.statut eq 'ACTIF' ? 'dp-p-ok' : 'dp-p-warn'}">
+                                    <h:outputText value="#{sessionBean.statut != null ? sessionBean.statut : 'EN_ATTENTE'}"/>
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Boutons toggle -->
+                        <h:form style="margin:0;display:flex;gap:6px;">
+                            <p:commandButton value="#{offreBean.profilEnEdition ? 'Annuler' : ' Modifier'}"
+                                             styleClass="dp-btn"
+                                             action="#{offreBean.toggleProfilEdition}"
+                                             update="dp-profil"
+                                             oncomplete="document.getElementById('dp-profil').classList.add('active');"/>
+                            <p:commandButton value="#{offreBean.mdpEnEdition ? 'Annuler' : ' Mot de passe'}"
+                                             styleClass="dp-btn"
+                                             action="#{offreBean.toggleMdpEdition}"
+                                             update="dp-profil"
+                                             oncomplete="document.getElementById('dp-profil').classList.add('active');"/>
+                        </h:form>
+                    </div>
+
+                    <!-- Lecture seule -->
+                    <h:panelGroup rendered="#{!offreBean.profilEnEdition and !offreBean.mdpEnEdition}">
+                        <div>
+                            <div class="dp-pi">
+                                <span class="dp-pi-k">Prénom</span>
+                                <span class="dp-pi-v"><h:outputText value="#{offreBean.editPrenom != null ? offreBean.editPrenom : ''}"/></span>
+                            </div>
+                            <div class="dp-pi">
+                                <span class="dp-pi-k">Nom</span>
+                                <span class="dp-pi-v"><h:outputText value="#{offreBean.editNom != null ? offreBean.editNom : ''}"/></span>
+                            </div>
+                            <div class="dp-pi">
+                                <span class="dp-pi-k">Email</span>
+                                <span class="dp-pi-v"><h:outputText value="#{sessionBean.email}"/></span>
+                            </div>
+                            <div class="dp-pi">
+                                <span class="dp-pi-k">Téléphone</span>
+                                <span class="dp-pi-v"><h:outputText value="#{offreBean.editTelephone != null ? offreBean.editTelephone : 'Non renseign'}"/></span>
+                            </div>
+                            <div class="dp-pi">
+                                <span class="dp-pi-k">Candidatures</span>
+                                <span class="dp-pi-v" style="font-weight:500;color:#BA7517;"><h:outputText value="#{offreBean.nbDemandes}"/></span>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Formulaire modification profil -->
+                    <h:panelGroup rendered="#{offreBean.profilEnEdition}">
+                        <h:form id="formProfilP">
+                            <p:messages id="msgProfilP" showDetail="true" closable="true" style="margin-bottom:10px;font-size:12px;"/>
+                            <div class="dp-fg">
+                                <div class="dp-fr">
+                                    <label>Prénom *</label>
+                                    <p:inputText value="#{offreBean.editPrenom}"
+                                                 style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"
+                                                 placeholder="Votre prénom"/>
+                                </div>
+                                <div class="dp-fr">
+                                    <label>Nom *</label>
+                                    <p:inputText value="#{offreBean.editNom}"
+                                                 style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"
+                                                 placeholder="Votre nom"/>
+                                </div>
+                                <div class="dp-fr">
+                                    <label>Email</label>
+                                    <input type="email" value="#{sessionBean.email}" readonly="readonly"
+                                           style="font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;background:#F9FAFB;color:#9CA3AF;width:100%"/>
+                                </div>
+                                <div class="dp-fr">
+                                    <label>Téléphone</label>
+                                    <p:inputText value="#{offreBean.editTelephone}"
+                                                 style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"
+                                                 placeholder="+221 77 000 00 00"/>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:8px;margin-top:4px;">
+                                <p:commandButton value="💾 Enregistrer"
+                                                 styleClass="dp-btn dp-btn-p"
+                                                 action="#{offreBean.sauvegarderProfil}"
+                                                 update="formProfilP dp-profil msgProfilP"
+                                                 oncomplete="document.getElementById('dp-profil').classList.add('active');"/>
+                                <p:commandButton value="Annuler"
+                                                 styleClass="dp-btn"
+                                                 action="#{offreBean.toggleProfilEdition}"
+                                                 update="dp-profil"
+                                                 oncomplete="document.getElementById('dp-profil').classList.add('active');"/>
+                            </div>
+                        </h:form>
+                    </h:panelGroup>
+
+                    <!-- Formulaire changement mot de passe -->
+                    <h:panelGroup rendered="#{offreBean.mdpEnEdition}">
+                        <h:form id="formMdpP">
+                            <p:messages id="msgMdpP" showDetail="true" closable="true" style="margin-bottom:10px;font-size:12px;"/>
+                            <div style="max-width:380px">
+                                <div class="dp-fr">
+                                    <label>Ancien mot de passe *</label>
+                                    <p:password value="#{offreBean.ancienMdp}" feedback="false"
+                                                style="width:100%" inputStyle="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"/>
+                                </div>
+                                <div class="dp-fr">
+                                    <label>Nouveau mot de passe * (min. 6 caractères)</label>
+                                    <p:password value="#{offreBean.nouveauMdp}" feedback="true"
+                                                style="width:100%" inputStyle="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"/>
+                                </div>
+                                <div class="dp-fr">
+                                    <label>Confirmer le nouveau mot de passe *</label>
+                                    <p:password value="#{offreBean.confirmerMdp}" feedback="false"
+                                                style="width:100%" inputStyle="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"/>
+                                </div>
+                                <div style="display:flex;gap:8px;">
+                                    <p:commandButton value="🔑 Changer"
+                                                     styleClass="dp-btn dp-btn-p"
+                                                     action="#{offreBean.changerMotDePasse}"
+                                                     update="formMdpP dp-profil msgMdpP"
+                                                     oncomplete="document.getElementById('dp-profil').classList.add('active');"/>
+                                    <p:commandButton value="Annuler"
+                                                     styleClass="dp-btn"
+                                                     action="#{offreBean.toggleMdpEdition}"
+                                                     update="dp-profil"
+                                                     oncomplete="document.getElementById('dp-profil').classList.add('active');"/>
+                                </div>
+                            </div>
+                        </h:form>
+                    </h:panelGroup>
+
+                </div>
+            </h:panelGroup><!-- /PROFIL -->
+
+            <!-- ══ PARAMÈTRES ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-parametres">
+
+                <!-- Sécurité -->
+                <div class="dp-card">
+                    <div class="dp-ph" style="margin-bottom:10px;">
+                        <div style="flex:1;">
+                            <div style="font-size:14px;font-weight:600;color:#111827;">Sécurité du compte</div>
+                            <div style="font-size:12px;color:#6B7280;margin-top:2px;">Modifiez votre mot de passe</div>
+                        </div>
+                        <svg width="20" height="20" fill="none" stroke="#6B7280" stroke-width="1.6" viewBox="0 0 24 24">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <h:form id="formMdpParams">
+                        <p:messages id="msgMdpParams" showDetail="true" closable="true" style="margin-bottom:10px;font-size:12px;"/>
+                        <div style="max-width:380px;">
+                            <div class="dp-fr">
+                                <label>Ancien mot de passe *</label>
+                                <p:password value="#{offreBean.ancienMdp}" feedback="false"
+                                            style="width:100%" inputStyle="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"/>
+                            </div>
+                            <div class="dp-fr">
+                                <label>Nouveau mot de passe * (min. 6 caractères)</label>
+                                <p:password value="#{offreBean.nouveauMdp}" feedback="true"
+                                            style="width:100%" inputStyle="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"/>
+                            </div>
+                            <div class="dp-fr">
+                                <label>Confirmer le nouveau mot de passe *</label>
+                                <p:password value="#{offreBean.confirmerMdp}" feedback="false"
+                                            style="width:100%" inputStyle="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;"/>
+                            </div>
+                            <div style="display:flex;gap:8px;margin-top:4px;">
+                                <p:commandButton value="🔑 Changer le mot de passe"
+                                                 styleClass="dp-btn dp-btn-p"
+                                                 action="#{offreBean.changerMotDePasse}"
+                                                 update="formMdpParams dp-parametres msgMdpParams"
+                                                 oncomplete="document.getElementById('dp-parametres').classList.add('active');"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </div>
+
+                <!-- Compte -->
+                <div class="dp-card">
+                    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px;">Informations du compte</div>
+                    <div class="dp-pi">
+                        <span class="dp-pi-k">Email</span>
+                        <span class="dp-pi-v"><h:outputText value="#{sessionBean.email}"/></span>
+                    </div>
+                    <div class="dp-pi">
+                        <span class="dp-pi-k">Statut</span>
+                        <span class="dp-pi-v">
+                            <span class="dp-pill #{sessionBean.statut eq 'ACTIF' ? 'dp-p-ok' : 'dp-p-warn'}">
+                                <h:outputText value="#{sessionBean.statut != null ? sessionBean.statut : 'EN_ATTENTE'}"/>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="dp-pi" style="border-bottom:none;">
+                        <span class="dp-pi-k">Profil</span>
+                        <span class="dp-pi-v" style="display:flex;align-items:center;gap:6px;">
+                            <h:outputText value="#{not empty sessionBean.nomComplet ? sessionBean.nomComplet : sessionBean.email}"/>
+                            <span onclick="dpShow('profil',document.getElementById('nav-profil'))"
+                                  style="font-size:11px;color:#0F2D5C;cursor:pointer;text-decoration:underline;">Modifier</span>
+                        </span>
+                    </div>
+                </div>
+
+            </h:panelGroup><!-- /PARAMÈTRES -->
+
+            <!-- ══ NOTIFICATIONS ══ -->
+            <div class="dp-page" id="dp-notifs">
+                <div class="dp-sec-lbl">Notifications</div>
+                <div class="dp-card">
+                    <div class="dp-tl">
+                        <div class="dp-tl-item">
+                            <div class="dp-tl-dot dp-dot-info">🔔</div>
+                            <div>
+                                <div class="dp-tl-title">Connecté — <h:outputText value="#{sessionBean.email}"/></div>
+                                <div class="dp-tl-sub">Session active sur votre espace</div>
+                            </div>
+                        </div>
+                        <!-- Notifs demandes (limité à 5 par le bean) -->
+                        <ui:repeat value="#{offreBean.demandesNotifs}" var="d">
+                            <div class="dp-tl-item">
+                                <div class="dp-tl-dot dp-dot-warn">📤</div>
+                                <div>
+                                    <div class="dp-tl-title">
+                                        <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}">Demande reçue</h:panelGroup>
+                                        <h:panelGroup rendered="#{d.statut eq 'VALIDEE'}">Demande validée ✓</h:panelGroup>
+                                        <h:panelGroup rendered="#{d.statut eq 'REJETEE'}">Demande traitée</h:panelGroup>
+                                        — <h:outputText value="#{d.offre.titre}"/>
+                                    </div>
+                                    <div class="dp-tl-sub">
+                                        <h:outputText value="#{d.dateDemande}"/>
+                                        <h:panelGroup rendered="#{d.statut eq 'EN_ATTENTE'}"> — en attente de traitement</h:panelGroup>
+                                        <h:panelGroup rendered="#{d.statut eq 'VALIDEE'}"> — inscription confirmée</h:panelGroup>
+                                        <h:panelGroup rendered="#{d.statut eq 'REJETEE'}"> — voir Mes demandes</h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                        <h:panelGroup rendered="#{empty offreBean.demandesNotifs}">
+                            <div class="dp-tl-item">
+                                <div class="dp-tl-dot dp-dot-info">📭</div>
+                                <div>
+                                    <div class="dp-tl-title">Aucune notification pour l'instant</div>
+                                    <div class="dp-tl-sub">Vous serez notifié dès qu'une action est effectuée</div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                </div>
+            </div><!-- /NOTIFS -->
+
+            <!-- ══ MES FORMATIONS ══ -->
+            <h:form id="formFormations">
+                <p:remoteCommand name="cmdChargerFormations"
+                                 action="#{particularDashboardBean.charger}"
+                                 update="dp-formations dp-resultats dp-calendrier"
+                                 oncomplete="document.getElementById('dp-formations').classList.add(window._dpTarget||'active');
+                                             if(window._dpTarget==='dp-resultats'){
+                                                 document.getElementById('dp-resultats').classList.add('active');
+                                                 document.getElementById('dp-formations').classList.remove('active');
+                                             }
+                                             window._dpTarget=null;"/>
+            </h:form>
+
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-formations">
+                <div class="dp-sec-lbl">Mes formations actives</div>
+
+                <!-- Vide -->
+                <h:panelGroup rendered="#{empty particularDashboardBean.formations}">
+                    <div class="dp-alert dp-alert-info">
+                        📭 Aucune formation active. Candidatez à une offre pour accéder au contenu e-learning.
+                    </div>
+                </h:panelGroup>
+
+                <!-- Cards formations -->
+                <ui:repeat value="#{particularDashboardBean.formations}" var="f">
+                    <div class="dp-form-card">
+                        <div style="display:flex;align-items:flex-start;gap:12px;">
+                            <div class="dp-form-initiale">
+                                <h:outputText value="#{f.initiale}"/>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:14px;font-weight:600;color:#111827;margin-bottom:2px;">
+                                    <h:outputText value="#{f.demande.offre.titre}"/>
+                                </div>
+                                <div style="font-size:11px;color:#6B7280;margin-bottom:6px;">
+                                    <h:panelGroup rendered="#{f.demande.offre.domaine != null}">
+                                        <span class="dp-tag"><h:outputText value="#{f.demande.offre.domaine.libelle}"/></span>&#160;
+                                    </h:panelGroup>
+                                    <h:outputText value="#{f.nbTermines}"/> /
+                                    <h:outputText value="#{f.nbCours}"/> cours terminés
+                                </div>
+                                <!-- Barre de progression -->
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div class="dp-prog-wrap" style="flex:1">
+                                        <div class="dp-prog-bar #{f.pourcentage ge 100 ? 'full' : (f.pourcentage lt 30 ? 'low' : '')}"
+                                             style="width:#{f.pourcentage}%;"></div>
+                                    </div>
+                                    <span style="font-size:12px;font-weight:600;color:#{f.pourcentage ge 100 ? '#059669' : '#BA7517'};">
+                                        <h:outputText value="#{f.pourcentage}"/>%
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Accès aux cours -->
+                            <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+                                <a href="#{request.contextPath}/mes-cours.xhtml?offreId=#{f.demande.offre.id}&amp;titre=#{f.demande.offre.titre}"
+                                   style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#7C3AED;background:#EDE9FE;padding:5px 12px;border-radius:20px;border:1px solid #C4B5FD;text-decoration:none;">
+                                    Accéder ↗
+                                </a>
+                                <h:panelGroup rendered="#{f.pourcentage ge 100}">
+                                    <a href="#{request.contextPath}/mes-cours.xhtml?offreId=#{f.demande.offre.id}&amp;titre=#{f.demande.offre.titre}"
+                                       style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#059669;background:#D1FAE5;padding:5px 10px;border-radius:20px;border:1px solid #6EE7B7;text-decoration:none;"
+                                       title="Voir le certificat de complétion">
+                                        🏆 Certificat
+                                    </a>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+
+                        <!-- Cours avec indicateur par type -->
+                        <h:panelGroup rendered="#{not empty f.cours}">
+                            <div style="border-top:1px solid #F3F4F6;padding-top:8px;display:flex;flex-wrap:wrap;gap:5px;">
+                                <ui:repeat value="#{f.cours}" var="c">
+                                    <span style="font-size:10px;padding:2px 8px;border-radius:20px;
+                                                 background:#{f.progressionPour(c.id) != null and f.progressionPour(c.id).complete ? '#D1FAE5' : '#F3F4F6'};
+                                                 color:#{f.progressionPour(c.id) != null and f.progressionPour(c.id).complete ? '#065F46' : '#6B7280'};">
+                                        <h:outputText value="#{f.progressionPour(c.id) != null and f.progressionPour(c.id).complete ? ' ' : ''}"/>
+                                        <h:outputText value="#{c.titre}"/>
+                                    </span>
+                                </ui:repeat>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                </ui:repeat>
+
+            </h:panelGroup><!-- /MES FORMATIONS -->
+
+            <!-- ══ MES RÉSULTATS ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-resultats">
+                <div class="dp-sec-lbl">Mes résultats (Quiz, TP, Examens)</div>
+
+                <h:panelGroup rendered="#{empty particularDashboardBean.formations}">
+                    <div class="dp-alert dp-alert-info">
+                        📭 Aucun résultat disponible. Commencez vos formations pour voir vos scores ici.
+                    </div>
+                </h:panelGroup>
+
+                <ui:repeat value="#{particularDashboardBean.formations}" var="f">
+                    <h:panelGroup rendered="#{not empty f.progressions}">
+                        <div style="margin-bottom:16px;">
+                            <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+                                <div class="dp-form-initiale" style="width:26px;height:26px;font-size:11px;border-radius:6px;">
+                                    <h:outputText value="#{f.initiale}"/>
+                                </div>
+                                <h:outputText value="#{f.demande.offre.titre}"/>
+                            </div>
+                            <div class="dp-tbl-wrap">
+                                <table class="dp-tbl">
+                                    <tr>
+                                        <th style="width:32%">Cours</th>
+                                        <th style="width:14%">Type</th>
+                                        <th style="width:13%">Statut</th>
+                                        <th style="width:15%">Score</th>
+                                        <th style="width:26%">Accès</th>
+                                    </tr>
+                                    <ui:repeat value="#{f.progressions}" var="prog">
+                                        <tr>
+                                            <td style="font-weight:500;">
+                                                <h:outputText value="#{prog.coursTitre}"/>
+                                            </td>
+                                            <td>
+                                                <span class="dp-pill dp-p-gray" style="font-size:9px;">
+                                                    <h:outputText value="#{prog.coursType}"/>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <h:panelGroup rendered="#{prog.complete}">
+                                                    <span class="dp-pill dp-p-ok">✓ Terminé</span>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{!prog.complete}">
+                                                    <span class="dp-pill dp-p-warn">En cours</span>
+                                                </h:panelGroup>
+                                            </td>
+                                            <td>
+                                                <h:panelGroup rendered="#{prog.scoreQuiz != null}">
+                                                    <span class="dp-score-badge #{prog.scoreQuiz ge 70 ? 'dp-score-ok' : (prog.scoreQuiz ge 50 ? 'dp-score-warn' : 'dp-score-neutral')}">
+                                                                        <h:outputText value="#{prog.scoreQuiz}"/>%
+                                                    </span>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{prog.scoreQuiz == null}">
+                                                    <span style="color:#9CA3AF;font-size:11px;">-</span>
+                                                </h:panelGroup>
+                                            </td>
+                                            <td>
+                                                <a href="#{request.contextPath}/mes-cours.xhtml?offreId=#{f.demande.offre.id}"
+                                                   style="font-size:11px;color:#5C4EE5;text-decoration:none;font-weight:500;">
+                                                    Voir le cours ↗
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </table>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </ui:repeat>
+            </h:panelGroup><!-- /MES RÉSULTATS -->
+
+            <!-- ══ CALENDRIER ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-calendrier">
+                <div class="dp-sec-lbl">Mon calendrier de formations</div>
+                <div class="dp-card" style="padding:32px;text-align:center;color:#9CA3AF;font-size:13px;">
+                    <div style="font-size:38px;margin-bottom:10px;">📅</div>
+                    Fonctionnalité calendrier à venir — vos sessions de formation apparaîtront ici.
+                </div>
+            </h:panelGroup><!-- /CALENDRIER -->
+
+            <!-- ══ MESSAGERIE ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-messagerie">
+                <div class="dp-sec-lbl">Messagerie</div>
+                <h:form id="formMessagerie">
+                    <p:messages showDetail="true" closable="true" style="font-size:12px;margin-bottom:10px;"/>
+                    <div style="display:grid;grid-template-columns:280px 1fr;gap:0;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;min-height:480px;">
+                        <!-- Liste conversations -->
+                        <div style="border-right:1px solid #E5E7EB;background:#F9FAFB;display:flex;flex-direction:column;">
+                            <div style="padding:12px 16px;font-size:12px;font-weight:600;color:#111827;border-bottom:1px solid #E5E7EB;">
+                                Conversations
+                            </div>
+                            <div style="flex:1;overflow-y:auto;">
+                                <h:panelGroup rendered="#{empty messageBean.conversations}" layout="block">
+                                    <div style="padding:24px 16px;text-align:center;color:#9CA3AF;font-size:12px;">
+                                        Aucune conversation
+                                    </div>
+                                </h:panelGroup>
+                                <ui:repeat value="#{messageBean.conversations}" var="conv">
+                                    <h:panelGroup layout="block">
+                                        <p:commandLink action="#{messageBean.selectionnerConversation(conv.offreId)}"
+                                                       update="formMessagerie"
+                                                       style="text-decoration:none;display:block;padding:12px 16px;border-bottom:1px solid #F3F4F6;cursor:pointer;background:#{messageBean.offreIdSelectionne eq conv.offreId ? '#EDE9FE' : '#F9FAFB'};">
+                                            <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:2px;">
+                                                <h:outputText value="#{conv.offreTitre}"/>
+                                            </div>
+                                            <div style="font-size:11px;color:#9CA3AF;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                                <h:outputText value="#{conv.dernierMessage}"/>
+                                            </div>
+                                        </p:commandLink>
+                                    </h:panelGroup>
+                                </ui:repeat>
+                            </div>
+                        </div>
+                        <!-- Zone messages -->
+                        <div style="display:flex;flex-direction:column;">
+                            <h:panelGroup rendered="#{messageBean.offreIdSelectionne == null}" layout="block"
+                                          style="flex:1;display:flex;align-items:center;justify-content:center;padding:60px;text-align:center;color:#9CA3AF;font-size:12px;">
+                                Sélectionnez une conversation pour voir les messages.
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{messageBean.offreIdSelectionne != null}" layout="block"
+                                          style="display:flex;flex-direction:column;height:100%;">
+                                <div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;font-size:12px;font-weight:600;color:#111827;">
+                                    <h:outputText value="#{messageBean.titreCourant}"/>
+                                </div>
+                                <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;min-height:300px;max-height:350px;">
+                                    <ui:repeat value="#{messageBean.messages}" var="msg">
+                                        <div style="display:flex;justify-content:#{msg.envoyeurId eq sessionBean.userId ? 'flex-end' : 'flex-start'};">
+                                            <div style="max-width:70%;padding:8px 12px;border-radius:10px;font-size:12px;
+                                                        background:#{msg.envoyeurId eq sessionBean.userId ? '#5C4EE5' : '#F3F4F6'};
+                                                        color:#{msg.envoyeurId eq sessionBean.userId ? '#fff' : '#111827'};">
+                                                <h:outputText value="#{msg.contenu}"/>
+                                                <div style="font-size:10px;opacity:.65;margin-top:3px;text-align:right;">
+                                                    <h:outputText value="#{msg.dateEnvoi}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                                <!-- Saisie -->
+                                <div style="padding:10px 14px;border-top:1px solid #E5E7EB;display:flex;gap:8px;align-items:flex-end;">
+                                    <p:inputTextarea value="#{messageBean.contenuMsg}" rows="2"
+                                                     style="flex:1;font-size:12px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;resize:none;"
+                                                     placeholder="Votre message..."/>
+                                    <p:commandButton value="Envoyer"
+                                                     action="#{messageBean.envoyerMessage}"
+                                                     update="formMessagerie"
+                                                     styleClass="dp-btn dp-btn-p"
+                                                     style="white-space:nowrap;"/>
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                </h:form>
+            </h:panelGroup><!-- /MESSAGERIE -->
+
+            <!-- ══ PAIEMENTS ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-paiements">
+                <div class="dp-sec-lbl">Historique des paiements</div>
+                <h:panelGroup rendered="#{paiementBean.paiementEffectue}" layout="block">
+                    <div class="dp-tbl-wrap">
+                        <table class="dp-tbl">
+                            <tr>
+                                <th style="width:40%">Formation</th>
+                                <th style="width:25%">Reference</th>
+                                <th style="width:20%">Montant</th>
+                                <th style="width:15%">Statut</th>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:500;"><h:outputText value="#{paiementBean.offreTitre}"/></td>
+                                <td style="font-size:11px;color:#6B7280;"><h:outputText value="#{paiementBean.referenceTransaction}"/></td>
+                                <td style="font-weight:600;color:#BA7517;"><h:outputText value="#{paiementBean.montantFormate}"/></td>
+                                <td><span class="dp-pill dp-p-ok">Regle</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{!paiementBean.paiementEffectue}" layout="block">
+                    <div class="dp-alert dp-alert-info">Aucun paiement enregistre.</div>
+                </h:panelGroup>
+            </h:panelGroup><!-- /PAIEMENTS -->
+
+            <!-- ══ MES FORMATIONS PROPOSÉES ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-mesFormations">
+                <div class="dp-sec-lbl">Formation a la carte</div>
+                <div class="dp-card" style="padding:24px;text-align:center;color:#9CA3AF;font-size:13px;">
+                    <div style="font-size:36px;margin-bottom:10px;">🎓</div>
+                    <p>Pour soumettre une demande de formation sur mesure,
+                    utilisez la section <strong
+                        style="color:#5C4EE5;cursor:pointer;"
+                        onclick="dpShow('carte',document.getElementById('nav-carte'))">Formation a la carte</strong>
+                    accessible depuis le menu principal.</p>
+                </div>
+            </h:panelGroup><!-- /MES FORMATIONS PROPOSÉES -->
+
+            <!-- ══ ÉVALUATION ══ -->
+            <h:panelGroup layout="block" styleClass="dp-page" id="dp-evaluation">
+                <div class="dp-sec-lbl">Evaluer mes formations</div>
+                <h:panelGroup rendered="#{empty particularDashboardBean.formations}" layout="block">
+                    <div class="dp-alert dp-alert-info">Aucune formation a evaluer pour le moment.</div>
+                </h:panelGroup>
+                <ui:repeat value="#{particularDashboardBean.formations}" var="fEv">
+                    <h:panelGroup rendered="#{fEv.pourcentage ge 50}" layout="block">
+                        <div class="dp-form-card" style="margin-bottom:12px;">
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                                <div class="dp-form-initiale"><h:outputText value="#{fEv.initiale}"/></div>
+                                <div style="flex:1;">
+                                    <div style="font-size:13px;font-weight:600;color:#111827;">
+                                        <h:outputText value="#{fEv.demande.offre.titre}"/>
+                                    </div>
+                                    <div style="font-size:11px;color:#9CA3AF;">
+                                        Progression : <h:outputText value="#{fEv.pourcentage}"/>%
+                                    </div>
+                                </div>
+                            </div>
+                            <h:form style="margin:0;">
+                                <p:messages showDetail="true" style="font-size:12px;margin-bottom:8px;"/>
+                                <div class="dp-fr">
+                                    <label>Note (1-5)</label>
+                                    <p:selectOneMenu value="#{evaluationBean.note}"
+                                                     style="width:180px;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:6px 8px;">
+                                        <f:selectItem itemValue="5" itemLabel="Excellent (5/5)"/>
+                                        <f:selectItem itemValue="4" itemLabel="Tres bien (4/5)"/>
+                                        <f:selectItem itemValue="3" itemLabel="Bien (3/5)"/>
+                                        <f:selectItem itemValue="2" itemLabel="Moyen (2/5)"/>
+                                        <f:selectItem itemValue="1" itemLabel="Insuffisant (1/5)"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="dp-fr">
+                                    <label>Commentaire</label>
+                                    <p:inputTextarea value="#{evaluationBean.commentaire}" rows="3"
+                                                     style="width:100%;font-size:13px;border:1px solid #E5E7EB;border-radius:8px;padding:8px 10px;resize:vertical;"
+                                                     placeholder="Partagez votre experience..."/>
+                                </div>
+                                <p:commandButton value="Soumettre l'evaluation"
+                                                 action="#{evaluationBean.evaluerFormation(fEv.demande.offre.id)}"
+                                                 styleClass="dp-btn dp-btn-p"
+                                                 update="@form"
+                                                 style="margin-top:4px;"/>
+                            </h:form>
+                        </div>
+                    </h:panelGroup>
+                </ui:repeat>
+            </h:panelGroup><!-- /ÉVALUATION -->
+
+        </div><!-- /dp-main -->
+    </div><!-- /dp-layout -->
+
+</h:panelGroup><!-- /dp-shell -->
+
+<script>
+/* ── Navigation entre sections ── */
+function dpShow(id, navEl) {
+    document.querySelectorAll('.dp-page').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.dp-nav').forEach(function(n) { n.classList.remove('active'); });
+    var el = document.getElementById('dp-' + id);
+    if (el) el.classList.add('active');
+    if (navEl) navEl.classList.add('active');
+}
+
+function dpShowFormations(navEl, target) {
+    window._dpTarget = target ? ('dp-' + target) : null;
+    dpShow('formations', navEl);
+    if (typeof cmdChargerFormations !== 'undefined') {
+        cmdChargerFormations();
+    }
+}
+
+function dpShowMessagerie(navEl) {
+    dpShow('messagerie', navEl);
+}
+
+function dpShowPaiements(navEl) {
+    dpShow('paiements', navEl);
+}
+
+/* ── Recherche offres ── */
+function dpSearch(q) {
+    document.querySelectorAll('#dp-og-list .dp-oc').forEach(function(c) {
+        var title = (c.getAttribute('data-title') || '').toLowerCase();
+        c.style.display = title.includes(q.toLowerCase()) ? '' : 'none';
+    });
+}
+</script>
+
+</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SenExpertFormation — Accueil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Poppins',sans-serif;background:#fff;color:#1a1a1a}
+        a{text-decoration:none;color:inherit}
+
+        /* ── TOPBAR ── */
+        .sef-nav{
+            position:fixed;top:0;left:0;right:0;z-index:200;
+            background:rgba(11,37,69,0.97);backdrop-filter:blur(12px);
+            height:56px;display:flex;align-items:center;padding:0 24px;
+            justify-content:space-between;
+            border-bottom:1px solid rgba(255,255,255,0.06);
+        }
+        .sef-brand{display:flex;align-items:center;gap:10px}
+        .sef-logo{width:32px;height:32px;background:#D9A441;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#0B2545}
+        .sef-name{color:#fff;font-weight:700;font-size:14px}
+        .sef-sub{color:rgba(255,255,255,0.4);font-size:10px;display:block}
+        .sef-links{display:flex;align-items:center;gap:2px}
+        .sef-links a{color:rgba(255,255,255,0.7);font-size:12px;font-weight:500;padding:6px 12px;border-radius:8px;transition:all .15s}
+        .sef-links a:hover{background:rgba(255,255,255,0.1);color:#fff}
+        .sef-links a.cta{background:#D9A441;color:#fff;font-weight:700;border-radius:20px;padding:7px 16px;margin-left:4px}
+        .sef-links a.cta:hover{background:#c4922e}
+        .sef-user{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:4px 12px 4px 6px;color:rgba(255,255,255,0.8);font-size:11px}
+        .sef-av{width:26px;height:26px;border-radius:50%;background:#D9A441;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0B2545}
+
+        /* ── HERO ── */
+        .hero{background:linear-gradient(135deg,#0B2545 0%,#1a3d6e 100%);min-height:420px;padding:96px 32px 48px;display:flex;align-items:center;position:relative;overflow:hidden}
+        .hero-blob1{position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(217,164,65,0.08);border-radius:50%;filter:blur(40px)}
+        .hero-blob2{position:absolute;bottom:-40px;left:-20px;width:160px;height:160px;background:rgba(59,130,246,0.08);border-radius:50%;filter:blur(40px)}
+        .hero-inner{max-width:640px;position:relative;z-index:1}
+        .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(217,164,65,0.2);border:1px solid rgba(217,164,65,0.4);color:#D9A441;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:14px}
+        .hero h1{color:#fff;font-size:28px;font-weight:700;line-height:1.25;margin-bottom:12px}
+        .hero p{color:rgba(255,255,255,0.75);font-size:13px;line-height:1.6;margin-bottom:20px;max-width:480px}
+        .hero-btns{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
+        .btn-gold{background:#D9A441;color:#fff;font-weight:700;font-size:13px;padding:10px 20px;border-radius:24px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:'Poppins',sans-serif}
+        .btn-gold:hover{background:#c4922e}
+        .btn-outline{background:transparent;color:#fff;font-weight:700;font-size:13px;padding:10px 20px;border-radius:24px;border:2px solid rgba(255,255,255,0.3);cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:'Poppins',sans-serif}
+        .btn-outline:hover{border-color:#D9A441;color:#D9A441}
+        .hero-stats{display:flex;gap:24px}
+        .hero-stat .num{color:#D9A441;font-size:20px;font-weight:800}
+        .hero-stat .lbl{color:rgba(255,255,255,0.5);font-size:10px}
+
+        /* ── STATS BAR ── */
+        .stats-bar{background:#0B2545;padding:28px 32px}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:700px;margin:0 auto;text-align:center}
+        .stat-item .sicon{width:40px;height:40px;background:rgba(217,164,65,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+        .stat-item .sicon i{color:#D9A441;font-size:20px}
+        .stat-item .sval{color:#fff;font-size:20px;font-weight:800}
+        .stat-item .slbl{color:rgba(255,255,255,0.45);font-size:10px;margin-top:2px}
+
+        /* ── SECTIONS ── */
+        .section{padding:32px 24px}
+        .section-bg{background:#f9fafb}
+        .sec-header{text-align:center;margin-bottom:24px}
+        .sec-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(217,164,65,0.1);color:#D9A441;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:10px}
+        .sec-title{color:#0B2545;font-size:22px;font-weight:700;margin-bottom:6px}
+        .sec-sub{color:#6b7280;font-size:12px;max-width:440px;margin:0 auto;line-height:1.6}
+
+        /* ── DOMAINES ── */
+        .domains-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+        .domain-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;transition:border-color .2s,transform .2s;display:block}
+        .domain-card:hover{border-color:#D9A441;transform:translateY(-2px)}
+        .domain-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:18px}
+        .domain-card h4{color:#0B2545;font-size:11px;font-weight:600;margin-bottom:2px}
+        .domain-card p{color:#9ca3af;font-size:10px}
+
+        /* ── OFFRES ── */
+        .offres-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+        .offre-card{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;transition:box-shadow .2s}
+        .offre-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.1)}
+        .offre-header{background:linear-gradient(135deg,#0B2545,#1a3d6e);padding:16px;position:relative}
+        .offre-bdg{position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px}
+        .bdg-green{background:#d1fae5;color:#065f46}
+        .bdg-blue{background:#dbeafe;color:#1e40af}
+        .bdg-purple{background:#ede9fe;color:#5b21b6}
+        .bdg-red{background:#fee2e2;color:#991b1b}
+        .offre-icon{width:32px;height:32px;background:rgba(217,164,65,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+        .offre-icon i{color:#D9A441;font-size:17px}
+        .offre-header h3{color:#fff;font-size:12px;font-weight:600;line-height:1.3;padding-right:60px}
+        .offre-header p{color:rgba(255,255,255,0.6);font-size:10px;margin-top:2px}
+        .offre-body{padding:12px 14px}
+        .offre-meta{display:flex;align-items:center;gap:10px;font-size:10px;color:#6b7280;margin-bottom:10px}
+        .offre-meta span{display:flex;align-items:center;gap:3px}
+        .offre-footer{display:flex;align-items:center;justify-content:space-between}
+        .offre-price{color:#0B2545;font-size:13px;font-weight:800}
+        .btn-apply{background:#D9A441;color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:14px;border:none;cursor:pointer;font-family:'Poppins',sans-serif}
+        .btn-apply:hover{background:#c4922e}
+
+        /* ── WHY ── */
+        .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .why-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px}
+        .why-card .wicon{width:32px;height:32px;background:rgba(217,164,65,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+        .why-card .wicon i{color:#D9A441;font-size:16px}
+        .why-card h4{color:#0B2545;font-size:11px;font-weight:600;margin-bottom:3px}
+        .why-card p{color:#6b7280;font-size:10px;line-height:1.5}
+
+        /* ── TESTIMONIALS ── */
+        .testimonials{background:#0B2545;padding:32px 24px}
+        .test-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+        .test-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px}
+        .test-card .qi{color:#D9A441;font-size:18px;margin-bottom:8px;opacity:0.7}
+        .test-card p{color:rgba(255,255,255,0.75);font-size:11px;line-height:1.55;margin-bottom:10px}
+        .test-stars{display:flex;gap:2px;margin-bottom:8px}
+        .test-stars i{color:#D9A441;font-size:11px}
+        .test-author{display:flex;align-items:center;gap:8px}
+        .test-avatar{width:30px;height:30px;background:#D9A441;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700;flex-shrink:0}
+        .test-name{color:#fff;font-size:11px;font-weight:600}
+        .test-role{color:rgba(255,255,255,0.45);font-size:10px}
+
+        /* ── PARTNERS ── */
+        .partners{background:#fff;padding:24px;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb}
+        .partners-label{text-align:center;color:#9ca3af;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px}
+        .partners-list{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+        .partner-item{display:flex;align-items:center;gap:5px;color:rgba(11,37,69,0.35);font-weight:700;font-size:11px}
+        .partner-item i{font-size:13px}
+
+        /* ── NEWSLETTER ── */
+        .newsletter{background:linear-gradient(135deg,#D9A441,#c4922e);padding:36px 24px;text-align:center}
+        .newsletter .nicon{width:48px;height:48px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+        .newsletter .nicon i{color:#fff;font-size:24px}
+        .newsletter h2{color:#fff;font-size:20px;font-weight:700;margin-bottom:8px}
+        .newsletter p{color:rgba(255,255,255,0.8);font-size:12px;margin-bottom:18px}
+        .nl-form{display:flex;gap:8px;max-width:400px;margin:0 auto}
+        .nl-form input{flex:1;background:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:12px;color:#374151;outline:none;font-family:'Poppins',sans-serif}
+        .nl-form button{background:#0B2545;color:#fff;font-weight:700;font-size:12px;padding:10px 16px;border-radius:24px;border:none;cursor:pointer;white-space:nowrap;font-family:'Poppins',sans-serif}
+        .nl-form button:hover{background:#1a3d6e}
+        .disclaimer{color:rgba(255,255,255,0.55);font-size:10px;margin-top:8px}
+        .nl-ok{display:none;background:rgba(255,255,255,0.2);border-radius:10px;padding:10px 20px;color:#fff;font-weight:600;font-size:12px;margin-top:12px}
+
+        /* ── CTA ── */
+        .cta-section{background:#fff;padding:32px 24px}
+        .cta-box{background:linear-gradient(135deg,#0B2545,#1a3d6e);border-radius:20px;padding:36px;text-align:center;position:relative;overflow:hidden}
+        .cta-blob{position:absolute;width:160px;height:160px;border-radius:50%;filter:blur(40px);pointer-events:none}
+        .cta-badge{display:inline-flex;align-items:center;gap:6px;background:#D9A441;color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;margin-bottom:12px}
+        .cta-box h2{color:#fff;font-size:22px;font-weight:700;margin-bottom:8px}
+        .cta-box .sub{color:rgba(255,255,255,0.65);font-size:12px;max-width:380px;margin:0 auto 20px;line-height:1.6}
+        .cta-btns{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
+        .btn-cta-gold{background:#D9A441;color:#fff;font-weight:700;font-size:12px;padding:10px 20px;border-radius:24px;border:none;cursor:pointer;font-family:'Poppins',sans-serif}
+        .btn-cta-gold:hover{background:#c4922e}
+        .btn-cta-outline{background:transparent;color:#fff;font-weight:700;font-size:12px;padding:10px 20px;border-radius:24px;border:2px solid rgba(255,255,255,0.3);cursor:pointer;font-family:'Poppins',sans-serif}
+        .btn-cta-outline:hover{border-color:#D9A441;color:#D9A441}
+
+        /* ── FOOTER ── */
+        .sef-footer{background:#0B2545;padding:32px 24px 16px;border-top:1px solid rgba(255,255,255,0.06)}
+        .footer-grid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:16px}
+        .footer-brand .fn{color:#fff;font-weight:700;font-size:14px;margin-bottom:6px}
+        .footer-brand p{color:rgba(255,255,255,0.4);font-size:11px;line-height:1.6;max-width:200px}
+        .footer-col h4{color:rgba(255,255,255,0.5);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+        .footer-col a{display:block;color:rgba(255,255,255,0.45);font-size:11px;margin-bottom:6px;transition:color .15s}
+        .footer-col a:hover{color:#D9A441}
+        .footer-bottom{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,0.25);font-size:10px}
+
+        /* ── UTILS ── */
+        .view-all{text-align:center;margin-top:20px}
+        .btn-view-all{display:inline-flex;align-items:center;gap:6px;background:#0B2545;color:#fff;font-weight:700;font-size:12px;padding:10px 20px;border-radius:24px;border:none;cursor:pointer;font-family:'Poppins',sans-serif}
+        .btn-view-all:hover{background:#1a3d6e}
+        .btn-view-outline{display:inline-flex;align-items:center;gap:6px;background:transparent;color:#0B2545;font-weight:700;font-size:12px;padding:10px 20px;border-radius:24px;border:2px solid #0B2545;cursor:pointer;font-family:'Poppins',sans-serif}
+        .btn-view-outline:hover{background:#0B2545;color:#fff}
+
+        @media(max-width:768px){
+            .domains-grid{grid-template-columns:repeat(2,1fr)}
+            .offres-grid{grid-template-columns:1fr}
+            .why-grid{grid-template-columns:1fr 1fr}
+            .test-grid{grid-template-columns:1fr}
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+            .footer-grid{grid-template-columns:1fr 1fr}
+        }
+    </style>
+</h:head>
+
+<h:body>
+
+    <!-- ── TOPBAR ─────────────────────────────────────────────────── -->
+    <nav class="sef-nav">
+        <a href="#{request.contextPath}/accueil.xhtml" class="sef-brand">
+            <div class="sef-logo">S</div>
+            <div>
+                <span class="sef-name">SenExpertFormation</span>
+                <span class="sef-sub">Plateforme de Formation</span>
+            </div>
+        </a>
+        <div class="sef-links">
+            <a href="#{request.contextPath}/offres.xhtml">Formations</a>
+            <a href="#{request.contextPath}/offres.xhtml">Catalogue</a>
+            <h:panelGroup rendered="#{!sessionBean.connecte}" style="display:inline-flex;align-items:center;gap:2px;">
+                <a href="#{request.contextPath}/login.xhtml">Connexion</a>
+                <a href="#{request.contextPath}/register.xhtml" class="cta">S'inscrire</a>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionBean.connecte and sessionBean.admin}" style="display:inline-flex;align-items:center;gap:2px;">
+                <a href="#{request.contextPath}/admin/dashboard.xhtml">Dashboard</a>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionBean.connecte and 'AGENT'.equals(sessionBean.role)}" style="display:inline-flex;align-items:center;gap:2px;">
+                <a href="#{request.contextPath}/dashboard-agent-institution.xhtml">Mon espace</a>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionBean.connecte and 'PARTICULIER'.equals(sessionBean.role)}" style="display:inline-flex;align-items:center;gap:2px;">
+                <a href="#{request.contextPath}/dashboard-particulier.xhtml">Mon espace</a>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionBean.connecte}" style="display:inline-flex;align-items:center;gap:6px;margin-left:6px;">
+                <div class="sef-user">
+                    <div class="sef-av">#{sessionBean.email != null ? sessionBean.email.substring(0,1).toUpperCase() : 'U'}</div>
+                    #{sessionBean.prenom != null ? sessionBean.prenom : sessionBean.email}
+                </div>
+                <h:form style="display:inline;margin:0;">
+                    <h:commandLink value="Quitter" action="#{authBean.logout}"
+                                   style="color:rgba(255,255,255,.55);font-size:11px;padding:5px 8px;"/>
+                </h:form>
+            </h:panelGroup>
+        </div>
+    </nav>
+
+    <!-- ── HERO ──────────────────────────────────────────────────── -->
+    <div class="hero">
+        <div class="hero-blob1"></div>
+        <div class="hero-blob2"></div>
+        <div class="hero-inner">
+            <div class="badge"><i class="ti ti-school"></i>+500 formations disponibles</div>
+            <h1>Formez-vous avec les Meilleurs Experts</h1>
+            <p>Accédez à des formations professionnelles certifiées pour booster votre carrière et votre entreprise à Dakar et partout au Sénégal.</p>
+            <div class="hero-btns">
+                <a href="#{request.contextPath}/offres.xhtml" class="btn-gold"><i class="ti ti-arrow-right"></i>Découvrir les formations</a>
+                <a href="#{request.contextPath}/register.xhtml" class="btn-outline"><i class="ti ti-player-play"></i>Créer un compte</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat"><div class="num">500+</div><div class="lbl">Formations</div></div>
+                <div class="hero-stat"><div class="num">12K+</div><div class="lbl">Apprenants</div></div>
+                <div class="hero-stat"><div class="num">98%</div><div class="lbl">Satisfaction</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STATS BAR ──────────────────────────────────────────────── -->
+    <div class="stats-bar">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="sicon"><i class="ti ti-users"></i></div>
+                <div class="sval">12 000+</div><div class="slbl">Apprenants inscrits</div>
+            </div>
+            <div class="stat-item">
+                <div class="sicon"><i class="ti ti-book"></i></div>
+                <div class="sval">500+</div><div class="slbl">Formations actives</div>
+            </div>
+            <div class="stat-item">
+                <div class="sicon"><i class="ti ti-award"></i></div>
+                <div class="sval">8 500+</div><div class="slbl">Certifications délivrées</div>
+            </div>
+            <div class="stat-item">
+                <div class="sicon"><i class="ti ti-trending-up"></i></div>
+                <div class="sval">98%</div><div class="slbl">Taux de satisfaction</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DOMAINES ──────────────────────────────────────────────── -->
+    <div class="section section-bg">
+        <div class="sec-header">
+            <div class="sec-badge"><i class="ti ti-book"></i>Nos Domaines</div>
+            <h2 class="sec-title">Explorez nos domaines de formation</h2>
+            <p class="sec-sub">Des programmes adaptés à tous les secteurs d'activité pour vous accompagner vers l'excellence professionnelle.</p>
+        </div>
+        <div class="domains-grid">
+            <ui:repeat value="#{offreBean.domaines}" var="dom" end="7">
+                <a href="#{request.contextPath}/offres.xhtml" class="domain-card">
+                    <div class="domain-icon" style="background:#eff6ff"><i class="ti ti-book" style="color:#2563eb;font-size:18px"></i></div>
+                    <h4>#{dom.libelle}</h4>
+                    <p>Voir les formations</p>
+                </a>
+            </ui:repeat>
+            <h:panelGroup rendered="#{empty offreBean.domaines}">
+                <div class="domain-card"><div class="domain-icon" style="background:#eff6ff"><i class="ti ti-globe" style="color:#2563eb;font-size:18px"></i></div><h4>Digital &amp; Tech</h4><p>48 formations</p></div>
+                <div class="domain-card"><div class="domain-icon" style="background:#f0fdf4"><i class="ti ti-chart-bar" style="color:#16a34a;font-size:18px"></i></div><h4>Management</h4><p>36 formations</p></div>
+                <div class="domain-card"><div class="domain-icon" style="background:#faf5ff"><i class="ti ti-trending-up" style="color:#9333ea;font-size:18px"></i></div><h4>Finance &amp; Compta</h4><p>29 formations</p></div>
+                <div class="domain-card"><div class="domain-icon" style="background:#fff7ed"><i class="ti ti-school" style="color:#ea580c;font-size:18px"></i></div><h4>RH &amp; Recrutement</h4><p>22 formations</p></div>
+                <div class="domain-card"><div class="domain-icon" style="background:#fdf2f8"><i class="ti ti-building" style="color:#db2777;font-size:18px"></i></div><h4>Marketing &amp; Comm</h4><p>31 formations</p></div>
+                <div class="domain-card"><div class="domain-icon" style="background:#f0fdfa"><i class="ti ti-users" style="color:#0d9488;font-size:18px"></i></div><h4>Santé &amp; Social</h4><p>18 formations</p></div>
+                <div class="domain-card"><div class="domain-icon" style="background:#fffbeb"><i class="ti ti-award" style="color:#d97706;font-size:18px"></i></div><h4>Logistique</h4><p>15 formations</p></div>
+                <div class="domain-card"><div class="domain-icon" style="background:#eef2ff"><i class="ti ti-bolt" style="color:#4f46e5;font-size:18px"></i></div><h4>Énergie &amp; Env.</h4><p>12 formations</p></div>
+            </h:panelGroup>
+        </div>
+        <div class="view-all">
+            <a href="#{request.contextPath}/offres.xhtml" class="btn-view-all">Voir tout le catalogue <i class="ti ti-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <!-- ── OFFRES POPULAIRES ──────────────────────────────────────── -->
+    <div class="section">
+        <div class="sec-header">
+            <div class="sec-badge"><i class="ti ti-award"></i>Offres populaires</div>
+            <h2 class="sec-title">Formations les plus demandées</h2>
+            <p class="sec-sub">Rejoignez des milliers d'apprenants qui ont transformé leur carrière grâce à nos formations certifiantes.</p>
+        </div>
+        <div class="offres-grid">
+            <ui:repeat value="#{offreBean.offres}" var="offre" end="2">
+                <div class="offre-card">
+                    <div class="offre-header">
+                        <h:panelGroup rendered="#{offre.niveau != null}">
+                            <span class="offre-bdg #{offre.niveau eq 'DEBUTANT' ? 'bdg-green' : offre.niveau eq 'INTERMEDIAIRE' ? 'bdg-blue' : offre.niveau eq 'AVANCE' ? 'bdg-purple' : 'bdg-red'}">
+                                #{offre.niveau}
+                            </span>
+                        </h:panelGroup>
+                        <div class="offre-icon"><i class="ti ti-school"></i></div>
+                        <h3>#{offre.titre}</h3>
+                        <p>#{offre.domaine != null ? offre.domaine.libelle : ''}</p>
+                    </div>
+                    <div class="offre-body">
+                        <div class="offre-meta">
+                            <span><i class="ti ti-clock"></i>#{offre.duree != null ? offre.duree.concat('h') : 'N/A'}</span>
+                            <span><i class="ti ti-users"></i>#{offre.places != null ? offre.places : '0'} places</span>
+                            <span><i class="ti ti-star" style="color:#D9A441"></i>4.8</span>
+                        </div>
+                        <div class="offre-footer">
+                            <span class="offre-price">#{offre.payante ? offre.coutFormate : 'Gratuit'}</span>
+                            <a href="#{request.contextPath}/offres.xhtml" class="btn-apply">Postuler</a>
+                        </div>
+                    </div>
+                </div>
+            </ui:repeat>
+            <h:panelGroup rendered="#{empty offreBean.offres}">
+                <div class="offre-card">
+                    <div class="offre-header"><span class="offre-bdg bdg-green">DÉBUTANT</span><div class="offre-icon"><i class="ti ti-code"></i></div><h3>Développement Web Full Stack</h3><p>Digital &amp; Tech</p></div>
+                    <div class="offre-body"><div class="offre-meta"><span><i class="ti ti-clock"></i>120h</span><span><i class="ti ti-users"></i>1 240</span><span><i class="ti ti-star" style="color:#D9A441"></i>4.8</span></div><div class="offre-footer"><span class="offre-price">180 000 FCFA</span><button class="btn-apply">Postuler</button></div></div>
+                </div>
+                <div class="offre-card">
+                    <div class="offre-header"><span class="offre-bdg bdg-blue">INTERMÉDIAIRE</span><div class="offre-icon"><i class="ti ti-chart-pie"></i></div><h3>Management &amp; Leadership</h3><p>Management</p></div>
+                    <div class="offre-body"><div class="offre-meta"><span><i class="ti ti-clock"></i>80h</span><span><i class="ti ti-users"></i>892</span><span><i class="ti ti-star" style="color:#D9A441"></i>4.9</span></div><div class="offre-footer"><span class="offre-price">150 000 FCFA</span><button class="btn-apply">Postuler</button></div></div>
+                </div>
+                <div class="offre-card">
+                    <div class="offre-header"><span class="offre-bdg bdg-purple">AVANCÉ</span><div class="offre-icon"><i class="ti ti-database"></i></div><h3>Data Science &amp; Big Data</h3><p>Digital &amp; Tech</p></div>
+                    <div class="offre-body"><div class="offre-meta"><span><i class="ti ti-clock"></i>160h</span><span><i class="ti ti-users"></i>540</span><span><i class="ti ti-star" style="color:#D9A441"></i>4.7</span></div><div class="offre-footer"><span class="offre-price">250 000 FCFA</span><button class="btn-apply">Postuler</button></div></div>
+                </div>
+            </h:panelGroup>
+        </div>
+        <div class="view-all">
+            <a href="#{request.contextPath}/offres.xhtml" class="btn-view-outline">Voir toutes les offres <i class="ti ti-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <!-- ── POURQUOI NOUS ──────────────────────────────────────────── -->
+    <div class="section section-bg">
+        <div class="sec-header">
+            <div class="sec-badge"><i class="ti ti-award"></i>Pourquoi nous choisir</div>
+            <h2 class="sec-title">La plateforme de référence au Sénégal</h2>
+            <p class="sec-sub">SenExpertFormation réunit les meilleurs experts pédagogiques du Sénégal et d'Afrique de l'Ouest.</p>
+        </div>
+        <div class="why-grid">
+            <div class="why-card"><div class="wicon"><i class="ti ti-shield-check"></i></div><h4>Certifications reconnues</h4><p>Validées par des organismes nationaux et internationaux reconnus.</p></div>
+            <div class="why-card"><div class="wicon"><i class="ti ti-users"></i></div><h4>Formateurs experts</h4><p>+200 formateurs actifs avec au minimum 10 ans d'expérience.</p></div>
+            <div class="why-card"><div class="wicon"><i class="ti ti-bolt"></i></div><h4>Apprentissage flexible</h4><p>Présentiel, distanciel ou hybride — à Dakar ou en ligne.</p></div>
+            <div class="why-card"><div class="wicon"><i class="ti ti-trending-up"></i></div><h4>Suivi personnalisé</h4><p>Un conseiller dédié vous accompagne jusqu'à votre certification.</p></div>
+            <div class="why-card"><div class="wicon"><i class="ti ti-globe"></i></div><h4>Réseau international</h4><p>+500 partenaires entreprises pour votre insertion professionnelle.</p></div>
+            <div class="why-card"><div class="wicon"><i class="ti ti-briefcase"></i></div><h4>Financement possible</h4><p>Des solutions adaptées pour faciliter l'accès à la formation.</p></div>
+        </div>
+    </div>
+
+    <!-- ── TÉMOIGNAGES ────────────────────────────────────────────── -->
+    <div class="testimonials">
+        <div class="sec-header" style="margin-bottom:20px">
+            <div class="sec-badge" style="background:rgba(217,164,65,0.2)"><i class="ti ti-quote"></i>Témoignages</div>
+            <h2 class="sec-title" style="color:#fff">Ce que disent nos apprenants</h2>
+        </div>
+        <div class="test-grid">
+            <div class="test-card">
+                <div class="qi"><i class="ti ti-quote"></i></div>
+                <p>"SenExpertFormation a transformé nos équipes. Les formateurs sont excellents et les certifications reconnues par tous nos partenaires."</p>
+                <div class="test-stars"><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i></div>
+                <div class="test-author"><div class="test-avatar">FD</div><div><div class="test-name">Fatou Diallo</div><div class="test-role">Directrice RH, Sonatel</div></div></div>
+            </div>
+            <div class="test-card">
+                <div class="qi"><i class="ti ti-quote"></i></div>
+                <p>"J'ai décroché un CDI deux semaines après ma certification en développement web. La qualité des formations est exceptionnelle."</p>
+                <div class="test-stars"><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i></div>
+                <div class="test-author"><div class="test-avatar">MS</div><div><div class="test-name">Mamadou Sow</div><div class="test-role">Développeur Senior, Orange Sénégal</div></div></div>
+            </div>
+            <div class="test-card">
+                <div class="qi"><i class="ti ti-quote"></i></div>
+                <p>"La formation en management m'a permis d'évoluer vers un poste de direction. Je recommande vivement cette plateforme."</p>
+                <div class="test-stars"><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i></div>
+                <div class="test-author"><div class="test-avatar">AN</div><div><div class="test-name">Aissatou Ndiaye</div><div class="test-role">Consultante, PricewaterhouseCoopers</div></div></div>
+            </div>
+            <div class="test-card">
+                <div class="qi"><i class="ti ti-quote"></i></div>
+                <p>"En tant qu'institution partenaire, nous sommes impressionnés par la qualité des profils formés sur SenExpertFormation."</p>
+                <div class="test-stars"><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i><i class="ti ti-star-filled"></i></div>
+                <div class="test-author"><div class="test-avatar">IB</div><div><div class="test-name">Ibrahima Ba</div><div class="test-role">CEO, Tech4Africa</div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── PARTENAIRES ────────────────────────────────────────────── -->
+    <div class="partners">
+        <div class="partners-label">Ils nous font confiance</div>
+        <div class="partners-list">
+            <div class="partner-item"><i class="ti ti-building"></i>Sonatel</div>
+            <div class="partner-item"><i class="ti ti-building"></i>Orange</div>
+            <div class="partner-item"><i class="ti ti-building"></i>CBAO</div>
+            <div class="partner-item"><i class="ti ti-building"></i>Ecobank</div>
+            <div class="partner-item"><i class="ti ti-building"></i>Total Energies</div>
+            <div class="partner-item"><i class="ti ti-building"></i>Société Générale</div>
+            <div class="partner-item"><i class="ti ti-building"></i>SENELEC</div>
+            <div class="partner-item"><i class="ti ti-building"></i>Air Sénégal</div>
+            <div class="partner-item"><i class="ti ti-building"></i>SAED</div>
+            <div class="partner-item"><i class="ti ti-building"></i>CTIC</div>
+        </div>
+    </div>
+
+    <!-- ── NEWSLETTER ─────────────────────────────────────────────── -->
+    <div class="newsletter">
+        <div class="nicon"><i class="ti ti-book"></i></div>
+        <h2>Restez informé des nouvelles formations</h2>
+        <p>Recevez chaque semaine nos nouvelles offres, conseils carrière et actualités du marché sénégalais.</p>
+        <div class="nl-form">
+            <input type="email" id="nlEmail" placeholder="Votre adresse email" required="required"/>
+            <button type="button" onclick="sAbonner()">S'abonner</button>
+        </div>
+        <p class="disclaimer">Pas de spam. Désabonnement en 1 clic.</p>
+        <div class="nl-ok" id="nlOk">✓ Inscription confirmée ! Vous recevrez nos prochaines formations.</div>
+    </div>
+
+    <!-- ── CTA FINAL ──────────────────────────────────────────────── -->
+    <div class="cta-section">
+        <div class="cta-box">
+            <div class="cta-blob" style="top:0;right:0;background:rgba(217,164,65,0.08)"></div>
+            <div class="cta-blob" style="bottom:0;left:0;background:rgba(59,130,246,0.08)"></div>
+            <div style="position:relative">
+                <div class="cta-badge"><i class="ti ti-rocket"></i>Commencez aujourd'hui</div>
+                <h2>Prêt à transformer votre carrière ?</h2>
+                <p class="sub">Rejoignez 12 000+ professionnels sénégalais qui ont déjà fait confiance à SenExpertFormation.</p>
+                <div class="cta-btns">
+                    <a href="#{request.contextPath}/register.xhtml" class="btn-cta-gold">Créer mon compte gratuitement</a>
+                    <a href="#{request.contextPath}/offres.xhtml" class="btn-cta-outline">Explorer le catalogue</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+    <footer class="sef-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="fn">SenExpertFormation</div>
+                <p>La plateforme de référence pour la formation professionnelle certifiée au Sénégal.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Formations</h4>
+                <a href="#{request.contextPath}/offres.xhtml">Toutes les offres</a>
+                <a href="#{request.contextPath}/offres.xhtml">Certifications</a>
+                <a href="#{request.contextPath}/offres.xhtml">Sessions</a>
+            </div>
+            <div class="footer-col">
+                <h4>Plateforme</h4>
+                <a href="#{request.contextPath}/register.xhtml">S'inscrire</a>
+                <a href="#{request.contextPath}/login.xhtml">Connexion</a>
+                <a href="#{request.contextPath}/accueil.xhtml">Accueil</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <a href="#">contact@senexpert.sn</a>
+                <a href="#">+221 33 000 00 00</a>
+                <a href="#">Dakar, Sénégal</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2024 SenExpertFormation. Tous droits réservés.</span>
+            <span>Fait avec ♥ au Sénégal</span>
+        </div>
+    </footer>
+
+    <script>
+    //<![CDATA[
+        function sAbonner() {
+            var email = document.getElementById('nlEmail');
+            if (!email || !email.value || email.value.indexOf('@') === -1) {
+                email.focus(); return;
+            }
+            document.getElementById('nlOk').style.display = 'block';
+            email.value = '';
+            setTimeout(function(){ document.getElementById('nlOk').style.display = 'none'; }, 5000);
+        }
+    //]]>
+    </script>
+
+</h:body>
+</html>

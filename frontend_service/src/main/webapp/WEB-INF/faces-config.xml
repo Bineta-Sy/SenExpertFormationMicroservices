@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                                  https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
+              version="4.0">
+
+    <!-- Handler ViewExpiredException : redirige vers la même URL -->
+    <factory>
+        <exception-handler-factory>
+            com.senexpert.frontend.exception.ViewExpiredExceptionHandlerFactory
+        </exception-handler-factory>
+    </factory>
+
+    <!-- Recharge les permissions depuis le backend à chaque cycle JSF -->
+    <lifecycle>
+        <phase-listener>com.senexpert.frontend.bean.PermissionRefreshListener</phase-listener>
+    </lifecycle>
+
+    <!-- Navigation rules -->
+    <navigation-rule>
+        <from-view-id>/login.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>admin-dashboard</from-outcome>
+            <to-view-id>/admin/dashboard.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>user-offres</from-outcome>
+            <to-view-id>/offres.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>login</from-outcome>
+            <to-view-id>/login.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+    </navigation-rule>
+
+</faces-config>

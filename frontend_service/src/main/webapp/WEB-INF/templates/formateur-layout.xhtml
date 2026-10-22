@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SenExpertFormation — <ui:insert name="title">Formateur</ui:insert></title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+*  { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
+             background: #F8FAFC; color: #0F172A; font-size: 13px; }
+.fpr-shell  { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── Sidebar ── */
+.fpr-sidebar { width: 220px; min-width: 220px; background: #fff;
+    border-right: 1px solid #E2E8F0; display: flex; flex-direction: column;
+    height: 100%; overflow-y: auto; }
+.fpr-logo { padding: 14px 16px; border-bottom: 1px solid #E2E8F0;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.fpr-logo-icon { width: 30px; height: 30px; background: #3B82F6; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
+.fpr-logo-name { font-size: 12px; font-weight: 700; color: #0F172A; }
+.fpr-prof  { padding: 12px 16px; border-bottom: 1px solid #E2E8F0;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.fpr-av    { width: 34px; height: 34px; border-radius: 50%; background: #EDE9FE;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #6D28D9; flex-shrink: 0; }
+.fpr-av-name  { font-size: 12px; font-weight: 600; color: #0F172A; }
+.fpr-av-email { font-size: 10px; color: #94A3B8; margin-top: 1px; }
+.fpr-nav      { flex: 1; padding: 8px 0; }
+.fpr-section  { font-size: 10px; color: #94A3B8; padding: 10px 16px 3px;
+    text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+.fpr-item { display: flex; align-items: center; gap: 9px; padding: 8px 16px;
+    font-size: 12px; color: #475569; text-decoration: none;
+    border-left: 2px solid transparent; user-select: none; }
+.fpr-item i { font-size: 15px; }
+.fpr-item:hover { background: #F8FAFC; color: #0F172A; }
+.fpr-item.active { background: #EFF6FF; color: #1D4ED8; border-left-color: #3B82F6; font-weight: 600; }
+.fpr-badge-cnt { margin-left: auto; background: #EFF6FF; color: #1D4ED8;
+    font-size: 10px; padding: 1px 6px; border-radius: 20px; font-weight: 700; }
+.fpr-logout { padding: 10px 16px; border-top: 1px solid #E2E8F0; flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #EF4444; cursor: pointer; }
+
+/* ── Main ── */
+.fpr-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.fpr-topbar { background: #fff; border-bottom: 1px solid #E2E8F0; padding: 0 28px;
+    height: 50px; display: flex; align-items: center;
+    justify-content: space-between; flex-shrink: 0; }
+.fpr-topbar-title { font-size: 14px; font-weight: 600; }
+.fpr-topbar-right { display: flex; align-items: center; gap: 10px; }
+.fpr-role-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    background: #EFF6FF; color: #1D4ED8; font-weight: 600; }
+.fpr-content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+/* ── Boutons ── */
+.fpr-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+    font-weight: 600; padding: 7px 14px; border-radius: 7px;
+    background: #3B82F6; color: #fff; border: none; cursor: pointer;
+    text-decoration: none; white-space: nowrap; }
+.fpr-btn:hover { background: #2563EB; }
+.fpr-btn-sm { padding: 5px 10px; font-size: 11px; }
+.fpr-btn-secondary { background: #F1F5F9 !important; color: #475569 !important;
+    border: 1px solid #E2E8F0 !important; }
+.fpr-btn-secondary:hover { background: #E2E8F0 !important; }
+.fpr-btn-danger { background: #FEE2E2 !important; color: #DC2626 !important;
+    border: 1px solid #FCA5A5 !important; }
+.fpr-btn-ok { background: #D1FAE5 !important; color: #065F46 !important;
+    border: 1px solid #A7F3D0 !important; }
+
+/* Styles spécifiques aux pages formateur */
+<ui:insert name="pageStyle"/>
+</style>
+</h:head>
+
+<h:body>
+
+<h:panelGroup rendered="#{!sessionBean.connecte}" layout="block"
+    style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;">
+    <p style="color:#64748B;">Vous devez être connecté.</p>
+    <h:link outcome="/login" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#3B82F6;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">
+        Se connecter
+    </h:link>
+</h:panelGroup>
+
+<h:panelGroup rendered="#{sessionBean.connecte}" layout="block" styleClass="fpr-shell">
+
+  <!-- SIDEBAR -->
+  <div class="fpr-sidebar">
+    <div class="fpr-logo">
+      <div class="fpr-logo-icon"><i class="ti ti-school"></i></div>
+      <span class="fpr-logo-name">SenExpertFormation</span>
+    </div>
+    <div class="fpr-prof">
+      <div class="fpr-av"><h:outputText value="#{sessionBean.initiale}"/></div>
+      <div>
+        <div class="fpr-av-name">
+          <h:outputText value="#{not empty sessionBean.nomComplet ? sessionBean.nomComplet : sessionBean.email}"/>
+        </div>
+        <div class="fpr-av-email"><h:outputText value="#{sessionBean.email}"/></div>
+      </div>
+    </div>
+
+    <div class="fpr-nav">
+
+      <div class="fpr-section">Espace formateur</div>
+      <a class="fpr-item #{navActiveDashboard}"
+         href="#{request.contextPath}/dashboard-formateur.xhtml">
+        <i class="ti ti-layout-dashboard"></i> Tableau de bord
+      </a>
+      <a class="fpr-item #{navActiveFormations}"
+         href="#{request.contextPath}/dashboard-formateur.xhtml?page=formations">
+        <i class="ti ti-school"></i> Mes formations
+      </a>
+      <a class="fpr-item #{navActiveNotifications}"
+         href="#{request.contextPath}/dashboard-formateur.xhtml?page=notifications">
+        <i class="ti ti-bell"></i> Notifications
+      </a>
+
+      <h:panelGroup rendered="#{sessionBean.permissionsMap['5006'] or sessionBean.permissionsMap['5007']}">
+        <div class="fpr-section">Mes cours</div>
+        <a class="fpr-item #{navActiveCours}"
+           href="#{request.contextPath}/formateur-cours.xhtml">
+          <i class="ti ti-books"></i> Mes cours
+        </a>
+        <a class="fpr-item #{navActiveDocuments}"
+           href="#{request.contextPath}/dashboard-formateur.xhtml?page=documents">
+          <i class="ti ti-file-text"></i> Documents
+        </a>
+      </h:panelGroup>
+
+      <h:panelGroup rendered="#{sessionBean.permissionsMap['5012']}">
+        <div class="fpr-section">Apprenants</div>
+        <a class="fpr-item #{navActiveApprenants}"
+           href="#{request.contextPath}/formateur-apprenants.xhtml">
+          <i class="ti ti-users"></i> Mes apprenants
+        </a>
+        <a class="fpr-item #{navActiveMessagerie}"
+           href="#{request.contextPath}/dashboard-formateur.xhtml?page=messagerie">
+          <i class="ti ti-message-circle"></i> Messagerie
+        </a>
+        <a class="fpr-item #{navActiveProgression}"
+           href="#{request.contextPath}/formateur-apprenants.xhtml">
+          <i class="ti ti-chart-bar"></i> Progression
+        </a>
+      </h:panelGroup>
+
+      <h:panelGroup rendered="#{sessionBean.permissionsMap['5011']}">
+        <div class="fpr-section">Corrections</div>
+        <a class="fpr-item #{navActiveCorrections}"
+           href="#{request.contextPath}/formateur-corrections.xhtml">
+          <i class="ti ti-clipboard-check" style="color:#F59E0B;"></i> Corrections
+        </a>
+      </h:panelGroup>
+
+      <div class="fpr-section">Planning</div>
+      <a class="fpr-item #{navActiveSessions}"
+         href="#{request.contextPath}/dashboard-formateur.xhtml?page=sessions">
+        <i class="ti ti-calendar-event"></i> Sessions
+      </a>
+
+      <div class="fpr-section">Compte</div>
+      <a class="fpr-item #{navActiveProfil}"
+         href="#{request.contextPath}/dashboard-formateur.xhtml?page=profil">
+        <i class="ti ti-user-circle"></i> Mon profil
+      </a>
+    </div>
+
+    <h:form style="margin:0;">
+      <h:commandLink action="#{authBean.logout}" styleClass="fpr-logout">
+        <i class="ti ti-logout"></i> Se déconnecter
+      </h:commandLink>
+    </h:form>
+  </div>
+
+  <!-- MAIN -->
+  <div class="fpr-main">
+    <div class="fpr-topbar">
+      <span class="fpr-topbar-title"><ui:insert name="topbarTitle">Formateur</ui:insert></span>
+      <div class="fpr-topbar-right">
+        <span class="fpr-role-badge">Formateur</span>
+        <div class="fpr-av" style="width:30px;height:30px;font-size:11px;">
+          <h:outputText value="#{sessionBean.initiale}"/>
+        </div>
+      </div>
+    </div>
+    <div class="fpr-content">
+      <ui:insert name="content"/>
+    </div>
+  </div>
+
+</h:panelGroup>
+
+</h:body>
+</html>

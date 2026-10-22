@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+    <ui:define name="title">Offres de Formation</ui:define>
+    <ui:define name="content">
+
+        <div style="margin-bottom:28px;">
+            <h1 class="page-title">📚 Offres de Formation</h1>
+            <p class="page-subtitle">Détail des formations disponibles</p>
+        </div>
+
+        <h:form id="offresForm">
+            <p:messages showDetail="true" closable="true" style="margin-bottom:12px;border-radius:8px;"/>
+
+            <p:dataTable value="#{offreBean.offres}" var="offre"
+                         paginator="true" rows="8"
+                         emptyMessage="Aucune offre disponible."
+                         style="border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.15);">
+
+                <p:column headerText="Formation">
+                    <div style="font-weight:700;color:#1e3a5f;font-size:0.95rem;">#{offre.titre}</div>
+                    <div style="font-size:0.78rem;color:#888;margin-top:3px;">#{offre.description}</div>
+                </p:column>
+
+                <p:column headerText="Domaine" style="width:130px;">
+                    <span class="badge badge-online">#{offre.domaine.libelle}</span>
+                </p:column>
+
+                <p:column headerText="Type" style="width:130px;">
+                    <h:panelGroup rendered="#{offre.type eq 'EN_LIGNE'}"><span class="badge badge-ok">🌐 En ligne</span></h:panelGroup>
+                    <h:panelGroup rendered="#{offre.type eq 'PRESENTIEL'}"><span class="badge badge-wait">🏫 Présentiel</span></h:panelGroup>
+                    <h:panelGroup rendered="#{offre.type eq 'A_LA_CARTE'}"><span class="badge badge-custom">📋 À la carte</span></h:panelGroup>
+                </p:column>
+
+                <p:column headerText="Période" style="width:190px;">
+                    <div style="font-size:0.83rem;color:#555;">
+                        <div>📅 Du : #{offre.dateDebut}</div>
+                        <div>🏁 Au : #{offre.dateFin}</div>
+                    </div>
+                </p:column>
+
+                <p:column headerText="Places" style="width:80px;text-align:center;">
+                    <span class="badge #{offre.placesDisponibles gt 0 ? 'badge-ok' : 'badge-ko'}">#{offre.placesDisponibles}</span>
+                </p:column>
+
+                <p:column headerText="Action" style="width:140px;text-align:center;">
+                    <h:panelGroup rendered="#{sessionBean.connecte and offre.placesDisponibles gt 0}">
+                        <p:commandButton value="📝 Postuler"
+                                         action="#{offreBean.postuler(offre.id)}"
+                                         update="offresForm"
+                                         style="padding:7px 14px;background:linear-gradient(135deg,#198754,#28a745);border:none;border-radius:6px;color:white;font-size:0.82rem;font-weight:600;cursor:pointer;"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{!sessionBean.connecte}">
+                        <h:link outcome="/login" style="color:#0072ff;font-weight:600;font-size:0.82rem;text-decoration:none;">🔐 Connexion</h:link>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{sessionBean.connecte and offre.placesDisponibles le 0}">
+                        <span class="badge badge-ko">Complet</span>
+                    </h:panelGroup>
+                </p:column>
+
+            </p:dataTable>
+        </h:form>
+
+    </ui:define>
+</ui:composition>
+</html>
